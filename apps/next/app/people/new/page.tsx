@@ -1,7 +1,7 @@
 "use client";
 import { PaperAirplaneIcon } from "@heroicons/react/16/solid";
 import { formatISO } from "date-fns";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DatePicker } from "../../../components/ui/date-picker";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { parseAsInteger, useQueryState } from "nuqs";
