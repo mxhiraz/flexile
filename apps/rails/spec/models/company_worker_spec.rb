@@ -15,15 +15,6 @@ RSpec.describe CompanyWorker do
     it { is_expected.to have_one(:active_expense_card) }
     it { is_expected.to have_one(:quickbooks_integration_record) }
     it { is_expected.to have_many(:company_worker_absences) }
-
-    it "has many uncompleted contracts" do
-      company_worker = create(:company_worker)
-      create(:document, :signed, company_worker:)
-      create(:equity_plan_contract_doc, company_worker:, completed_at: nil)
-      uncompleted_contracts = create_list(:document, 2, company_worker:, completed_at: nil)
-
-      expect(company_worker.uncompleted_contracts).to match_array(uncompleted_contracts)
-    end
   end
 
   describe "validations" do

@@ -4,28 +4,24 @@ class Document < ApplicationRecord
   include Deletable
 
   belongs_to :company
-  belongs_to :user
   belongs_to :user_compliance_info, optional: true
-  belongs_to :company_administrator, optional: true
-  belongs_to :company_worker, optional: true, foreign_key: :company_contractor_id
   belongs_to :equity_grant, optional: true
 
-  has_and_belongs_to_many :signatories, class_name: "User", join_table: :document_signatures
+  has_many :signatures, class_name: "DocumentSignature"
+  has_many :signatories, through: :signatures, source: :user
 
   has_many_attached :attachments
 
+  validates_associated :signatures
   validates :name, presence: true
   validates :document_type, presence: true
   validates :year, presence: true, numericality: { only_integer: true, less_than_or_equal_to: Date.current.year }
   validates :user_compliance_info_id, presence: true, if: :tax_document?
-  validates :company_administrator_id, presence: true, if: -> { consulting_contract? || equity_plan_contract? || exercise_notice? }
-  validates :company_worker, presence: true, if: -> { consulting_contract? || equity_plan_contract? || exercise_notice? }
   validates :equity_grant_id, presence: true, if: -> { equity_plan_contract? }
   validates :name, inclusion: { in: TaxDocument::ALL_SUPPORTED_TAX_FORM_NAMES }, if: :tax_document?
   validate :tax_document_must_be_unique, if: :tax_document?
-  validate :signatures_and_completed_at_are_present, if: -> { consulting_contract? || equity_plan_contract? }
 
-  after_update_commit :sync_contractor_with_quickbooks, if: :saved_change_to_completed_at?
+  # after_update_commit :sync_contractor_with_quickbooks, if: :saved_change_to_completed_at?
 
   enum :document_type, {
     consulting_contract: 0,
@@ -36,6 +32,7 @@ class Document < ApplicationRecord
   }
 
   scope :irs_tax_forms, -> { tax_document.where(name: TaxDocument::SUPPORTED_IRS_TAX_FORM_NAMES) }
+  scope :unsigned, -> { joins(:signatures).where(signatures: { signed_at: nil }) }
 
   def fetch_serializer(namespace: nil)
     raise "Document type not supported" unless tax_document?
@@ -61,14 +58,5 @@ class Document < ApplicationRecord
       return if self.class.alive.tax_document.where.not(id:).where(name:, year:, user_compliance_info:, company:).none?
 
       errors.add(:base, "A tax form with the same name, company, and year already exists for this user")
-    end
-
-    def signatures_and_completed_at_are_present
-      return unless consulting_contract? || equity_plan_contract?
-
-      fully_signed = signatories.count >= 2
-      if completed_at.blank?
-        errors.add(:completed_at, "must be present") if fully_signed
-      end
     end
 end

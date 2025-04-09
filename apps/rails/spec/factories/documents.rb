@@ -3,44 +3,57 @@
 FactoryBot.define do
   factory :document do
     company
-    user
     year { Date.current.year }
     attachments { [Rack::Test::UploadedFile.new(Rails.root.join("spec/fixtures/files/sample.pdf"))] }
 
     # Consulting contract
     name { Contract::CONSULTING_CONTRACT_NAME }
     document_type { Document.document_types[:consulting_contract] }
-    company_administrator { create(:company_administrator, company:) }
-    company_worker { create(:company_worker, company:) }
+
+    transient do
+      user { nil }
+      company_administrator { nil }
+    end
+
+    after :build do |document, evaluator|
+      user = evaluator.user || create(:user)
+      document.signatures.build(user:, title: "Signer")
+      document.signatures.build(user: evaluator.company_administrator.user, title: "Company Representative") if evaluator.company_administrator.present?
+    end
 
     factory :equity_plan_contract_doc do
       name { "Equity Incentive Plan #{Date.current.year}" }
       document_type { Document.document_types[:equity_plan_contract] }
-      equity_grant { create(:equity_grant, company_investor: create(:company_investor, company:, user:)) }
+      equity_grant { create(:equity_grant, company_investor: create(:company_investor, company:)) }
     end
 
     trait :signed do
-      completed_at { Time.current }
-
       after :build do |document|
-        document.signatories << document.user if document.user.present?
-        document.signatories << document.company_administrator.user if document.company_administrator.present?
+        document.signatures.each do |signature|
+          signature.signed_at = Time.current
+        end
       end
     end
 
     trait :unsigned do
-      completed_at { nil }
+      after :build do |document|
+        document.signatures.each do |signature|
+          signature.signed_at = nil
+        end
+      end
     end
 
     factory :tax_doc do
       document_type { Document.document_types[:tax_document] }
       name { TaxDocument::ALL_SUPPORTED_TAX_FORM_NAMES.sample }
-      company_administrator { nil }
-      company_worker { nil }
-      user_compliance_info { create(:user_compliance_info, user:) }
+      user_compliance_info { create(:user_compliance_info) }
 
       trait :submitted do
-        completed_at { Time.current }
+        after :build do |document|
+          document.signatures.each do |signature|
+            signature.signed_at = Time.current
+          end
+        end
       end
 
       trait :deleted do
@@ -75,8 +88,6 @@ FactoryBot.define do
     factory :share_certificate_doc do
       document_type { Document.document_types[:share_certificate] }
       name { "Share Certificate" }
-      company_administrator { nil }
-      company_worker { nil }
     end
 
     factory :exercise_notice do

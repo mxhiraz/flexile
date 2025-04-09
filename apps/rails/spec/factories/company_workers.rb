@@ -39,9 +39,7 @@ FactoryBot.define do
 
       signing_trait = evaluator.with_unsigned_contract ? :unsigned : :signed
       unless evaluator.without_contract
-        create(:contract, signing_trait, company_worker:)
-        create(:document, signing_trait, company_worker:, company: company_worker.company,
-                                         user: company_worker.user)
+        create(:document, signing_trait, company: company_worker.company, user: company_worker.user)
       end
 
       if evaluator.equity_percentage

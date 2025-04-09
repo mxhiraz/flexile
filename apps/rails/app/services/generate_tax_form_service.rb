@@ -14,7 +14,7 @@ class GenerateTaxFormService
     return unless user_compliance_info.tax_information_confirmed_at?
 
     document = user_compliance_info.documents.tax_document.alive.find_or_initialize_by(
-      user: user_compliance_info.user, name: form_name, year: tax_year, company:
+      name: form_name, year: tax_year, company:
     )
 
     return if document.persisted?
@@ -37,6 +37,7 @@ class GenerateTaxFormService
       filename: "#{tax_year}-#{form_name}-#{company.name.parameterize}-#{user.billing_entity_name.parameterize}.pdf",
       content_type: "application/pdf",
     )
+    document.signatures.build(user:, title: "Signer")
     document.save!
     document
   end

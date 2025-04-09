@@ -25,6 +25,8 @@ const typeLabels = {
 type Document = RouterOutput["documents"]["list"]["documents"][number];
 
 function DocumentStatus({ document }: { document: Document }) {
+  const user = useCurrentUser();
+
   switch (document.type) {
     case DocumentType.TaxDocument:
       if (document.name.startsWith("W-") || document.completedAt) {
@@ -40,7 +42,7 @@ function DocumentStatus({ document }: { document: Document }) {
       return <Status variant="success">Issued</Status>;
     case DocumentType.ConsultingContract:
     case DocumentType.EquityPlanContract:
-      return document.completedAt ? (
+      return document.signatories.some((signatory) => signatory.id === user.id && signatory.signedAt) ? (
         <Status variant="success">Signed</Status>
       ) : (
         <Status variant="critical">Signature required</Status>
@@ -60,9 +62,7 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
   const [signDocumentParam] = useQueryState("sign");
   const [signDocumentId, setSignDocumentId] = useState<bigint | null>(null);
   const isSignable = (document: Document): document is SignableDocument =>
-    !!document.docusealSubmissionId &&
-    ((document.user.id === user.id && !document.signatories.includes(user.id)) ||
-      (user.activeRole === "administrator" && !document.signatories.includes(user.id)));
+    !!document.docusealSubmissionId && document.signable;
   const signDocument = signDocumentId
     ? documents.find((document): document is SignableDocument => document.id === signDocumentId && isSignable(document))
     : null;
@@ -76,7 +76,12 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
   const columns = useMemo(
     () =>
       [
-        userId ? null : columnHelper.accessor("user.name", { header: "Signer" }),
+        userId
+          ? null
+          : columnHelper.accessor("signatories.name", {
+              header: "Signer",
+              cell: (info) => info.row.original.signatories.find((signatory) => signatory.id !== user.id)?.name,
+            }),
         columnHelper.simple("name", "Document"),
         columnHelper.simple("type", "Type", (value) => typeLabels[value]),
         columnHelper.simple("createdAt", "Date", formatDate),
@@ -155,7 +160,7 @@ const SignDocumentModal = ({ document, onClose }: { document: SignableDocument; 
             companyId: company.id,
             id: document.id,
             role:
-              document.user.id === user.id && !document.signatories.includes(user.id)
+              document.signatories.find((signatory) => signatory.id === user.id)?.title === "Signer"
                 ? "Signer"
                 : "Company Representative",
           })

@@ -87,7 +87,7 @@ RSpec.describe "Onboarding for a user with contractor and investor roles", :vcr 
       expect(page).to have_link("Documents")
       expect(page).to have_link("Account")
     end.to change { contract.reload.completed_at.present? }.from(false).to(true)
-       .and change { contract.signatories.count }.from(1).to(2)
+       .and change { contract.contractor_signature }.from(nil).to(user.legal_name)
        .and change { contract.attachment.present? }.from(false).to(true)
 
     expect(page).to have_current_path(spa_company_invoices_path(company.external_id))
@@ -146,7 +146,7 @@ RSpec.describe "Onboarding for a user with contractor and investor roles", :vcr 
         expect(page).to have_link("Documents")
         expect(page).to have_link("Account")
       end.to change { contract.reload.completed_at.present? }.from(false).to(true)
-         .and change { contract.signatories.count }.from(1).to(2)
+         .and change { contract.contractor_signature }.from(nil).to("Marco Antônio")
          .and change { contract.attachment.present? }.from(false).to(true)
 
       expect(page).to have_text("Invoicing")
@@ -224,8 +224,8 @@ RSpec.describe "Onboarding for a user with contractor and investor roles", :vcr 
         expect(page).to have_link("Documents")
         expect(page).to have_link("Account")
       end.to change { contract.reload.completed_at.present? }.from(false).to(true)
-         .and change { contract.signatories.count }.from(1).to(2)
-         .and change { contract.attachment.present? }.from(false).to(true)
+        .and change { contract.contractor_signature }.from(nil).to("Marco Antônio")
+        .and change { contract.attachment.present? }.from(false).to(true)
 
       expect(page).to have_text("Invoicing")
       expect(page).to have_current_path(spa_company_invoices_path(company.external_id))
