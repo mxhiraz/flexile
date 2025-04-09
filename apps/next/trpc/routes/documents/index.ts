@@ -4,7 +4,7 @@ import { and, desc, eq, inArray, isNotNull, isNull, not, type SQLWrapper } from 
 import { pick } from "lodash-es";
 import { z } from "zod";
 import { byExternalId, db, pagination, paginationSchema } from "@/db";
-import { activeStorageAttachments, activeStorageBlobs, documents, users } from "@/db/schema";
+import { activeStorageAttachments, activeStorageBlobs, documents, documentSignatures, users } from "@/db/schema";
 import env from "@/env";
 import { companyProcedure, createRouter, getS3Url } from "@/trpc";
 import { simpleUser } from "@/trpc/routes/users";
@@ -39,6 +39,7 @@ export const documentsRouter = createRouter({
       const rows = await db.query.documents.findMany({
         with: {
           user: { columns: simpleUser.columns },
+          signatures: { with: { user: { columns: { externalId: true } } } },
         },
         where,
         orderBy: [desc(documents.createdAt)],
@@ -78,6 +79,7 @@ export const documentsRouter = createRouter({
           ),
           user: simpleUser(document.user),
           attachment: attachments.get(document.id),
+          signatories: document.signatures.map((signature) => signature.user.externalId),
         })),
         total,
       };
@@ -116,17 +118,27 @@ export const documentsRouter = createRouter({
         where: and(
           eq(documents.id, input.id),
           input.role === "Company Representative"
-            ? and(eq(documents.companyId, ctx.company.id), isNull(documents.administratorSignature))
-            : and(eq(documents.userId, ctx.user.id), isNull(documents.contractorSignature)),
+            ? eq(documents.companyId, ctx.company.id)
+            : eq(documents.userId, ctx.user.id),
         ),
+        with: {
+          signatures: {
+            where: eq(documentSignatures.userId, ctx.user.id),
+          },
+        },
       });
       if (!document) throw new TRPCError({ code: "NOT_FOUND" });
       await db
+        .insert(documentSignatures)
+        .values({
+          documentId: input.id,
+          userId: ctx.user.id,
+        })
+        .onConflictDoNothing();
+      await db
         .update(documents)
         .set({
-          [input.role === "Company Representative" ? "administratorSignature" : "contractorSignature"]:
-            ctx.user.legalName,
-          completedAt: document.administratorSignature || document.contractorSignature ? new Date() : undefined,
+          completedAt: document.signatures.length > 0 ? new Date() : undefined,
         })
         .where(eq(documents.id, input.id));
     }),

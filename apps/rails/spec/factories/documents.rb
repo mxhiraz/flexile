@@ -12,7 +12,7 @@ FactoryBot.define do
     document_type { Document.document_types[:consulting_contract] }
     company_administrator { create(:company_administrator, company:) }
     company_worker { create(:company_worker, company:) }
-    administrator_signature { company_administrator.user.legal_name }
+    signatories { [company_administrator.user] }
 
     factory :equity_plan_contract_doc do
       name { "Equity Incentive Plan #{Date.current.year}" }
@@ -21,8 +21,11 @@ FactoryBot.define do
     end
 
     trait :signed do
-      contractor_signature { user.legal_name }
       completed_at { Time.current }
+
+      after :build do |document|
+        document.signatories << document.user
+      end
     end
 
     trait :unsigned do
@@ -34,7 +37,6 @@ FactoryBot.define do
       name { TaxDocument::ALL_SUPPORTED_TAX_FORM_NAMES.sample }
       company_administrator { nil }
       company_worker { nil }
-      administrator_signature { nil }
       user_compliance_info { create(:user_compliance_info, user:) }
 
       trait :submitted do
@@ -75,7 +77,6 @@ FactoryBot.define do
       name { "Share Certificate" }
       company_administrator { nil }
       company_worker { nil }
-      administrator_signature { nil }
     end
 
     factory :exercise_notice do

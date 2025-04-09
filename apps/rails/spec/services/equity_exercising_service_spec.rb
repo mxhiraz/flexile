@@ -85,10 +85,9 @@ RSpec.describe EquityExercisingService do
       expect(document.year).to eq(exercise.signed_at.year)
       expect(document.company_administrator).to eq(company_administrator)
       expect(document.company).to eq(company)
-      expect(document.administrator_signature).to eq(company_administrator.user.legal_name)
+      expect(document.signatories).to eq([company_administrator.user, user])
       expect(document.name).to eq("Notice of Exercise")
       expect(document.completed_at).to eq(exercise.signed_at)
-      expect(document.contractor_signature).to eq(user.legal_name)
       expect(document.json_data).to eq({ equity_grant_exercise_id: exercise.id }.as_json)
     end
 

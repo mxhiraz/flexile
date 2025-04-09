@@ -58,9 +58,9 @@ class EquityExercisingService
       end
       company_administrator = company.primary_admin
       Document.create!(company_worker:, company_administrator:, company:, user: company_investor.user,
-                       administrator_signature: company_administrator.user.legal_name,
+                       signatories: [company_administrator.user, company_investor.user],
                        name: "Notice of Exercise", document_type: :exercise_notice,
-                       completed_at: current_time, contractor_signature: company_investor.user.legal_name, year: current_time.year,
+                       completed_at: current_time, year: current_time.year,
                        json_data: { equity_grant_exercise_id: exercise.id }, docuseal_submission_id: submission_id)
       CompanyInvestorMailer.stock_exercise_payment_instructions(company_investor.id, exercise_id: exercise.id).deliver_later
       if company.completed_onboarding?

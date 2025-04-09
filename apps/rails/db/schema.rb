@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_21_231056) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_09_021342) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -552,6 +552,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_21_231056) do
     t.datetime "updated_at", null: false
     t.index ["dividend_id"], name: "index_dividends_dividend_payments_on_dividend_id"
     t.index ["dividend_payment_id"], name: "index_dividends_dividend_payments_on_dividend_payment_id"
+  end
+
+  create_table "document_signatures", id: false, force: :cascade do |t|
+    t.bigint "document_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "document_templates", force: :cascade do |t|

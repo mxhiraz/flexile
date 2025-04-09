@@ -703,6 +703,15 @@ export const documents = pgTable(
   ],
 );
 
+export const documentSignatures = pgTable("document_signatures", {
+  documentId: bigint("document_id", { mode: "bigint" }).notNull(),
+  userId: bigint("user_id", { mode: "bigint" }).notNull(),
+  createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { precision: 6, mode: "date" })
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
 export const equityExerciseBankAccounts = pgTable(
   "equity_exercise_bank_accounts",
   {
@@ -2351,6 +2360,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   tosAgreements: many(tosAgreements),
   userComplianceInfos: many(userComplianceInfos),
   wallets: many(wallets),
+  documentSignatures: many(documentSignatures),
 }));
 
 export const companiesRelations = relations(companies, ({ many }) => ({
@@ -2405,7 +2415,7 @@ export const companyContractorUpdatesRelations = relations(companyContractorUpda
   tasks: many(companyContractorUpdateTasks),
 }));
 
-export const documentsRelations = relations(documents, ({ one }) => ({
+export const documentsRelations = relations(documents, ({ one, many }) => ({
   company: one(companies, {
     fields: [documents.companyId],
     references: [companies.id],
@@ -2425,6 +2435,18 @@ export const documentsRelations = relations(documents, ({ one }) => ({
   equityGrant: one(equityGrants, {
     fields: [documents.equityGrantId],
     references: [equityGrants.id],
+  }),
+  signatures: many(documentSignatures),
+}));
+
+export const documentSignaturesRelations = relations(documentSignatures, ({ one }) => ({
+  document: one(documents, {
+    fields: [documentSignatures.documentId],
+    references: [documents.id],
+  }),
+  user: one(users, {
+    fields: [documentSignatures.userId],
+    references: [users.id],
   }),
 }));
 

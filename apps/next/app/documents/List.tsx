@@ -61,8 +61,8 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
   const [signDocumentId, setSignDocumentId] = useState<bigint | null>(null);
   const isSignable = (document: Document): document is SignableDocument =>
     !!document.docusealSubmissionId &&
-    ((document.user.id === user.id && !document.contractorSignature) ||
-      (user.activeRole === "administrator" && !document.administratorSignature));
+    ((document.user.id === user.id && !document.signatories.includes(user.id)) ||
+      (user.activeRole === "administrator" && !document.signatories.includes(user.id)));
   const signDocument = signDocumentId
     ? documents.find((document): document is SignableDocument => document.id === signDocumentId && isSignable(document))
     : null;
@@ -154,7 +154,10 @@ const SignDocumentModal = ({ document, onClose }: { document: SignableDocument; 
           signDocument.mutate({
             companyId: company.id,
             id: document.id,
-            role: document.user.id === user.id && !document.contractorSignature ? "Signer" : "Company Representative",
+            role:
+              document.user.id === user.id && !document.signatories.includes(user.id)
+                ? "Signer"
+                : "Company Representative",
           })
         }
       />

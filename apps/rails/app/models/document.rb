@@ -10,6 +10,8 @@ class Document < ApplicationRecord
   belongs_to :company_worker, optional: true, foreign_key: :company_contractor_id
   belongs_to :equity_grant, optional: true
 
+  has_and_belongs_to_many :signatories, class_name: "User", join_table: :document_signatures
+
   has_many_attached :attachments
 
   validates :name, presence: true
@@ -64,7 +66,7 @@ class Document < ApplicationRecord
     def signatures_and_completed_at_are_present
       return unless consulting_contract? || equity_plan_contract?
 
-      fully_signed = contractor_signature.present? && administrator_signature.present?
+      fully_signed = signatories.count >= 2
       if completed_at.blank?
         errors.add(:completed_at, "must be present") if fully_signed
       end

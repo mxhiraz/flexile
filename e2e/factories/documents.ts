@@ -26,7 +26,6 @@ export const documentsFactory = {
         userId: user.id,
         name: "Consulting Agreement",
         type: DocumentType.ConsultingContract,
-        contractorSignature: options.signed ? user.legalName : null,
         completedAt: options.signed ? new Date() : null,
         year: new Date().getFullYear(),
         ...overrides,

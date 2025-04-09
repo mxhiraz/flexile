@@ -15,6 +15,7 @@ RSpec.describe Document do
     it { is_expected.to belong_to(:company_administrator).optional(true) }
     it { is_expected.to belong_to(:equity_grant).optional(true) }
     it { is_expected.to have_many_attached(:attachments) }
+    it { is_expected.to have_and_belong_to_many(:signatories).class_name("User").join_table(:document_signatures) }
   end
 
   describe "validations" do
