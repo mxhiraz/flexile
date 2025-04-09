@@ -21,8 +21,6 @@ class Document < ApplicationRecord
   validates :name, inclusion: { in: TaxDocument::ALL_SUPPORTED_TAX_FORM_NAMES }, if: :tax_document?
   validate :tax_document_must_be_unique, if: :tax_document?
 
-  # after_update_commit :sync_contractor_with_quickbooks, if: :saved_change_to_completed_at?
-
   enum :document_type, {
     consulting_contract: 0,
     equity_plan_contract: 1,
@@ -47,12 +45,6 @@ class Document < ApplicationRecord
   end
 
   private
-    def sync_contractor_with_quickbooks
-      return unless consulting_contract?
-
-      QuickbooksDataSyncJob.perform_async(company_worker.company_id, company_worker.class.name, company_contractor_id)
-    end
-
     def tax_document_must_be_unique
       return if deleted?
       return if self.class.alive.tax_document.where.not(id:).where(name:, year:, user_compliance_info:, company:).none?
