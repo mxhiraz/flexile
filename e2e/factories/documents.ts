@@ -3,7 +3,7 @@ import { companiesFactory } from "@test/factories/companies";
 import { usersFactory } from "@test/factories/users";
 import { eq } from "drizzle-orm";
 import { DocumentType } from "@/db/enums";
-import { documents, users } from "@/db/schema";
+import { companyAdministrators, documents, documentSignatures, users } from "@/db/schema";
 import { assert } from "@/utils/assert";
 
 type CreateOptions = {
@@ -32,6 +32,24 @@ export const documentsFactory = {
       })
       .returning();
     assert(document !== undefined);
+
+    if (options.signed) {
+      if (document.companyAdministratorId) {
+        const companyAdministrator = await db.query.companyAdministrators.findFirst({
+          where: eq(companyAdministrators.id, document.companyAdministratorId),
+        });
+        assert(companyAdministrator !== undefined);
+        await db.insert(documentSignatures).values({
+          userId: companyAdministrator.userId,
+          documentId: document.id,
+        });
+      }
+
+      await db.insert(documentSignatures).values({
+        documentId: document.id,
+        userId: user.id,
+      });
+    }
 
     return { document };
   },

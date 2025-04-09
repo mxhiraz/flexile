@@ -12,7 +12,6 @@ FactoryBot.define do
     document_type { Document.document_types[:consulting_contract] }
     company_administrator { create(:company_administrator, company:) }
     company_worker { create(:company_worker, company:) }
-    signatories { [company_administrator.user] }
 
     factory :equity_plan_contract_doc do
       name { "Equity Incentive Plan #{Date.current.year}" }
@@ -24,7 +23,8 @@ FactoryBot.define do
       completed_at { Time.current }
 
       after :build do |document|
-        document.signatories << document.user
+        document.signatories << document.user if document.user.present?
+        document.signatories << document.company_administrator.user if document.company_administrator.present?
       end
     end
 
