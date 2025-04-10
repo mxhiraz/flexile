@@ -11,6 +11,7 @@ import Table, { createColumnHelper, useTable } from "@/components/Table";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { DocumentType, trpc } from "@/trpc/client";
+import { assertDefined } from "@/utils/assert";
 import { formatDate } from "@/utils/time";
 import DocusealForm from "./DocusealForm";
 
@@ -80,7 +81,8 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
           ? null
           : columnHelper.accessor("signatories.name", {
               header: "Signer",
-              cell: (info) => info.row.original.signatories.find((signatory) => signatory.id !== user.id)?.name,
+              cell: (info) =>
+                assertDefined(info.row.original.signatories.find((signatory) => signatory.id !== user.id)).name,
             }),
         columnHelper.simple("name", "Document"),
         columnHelper.simple("type", "Type", (value) => typeLabels[value]),
@@ -160,7 +162,7 @@ const SignDocumentModal = ({ document, onClose }: { document: SignableDocument; 
             companyId: company.id,
             id: document.id,
             role:
-              document.signatories.find((signatory) => signatory.id === user.id)?.title === "Signer"
+              assertDefined(document.signatories.find((signatory) => signatory.id === user.id)).title === "Signer"
                 ? "Signer"
                 : "Company Representative",
           })
