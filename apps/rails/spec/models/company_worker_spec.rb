@@ -104,7 +104,7 @@ RSpec.describe CompanyWorker do
         create(:company_worker, company: @active_contractor.company, with_unsigned_contract: true)
 
         company_worker_with_new_document = create(:company_worker, without_contract: true)
-        document = create(:document, company: company_worker_with_new_document.company, signed: true, signatories: [company_worker_with_new_document.user])
+        create(:document, company: company_worker_with_new_document.company, signed: true, signatories: [company_worker_with_new_document.user])
 
         result = described_class.with_signed_contract
         expected_collection = [

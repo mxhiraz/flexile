@@ -15,7 +15,7 @@ RSpec.describe DocumentSignature do
       company = create(:company)
       company_worker = create(:company_worker, company:, without_contract: true)
       user = company_worker.user
-      document = create(:document, company:, signatories: [user], signed: false)
+      create(:document, company:, signatories: [user], signed: false)
 
       user.document_signatures.first.update!(signed_at: Time.current)
       expect(QuickbooksDataSyncJob).to have_enqueued_sidekiq_job(company.id, CompanyWorker.name, company_worker.id)
