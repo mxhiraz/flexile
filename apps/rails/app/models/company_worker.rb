@@ -10,7 +10,6 @@ class CompanyWorker < ApplicationRecord
   belongs_to :company_role
 
   has_many :contracts, foreign_key: :company_contractor_id
-  has_many :documents, foreign_key: :company_contractor_id
   has_many :equity_allocations, foreign_key: :company_contractor_id
   has_many :invoices, foreign_key: :company_contractor_id
   has_many :company_worker_updates, foreign_key: :company_contractor_id
@@ -58,9 +57,9 @@ class CompanyWorker < ApplicationRecord
     joins(join).where(invoices: { id: nil })
   }
   scope :with_signed_contract, -> {
-    joins("LEFT OUTER JOIN document_signatures ON document_signatures.user_id = company_contractors.user_id AND " \
+    joins("JOIN document_signatures ON document_signatures.user_id = company_contractors.user_id AND " \
             "document_signatures.signed_at IS NOT NULL").
-      joins("LEFT OUTER JOIN documents ON documents.id = document_signatures.document_id AND " \
+      joins("JOIN documents ON documents.id = document_signatures.document_id AND " \
             "documents.deleted_at IS NULL AND " \
             "documents.company_id = company_contractors.company_id AND " \
             "documents.document_type = #{Document.document_types[:consulting_contract]}").

@@ -3,6 +3,7 @@
 FactoryBot.define do
   factory :document do
     company
+    user_compliance_info
     year { Date.current.year }
     attachments { [Rack::Test::UploadedFile.new(Rails.root.join("spec/fixtures/files/sample.pdf"))] }
 
@@ -11,14 +12,30 @@ FactoryBot.define do
     document_type { Document.document_types[:consulting_contract] }
 
     transient do
-      user { nil }
-      company_administrator { nil }
+      signed { true }
+      signatories { [] }
     end
 
     after :build do |document, evaluator|
-      user = evaluator.user || create(:user)
-      document.signatures.build(user:, title: "Signer")
-      document.signatures.build(user: evaluator.company_administrator.user, title: "Company Representative") if evaluator.company_administrator.present?
+      if evaluator.signatories.any?
+        evaluator.signatories.each do |signatory|
+          title = signatory.company_worker_for(document.company) ? "Signer" : "Company Representative"
+          document.signatures.build(user: signatory, title:, signed_at: evaluator.signed ? Time.current : nil)
+        end
+      else
+        if document.tax_document?
+          user = document.user_compliance_info.user
+        else
+          company_worker = create(:company_worker, without_contract: true)
+          user = company_worker.user
+          document.company = company_worker.company
+        end
+        document.signatures.build(user:, title: "Signer", signed_at: evaluator.signed ? Time.current : nil)
+
+        if document.consulting_contract? || document.equity_plan_contract?
+          document.signatures.build(user: create(:company_administrator, company: company_worker.company).user, title: "Company Representative", signed_at: evaluator.signed ? Time.current : nil)
+        end
+      end
     end
 
     factory :equity_plan_contract_doc do
@@ -27,34 +44,10 @@ FactoryBot.define do
       equity_grant { create(:equity_grant, company_investor: create(:company_investor, company:)) }
     end
 
-    trait :signed do
-      after :build do |document|
-        document.signatures.each do |signature|
-          signature.signed_at = Time.current
-        end
-      end
-    end
-
-    trait :unsigned do
-      after :build do |document|
-        document.signatures.each do |signature|
-          signature.signed_at = nil
-        end
-      end
-    end
-
     factory :tax_doc do
       document_type { Document.document_types[:tax_document] }
       name { TaxDocument::ALL_SUPPORTED_TAX_FORM_NAMES.sample }
       user_compliance_info { create(:user_compliance_info) }
-
-      trait :submitted do
-        after :build do |document|
-          document.signatures.each do |signature|
-            signature.signed_at = Time.current
-          end
-        end
-      end
 
       trait :deleted do
         deleted_at { Time.current }

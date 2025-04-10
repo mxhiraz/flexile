@@ -25,12 +25,12 @@ RSpec.describe Document do
     context "signatures" do
       subject(:document) { build(:document) }
 
-      it 'is invalid when signatures are invalid' do
+      it "is invalid when signatures are invalid" do
         document.signatures.build(user: nil, title: "Signer")
         expect(document).to be_invalid
       end
 
-      it 'is valid when signatures are valid' do
+      it "is valid when signatures are valid" do
         document.signatures.build(user: create(:user), title: "Signer")
         expect(document).to be_valid
       end

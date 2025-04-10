@@ -56,7 +56,6 @@ class EquityExercisingService
           exercise_price_usd: equity_grant.exercise_price_usd
         )
       end
-      company_administrator = company.primary_admin
       document = Document.new(company:, name: "Notice of Exercise", document_type: :exercise_notice, year: current_time.year,
                               json_data: { equity_grant_exercise_id: exercise.id }, docuseal_submission_id: submission_id)
       document.signatures.build(user: company_investor.user, title: "Signer", signed_at: current_time)
