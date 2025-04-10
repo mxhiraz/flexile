@@ -26,6 +26,7 @@ export const documentsRouter = createRouter({
         throw new TRPCError({ code: "FORBIDDEN" });
 
       const signable = isNotNull(documents.docusealSubmissionId);
+      const signed = isNotNull(documentSignatures.signedAt);
       const where = and(
         visibleDocuments(ctx.company.id),
         input.year ? eq(documents.year, input.year) : undefined,
@@ -35,7 +36,10 @@ export const documentsRouter = createRouter({
         with: {
           signatures: {
             with: { user: { columns: simpleUser.columns } },
-            where: input.userId ? eq(documentSignatures.userId, byExternalId(users, input.userId)) : undefined,
+            where: and(
+              input.userId ? eq(documentSignatures.userId, byExternalId(users, input.userId)) : undefined,
+              input.signable != null ? (input.signable ? not(signed) : signed) : undefined,
+            ),
             orderBy: [desc(documentSignatures.signedAt)],
           },
         },
