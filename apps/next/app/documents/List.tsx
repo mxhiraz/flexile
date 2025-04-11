@@ -42,7 +42,7 @@ function DocumentStatus({ document }: { document: Document }) {
       return <Status variant="success">Issued</Status>;
     case DocumentType.ConsultingContract:
     case DocumentType.EquityPlanContract:
-      return document.signatories.some((signatory) => signatory.id === user.id && signatory.signedAt) ? (
+      return completedAt ? (
         <Status variant="success">Signed</Status>
       ) : (
         <Status variant="critical">Signature required</Status>
