@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 
 const NumberInput = ({
   value,
@@ -15,8 +15,8 @@ const NumberInput = ({
   return (
     <Input
       value={input}
-      onChange={(value) => {
-        const newInput = value.replace(/\D/gu, "");
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        const newInput = e.target.value.replace(/\D/gu, "");
         setInput(newInput);
 
         const parsed = parseInt(newInput, 10);

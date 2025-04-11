@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 
 const MAXIMUM_FRACTION_DIGITS_ALLOWED_BY_SPEC = 100;
 
@@ -33,7 +33,7 @@ const DecimalInput = ({
     if (!isFocused) {
       setInput(formatValue(value));
     }
-  }, [value, isFocused]);
+  }, [value, isFocused, formatValue]);
 
   const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
     setIsFocused(false);
@@ -48,8 +48,8 @@ const DecimalInput = ({
   return (
     <Input
       value={input}
-      onChange={(value) => {
-        const newInput = value.replace(/[^\d.]/gu, "");
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        const newInput = e.target.value.replace(/[^\d.]/gu, "");
         const parsed = parseFloat(newInput);
 
         setInput(newInput);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import { formatDuration } from "@/utils/time";
 
 const DurationInput = ({
@@ -17,7 +17,7 @@ const DurationInput = ({
     <Input
       {...props}
       value={rawValue}
-      onChange={setRawValue}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRawValue(e.target.value)}
       onBlur={() => {
         if (!rawValue.length) return onChange(null);
 

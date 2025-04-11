@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from "react";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 
 const ComboBox = ({
   options,
@@ -24,18 +24,18 @@ const ComboBox = ({
     if (matchedValue) {
       onChange?.(matchedValue);
     }
-  }, [matchedValue]);
+  }, [matchedValue, onChange]);
 
   return (
     <>
       <Input
         {...inputProps}
         value={inputValue}
-        onChange={setInputValue}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
         list={`${id}-list`}
         invalid={invalid || (touched && !matchedValue)}
         help={touched && !matchedValue ? "Please select an option from the list." : help}
-        onBlur={(e) => {
+        onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
           setTouched(true);
           inputProps.onBlur?.(e);
         }}
