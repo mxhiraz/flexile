@@ -12,7 +12,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 import Button from "@/components/Button";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import { linkClasses } from "@/components/Link";
 import { useCurrentCompany } from "@/global";
 import type { RouterInput, RouterOutput } from "@/trpc";

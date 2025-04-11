@@ -12,7 +12,7 @@ import { CardRow } from "@/components/Card";
 import Checkbox from "@/components/Checkbox";
 import DecimalInput from "@/components/DecimalInput";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";

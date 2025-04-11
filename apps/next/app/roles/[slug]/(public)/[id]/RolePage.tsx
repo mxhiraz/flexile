@@ -10,7 +10,7 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { Card, CardRow } from "@/components/Card";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import SimpleLayout from "@/components/layouts/Simple";
 import MutationButton from "@/components/MutationButton";
 import Notice from "@/components/Notice";

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { Set } from "immutable";
 import { useState } from "react";
 import { z } from "zod";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import MutationButton from "@/components/MutationButton";
 import Select from "@/components/Select";
 import { useCurrentUser } from "@/global";

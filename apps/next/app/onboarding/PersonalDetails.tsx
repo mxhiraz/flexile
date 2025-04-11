@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import Button from "@/components/Button";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import Select from "@/components/Select";

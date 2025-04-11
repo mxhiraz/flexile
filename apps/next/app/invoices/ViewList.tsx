@@ -11,7 +11,7 @@ import Button from "@/components/Button";
 import { Card, CardRow } from "@/components/Card";
 import DecimalInput from "@/components/DecimalInput";
 import DurationInput from "@/components/DurationInput";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import { linkClasses } from "@/components/Link";
 import Notice from "@/components/Notice";

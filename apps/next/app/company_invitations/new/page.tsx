@@ -9,7 +9,7 @@ import TemplateSelector from "@/app/document_templates/TemplateSelector";
 import { CardRow } from "@/components/Card";
 import DecimalInput from "@/components/DecimalInput";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";

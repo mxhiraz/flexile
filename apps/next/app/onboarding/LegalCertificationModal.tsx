@@ -1,7 +1,7 @@
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import { linkClasses } from "@/components/Link";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";

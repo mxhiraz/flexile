@@ -7,7 +7,7 @@ import { Map } from "immutable";
 import React, { useEffect, useState } from "react";
 import { CardRow } from "@/components/Card";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import MutationButton from "@/components/MutationButton";
 import { useCurrentUser } from "@/global";
 import { MAX_PREFERRED_NAME_LENGTH, MIN_EMAIL_LENGTH } from "@/models";

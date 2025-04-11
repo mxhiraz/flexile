@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { parseAsInteger, useQueryState } from "nuqs";
 import React, { useState } from "react";
 import Button from "@/components/Button";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import PaginationSection, { usePage } from "@/components/PaginationSection";

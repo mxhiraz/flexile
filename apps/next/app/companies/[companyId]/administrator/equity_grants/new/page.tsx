@@ -10,7 +10,7 @@ import { optionGrantTypeDisplayNames, relationshipDisplayNames, vestingTriggerDi
 import Button from "@/components/Button";
 import { CardRow } from "@/components/Card";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";

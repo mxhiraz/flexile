@@ -11,7 +11,7 @@ import LegalCertificationModal from "@/app/onboarding/LegalCertificationModal";
 import Button from "@/components/Button";
 import { CardRow } from "@/components/Card";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import Notice from "@/components/Notice";
 import RadioButtons from "@/components/RadioButtons";
 import Select from "@/components/Select";

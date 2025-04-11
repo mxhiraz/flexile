@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import { Card, CardRow } from "@/components/Card";
 import Checkbox from "@/components/Checkbox";
 import Delta from "@/components/Delta";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import Notice from "@/components/Notice";

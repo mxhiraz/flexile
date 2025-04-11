@@ -7,7 +7,7 @@ import { startOfMonth, startOfQuarter, startOfYear, subMonths, subQuarters, subY
 import { useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import Button from "@/components/Button";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";

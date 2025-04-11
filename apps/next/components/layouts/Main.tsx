@@ -43,7 +43,7 @@ import { z } from "zod";
 import { navLinks as equityNavLinks } from "@/app/equity";
 import InvoiceStatus, { invoiceSchema } from "@/app/invoices/LegacyStatus";
 import Badge from "@/components/Badge";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import { linkClasses } from "@/components/Link";
 import { useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";

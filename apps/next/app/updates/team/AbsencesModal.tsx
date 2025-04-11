@@ -5,7 +5,7 @@ import { startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
 import { useEffect, useState } from "react";
 import Button from "@/components/Button";
-import Input from "@/components/Input";
+import { Input } from "@/components/ui/input";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import { useCurrentCompany, useCurrentUser } from "@/global";
