@@ -181,16 +181,12 @@ export const RejectModal = ({
         </>
       }
     >
-      <div className="group grid gap-2">
-        <label className="cursor-pointer">
-          Explain why the invoice was rejected and how to fix it (optional)
-        </label>
-        <Textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className="w-full"
-        />
-      </div>
+      <Textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        label="Explain why the invoice was rejected and how to fix it (optional)"
+        className="w-full"
+      />
     </Modal>
   );
 };
