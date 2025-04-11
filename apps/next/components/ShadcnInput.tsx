@@ -70,7 +70,7 @@ const ShadcnInput = ({
           type={props.type}
           value={value ?? ""}
           onChange={(e) => onChange?.(e.target.value)}
-          className="h-full w-0 flex-1 rounded-md border-0 bg-transparent p-2 focus:outline-hidden focus:ring-0 focus:shadow-none"
+          className="h-full w-0 flex-1 border-0 bg-transparent p-2 focus:outline-hidden focus:ring-0 focus:shadow-none"
           {...props}
         />
         {suffix ? <div className="mr-2 flex items-center text-gray-600">{suffix}</div> : null}
