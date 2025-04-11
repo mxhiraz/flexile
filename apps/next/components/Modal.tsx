@@ -39,7 +39,7 @@ const Modal = ({ open, onClose, title, sticky, sidebar, children, footer, classN
     >
       <div className="flex w-full max-w-prose min-w-80 flex-col gap-4 p-5" onClick={(e) => e.stopPropagation()}>
         {title ? (
-          <header className="flex items-center justify-between gap-4">
+          <header className="flex items-center justify-between gap-4 p-1">
             <h2 className="text-lg font-bold">{title}</h2>
             {!sticky && (
               <button aria-label="Close" onClick={onClose} className="hover:text-blue-600">
@@ -48,8 +48,8 @@ const Modal = ({ open, onClose, title, sticky, sidebar, children, footer, classN
             )}
           </header>
         ) : null}
-        <div className="flex grow flex-col gap-4 overflow-y-auto">{children}</div>
-        {footer ? <div className="grid auto-cols-fr grid-flow-col items-center gap-3">{footer}</div> : null}
+        <div className="flex grow flex-col gap-4 overflow-y-auto p-1">{children}</div>
+        {footer ? <div className="grid auto-cols-fr grid-flow-col items-center gap-3 p-1">{footer}</div> : null}
       </div>
     </dialog>,
     document.body,
