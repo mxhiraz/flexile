@@ -52,7 +52,7 @@ const ShadcnInput = ({
         </label>
       ) : null}
       <div
-        className={`has-invalid:border-red flex items-center has-disabled:bg-gray-100 has-disabled:opacity-50 ${formControlClasses} ${className}`}
+        className={`has-invalid:border-red flex items-center has-disabled:bg-gray-100 has-disabled:opacity-50 border-0 ${formControlClasses} ${className}`}
       >
         {prefix ? <div className="ml-2 flex items-center text-gray-600">{prefix}</div> : null}
         <Input
