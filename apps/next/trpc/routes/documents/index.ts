@@ -1,9 +1,9 @@
 import docuseal from "@docuseal/api";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, inArray, isNotNull, isNull, not } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, not, type SQLWrapper } from "drizzle-orm";
 import { pick } from "lodash-es";
 import { z } from "zod";
-import { byExternalId, db, pagination, paginationSchema } from "@/db";
+import { byExternalId, db, paginate, paginationSchema } from "@/db";
 import { activeStorageAttachments, activeStorageBlobs, documents, documentSignatures, users } from "@/db/schema";
 import env from "@/env";
 import { companyProcedure, createRouter, getS3Url } from "@/trpc";
@@ -13,7 +13,12 @@ import { templatesRouter } from "./templates";
 
 docuseal.configure({ key: env.DOCUSEAL_TOKEN });
 
-const visibleDocuments = (companyId: bigint) => and(eq(documents.companyId, companyId), isNull(documents.deletedAt));
+const visibleDocuments = (companyId: bigint, userId: bigint | SQLWrapper | undefined) =>
+  and(
+    eq(documents.companyId, companyId),
+    isNull(documents.deletedAt),
+    userId ? eq(documentSignatures.userId, userId) : undefined,
+  );
 export const documentsRouter = createRouter({
   list: companyProcedure
     .input(
@@ -28,26 +33,39 @@ export const documentsRouter = createRouter({
       const signable = isNotNull(documents.docusealSubmissionId);
       const signed = isNotNull(documentSignatures.signedAt);
       const where = and(
-        visibleDocuments(ctx.company.id),
+        visibleDocuments(ctx.company.id, input.userId ? byExternalId(users, input.userId) : undefined),
         input.year ? eq(documents.year, input.year) : undefined,
         input.signable != null ? (input.signable ? signable : not(signable)) : undefined,
       );
-      const rows = await db.query.documents.findMany({
-        with: {
-          signatures: {
-            with: { user: { columns: simpleUser.columns } },
-            where: and(
+      const rows = await paginate(
+        db
+          .select({ ...pick(documents, "id", "name", "createdAt", "docusealSubmissionId", "type") })
+          .from(documents)
+          .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
+          .innerJoin(users, eq(documentSignatures.userId, users.id))
+          .where(
+            and(
+              where,
               input.userId ? eq(documentSignatures.userId, byExternalId(users, input.userId)) : undefined,
               input.signable != null ? (input.signable ? not(signed) : signed) : undefined,
             ),
-            orderBy: [desc(documentSignatures.signedAt)],
-          },
-        },
-        where,
-        orderBy: [desc(documents.createdAt)],
-        ...pagination(input),
-      });
+          )
+          .orderBy(desc(documents.createdAt), desc(documentSignatures.signedAt)),
+        input,
+      );
       const total = await db.$count(documents, where);
+      const signatories = await db.query.documentSignatures.findMany({
+        columns: { documentId: true, title: true, signedAt: true },
+        where: and(
+          inArray(
+            documentSignatures.documentId,
+            rows.map((document) => document.id),
+          ),
+          isNotNull(documentSignatures.signedAt),
+        ),
+        with: { user: { columns: simpleUser.columns } },
+        orderBy: desc(documentSignatures.signedAt),
+      });
       const attachmentRows = await db.query.activeStorageAttachments.findMany({
         columns: { recordId: true },
         with: { blob: { columns: { key: true, filename: true } } },
@@ -70,15 +88,13 @@ export const documentsRouter = createRouter({
         documents: rows.map((document) => ({
           ...pick(document, "id", "name", "createdAt", "docusealSubmissionId", "type"),
           attachment: attachments.get(document.id),
-          completedAt: document.signatures.every((signature) => signature.signedAt)
-            ? assertDefined(document.signatures[0]).signedAt
-            : null,
-          signable: document.signatures.some((signature) => !signature.signedAt),
-          signatories: document.signatures.map((signature) => ({
-            ...simpleUser(signature.user),
-            title: signature.title,
-            signedAt: signature.signedAt,
-          })),
+          signatories: signatories
+            .filter((signature) => signature.documentId === document.id)
+            .map((signature) => ({
+              ...simpleUser(signature.user),
+              title: signature.title,
+              signedAt: signature.signedAt,
+            })),
         })),
         total,
       };
@@ -87,27 +103,27 @@ export const documentsRouter = createRouter({
     if (input.userId !== ctx.user.externalId && !ctx.companyAdministrator && !ctx.companyLawyer)
       throw new TRPCError({ code: "FORBIDDEN" });
 
+    const where = visibleDocuments(ctx.company.id, input.userId ? byExternalId(users, input.userId) : undefined);
     const rows = await db
       .selectDistinct(pick(documents, "year"))
       .from(documents)
-      .leftJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
-      .where(
-        and(
-          visibleDocuments(ctx.company.id),
-          input.userId ? eq(documentSignatures.userId, byExternalId(users, input.userId)) : undefined,
-        ),
-      )
+      .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
+      .where(where)
       .orderBy(desc(documents.year));
     return rows.map((row) => row.year);
   }),
   getUrl: companyProcedure.input(z.object({ id: z.bigint() })).query(async ({ ctx, input }) => {
-    const document = await db.query.documents.findFirst({
-      where: and(eq(documents.id, input.id), visibleDocuments(ctx.company.id)),
-      with:
-        !ctx.companyAdministrator && !ctx.companyLawyer
-          ? { signatures: { where: eq(documentSignatures.userId, ctx.user.id) } }
-          : undefined,
-    });
+    const [document] = await db
+      .select({ docusealSubmissionId: documents.docusealSubmissionId })
+      .from(documents)
+      .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
+      .where(
+        and(
+          eq(documents.id, input.id),
+          visibleDocuments(ctx.company.id, ctx.companyAdministrator || ctx.companyLawyer ? undefined : ctx.user.id),
+        ),
+      )
+      .limit(1);
     if (!document?.docusealSubmissionId) throw new TRPCError({ code: "NOT_FOUND" });
     const submission = await docuseal.getSubmission(document.docusealSubmissionId);
     return assertDefined(submission.documents[0]).url;

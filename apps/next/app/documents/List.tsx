@@ -27,15 +27,14 @@ type Document = RouterOutput["documents"]["list"]["documents"][number];
 
 function DocumentStatus({ document }: { document: Document }) {
   const user = useCurrentUser();
+  const completedAt = document.signatories.every((signatory) => signatory.signedAt)
+    ? assertDefined(document.signatories[0]).signedAt
+    : undefined;
 
   switch (document.type) {
     case DocumentType.TaxDocument:
-      if (document.name.startsWith("W-") || document.completedAt) {
-        return (
-          <Status variant="success">
-            {document.completedAt ? `Filed on ${formatDate(document.completedAt)}` : "Signed"}
-          </Status>
-        );
+      if (document.name.startsWith("W-") || completedAt) {
+        return <Status variant="success">{completedAt ? `Filed on ${formatDate(completedAt)}` : "Signed"}</Status>;
       }
       return <Status>Ready for filing</Status>;
     case DocumentType.ShareCertificate:
@@ -63,7 +62,7 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
   const [signDocumentParam] = useQueryState("sign");
   const [signDocumentId, setSignDocumentId] = useState<bigint | null>(null);
   const isSignable = (document: Document): document is SignableDocument =>
-    !!document.docusealSubmissionId && document.signable;
+    !!document.docusealSubmissionId && document.signatories.some((signatory) => !signatory.signedAt);
   const signDocument = signDocumentId
     ? documents.find((document): document is SignableDocument => document.id === signDocumentId && isSignable(document))
     : null;
@@ -87,7 +86,8 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
         columnHelper.simple("name", "Document"),
         columnHelper.simple("type", "Type", (value) => typeLabels[value]),
         columnHelper.simple("createdAt", "Date", formatDate),
-        columnHelper.accessor("completedAt", {
+        columnHelper.display({
+          id: "status",
           header: "Status",
           cell: (info) => <DocumentStatus document={info.row.original} />,
         }),
@@ -109,7 +109,7 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
                       Download
                     </a>
                   </Button>
-                ) : document.docusealSubmissionId && document.completedAt ? (
+                ) : document.docusealSubmissionId && document.signatories.every((signatory) => signatory.signedAt) ? (
                   <Button variant="outline" small onClick={() => setDownloadDocument(document.id)}>
                     <ArrowDownTrayIcon className="size-4" />
                     Download

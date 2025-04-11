@@ -142,9 +142,9 @@ export const templatesRouter = createRouter({
       __signerLegalEntity: (complianceInfo?.businessEntity ? complianceInfo.businessName : ctx.user.legalName) ?? "",
     };
     if (document.type === DocumentType.ConsultingContract) {
-      const contractor = document.signatures.find((s) => s.user.companyContractors.length > 0)?.user
-        .companyContractors[0];
-      if (!contractor) throw new TRPCError({ code: "NOT_FOUND" });
+      const contractor = assertDefined(
+        document.signatures.find((s) => s.title === "Signer")?.user.companyContractors[0],
+      );
       const equityPercentage = contractor.equityAllocations[0]?.equityPercentage;
       const startDate = max([contractor.startedAt, contractor.updatedAt]);
       Object.assign(values, {

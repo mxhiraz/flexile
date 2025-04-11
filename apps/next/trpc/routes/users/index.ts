@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { DocumentTemplateType } from "@/db/enums";
-import { companyAdministrators, documents, documentTemplates, users } from "@/db/schema";
+import { documents, documentTemplates, users } from "@/db/schema";
 import env from "@/env";
 import { MAX_PREFERRED_NAME_LENGTH, MIN_EMAIL_LENGTH } from "@/models";
 import { createRouter, protectedProcedure } from "@/trpc";
@@ -96,23 +96,13 @@ export const usersRouter = createRouter({
         ),
         orderBy: desc(documentTemplates.createdAt),
       });
-      const companyAdministrator = await db.query.companyAdministrators.findFirst({
-        where: and(
-          eq(companyAdministrators.companyId, document.companyId),
-          inArray(
-            companyAdministrators.userId,
-            document.signatures.map((signature) => signature.userId),
-          ),
-        ),
-        with: { user: true },
-      });
-      const admin = assertDefined(companyAdministrator);
-      const submission = await createSubmission(ctx, assertDefined(template).docusealId, admin.user, "Signer");
+      const user = assertDefined(document.signatures.find((s) => s.title === "Company Representative")?.user);
+      const submission = await createSubmission(ctx, assertDefined(template).docusealId, user, "Signer");
       await db.update(documents).set({ docusealSubmissionId: submission.id }).where(eq(documents.id, document.id));
 
       await sendEmail({
         from: `Flexile <support@${env.DOMAIN}>`,
-        to: admin.user.email,
+        to: user.email,
         subject: `${userDisplayName(ctx.user)} has updated their tax information`,
         react: TaxSettingsChanged({
           host: ctx.host,

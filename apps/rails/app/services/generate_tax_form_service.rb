@@ -38,7 +38,7 @@ class GenerateTaxFormService
       content_type: "application/pdf",
     )
 
-    # Automatically mark as signed tax information forms
+    # Automatically mark as signed tax information forms (W-8/W-9) because the user gave us their e-sign consent
     signed_at = form_name.in?(TaxDocument::SUPPORTED_TAX_INFORMATION_NAMES) ? Time.current : nil
     document.signatures.build(user:, title: "Signer", signed_at:)
     document.save!

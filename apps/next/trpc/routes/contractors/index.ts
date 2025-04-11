@@ -260,16 +260,18 @@ export const contractorsRouter = createRouter({
               .returning();
             documentId = assertDefined(document).id;
 
-            await tx.insert(documentSignatures).values({
-              documentId,
-              userId: ctx.companyAdministrator.userId,
-              title: "Company Representative",
-            });
-            await tx.insert(documentSignatures).values({
-              documentId,
-              userId: contractor.userId,
-              title: "Signer",
-            });
+            await tx.insert(documentSignatures).values([
+              {
+                documentId,
+                userId: ctx.companyAdministrator.userId,
+                title: "Company Representative",
+              },
+              {
+                documentId,
+                userId: contractor.userId,
+                title: "Signer",
+              },
+            ]);
           }
           if (payRateType === PayRateType.Hourly) {
             await sendEmail({
