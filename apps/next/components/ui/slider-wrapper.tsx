@@ -1,0 +1,96 @@
+import * as React from "react"
+import { cn } from "../../utils"
+import { Slider } from "./slider"
+import { Input } from "./input"
+
+export interface SliderWrapperProps {
+  min?: number | undefined;
+  max?: number | undefined;
+  unit?: string | undefined;
+  value: number;
+  onChange: (value: number) => void;
+  label?: React.ReactNode | undefined;
+  id?: string | undefined;
+  ariaLabel?: string | undefined;
+  invalid?: boolean | undefined;
+  className?: string | undefined;
+}
+
+const SliderWrapper = React.forwardRef<HTMLInputElement, SliderWrapperProps>(
+  ({ min, max, unit = "", value, onChange, label, id, ariaLabel, invalid, className }, ref) => {
+    const uid = React.useId();
+    const [input, setInput] = React.useState(value.toString());
+
+    React.useEffect(() => {
+      setInput(value.toString());
+    }, [value]);
+
+    React.useEffect(() => {
+      if (min != null && value < min) {
+        onChange(min);
+      }
+    }, [min, value, onChange]);
+
+    const handleInputChange = (newValue: string) => {
+      setInput(newValue);
+      let parsed = parseInt(newValue.replace(/,/gu, ""), 10);
+      if (isNaN(parsed)) parsed = 0;
+
+      const boundedValue = max != null && parsed > max ? max : min != null && parsed < min ? min : parsed;
+
+      onChange(boundedValue);
+    };
+
+    return (
+      <div className={cn("group grid gap-2", className)}>
+        {label ? (
+          <label className="cursor-pointer" htmlFor={id ?? uid}>
+            {label}
+          </label>
+        ) : null}
+        <div className="grid grid-cols-[1fr_6rem] gap-4">
+          <div className="grid">
+            <Slider
+              id={id ?? uid}
+              value={[value]}
+              onValueChange={(values) => onChange(values[0])}
+              aria-label={ariaLabel}
+              min={min}
+              max={max}
+              className={cn("col-span-2", invalid && "border-red")}
+              ref={ref}
+            />
+            <div className="col-span-2 flex justify-between">
+              {min != null && (
+                <div aria-hidden="true" className="text-xs">
+                  {min.toLocaleString()}
+                  {unit !== "%" && "\u00A0"}
+                  {unit}
+                </div>
+              )}
+              {max != null && (
+                <div aria-hidden="true" className="text-right text-xs">
+                  {max.toLocaleString()}
+                  {unit !== "%" && "\u00A0"}
+                  {unit}
+                </div>
+              )}
+            </div>
+          </div>
+          <Input
+            value={input}
+            onChange={handleInputChange}
+            aria-hidden="true"
+            inputMode="numeric"
+            suffix={unit}
+            invalid={invalid ?? false}
+          />
+        </div>
+      </div>
+    );
+  }
+);
+
+SliderWrapper.displayName = "SliderWrapper";
+
+export { SliderWrapper };

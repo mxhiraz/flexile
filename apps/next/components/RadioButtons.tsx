@@ -1,5 +1,5 @@
 import React from "react";
-import { RadioButtons as ShadcnRadioButtons } from "@/components/ui/radiobuttons";
+import { RadioGroup } from "@/components/ui/radio-group";
 
 function RadioButtons<T extends string | number>({
   options,
@@ -21,7 +21,7 @@ function RadioButtons<T extends string | number>({
   className?: string;
 }) {
   return (
-    <ShadcnRadioButtons
+    <RadioGroup
       options={options}
       value={value}
       onChange={onChange}

@@ -1,5 +1,5 @@
 import React from "react";
-import { RichText as ShadcnRichText, Editor as ShadcnEditor } from "@/components/ui/richtext";
+import { RichText as ShadcnRichText, Editor as ShadcnEditor } from "@/components/ui/rich-text";
 import type { Content } from "@tiptap/core";
 
 const RichText = ({ content }: { content: Content }) => {

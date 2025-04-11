@@ -1,5 +1,5 @@
 import React from "react";
-import { ColorPicker as ShadcnColorPicker } from "@/components/ui/colorpicker";
+import { ColorPicker as ShadcnColorPicker } from "@/components/ui/color-picker";
 
 interface ColorPickerProps {
   label: string;

@@ -1,5 +1,5 @@
 import React from "react";
-import { Select as ShadcnSelect } from "@/components/ui/select-shadcn";
+import { SelectWrapper } from "@/components/ui/select-wrapper";
 
 export type Option = Readonly<{ label: string; value: string }>;
 
@@ -31,7 +31,7 @@ export default function Select({
   ref?: React.RefObject<HTMLSelectElement | null>;
 }) {
   return (
-    <ShadcnSelect
+    <SelectWrapper
       id={id}
       className={className}
       label={label}
