@@ -5,7 +5,7 @@ import { Map } from "immutable";
 import { useEffect, useState } from "react";
 import { CardRow } from "@/components/Card";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
+import ShadcnInput from "@/components/ShadcnInput";
 import MutationButton from "@/components/MutationButton";
 import Select from "@/components/Select";
 import { useCurrentCompany } from "@/global";
@@ -61,8 +61,8 @@ export default function Details() {
       description="These details will be included in tax forms, as well as in your contractor's invoices."
     >
       <CardRow className="grid gap-4">
-        <Input value={name} onChange={setName} label="Company's legal name" invalid={errors.has("name")} autoFocus />
-        <Input
+        <ShadcnInput value={name} onChange={setName} label="Company's legal name" invalid={errors.has("name")} autoFocus />
+        <ShadcnInput
           value={taxId}
           onChange={(value) => setTaxId(formatTaxId(value))}
           label="EIN"
@@ -70,7 +70,7 @@ export default function Details() {
           invalid={errors.has("taxId")}
           help={errors.get("taxId")}
         />
-        <Input
+        <ShadcnInput
           value={phoneNumber}
           onChange={(value) => setPhoneNumber(formatPhoneNumber(value))}
           label="Phone number"
@@ -78,14 +78,14 @@ export default function Details() {
           invalid={errors.has("phoneNumber")}
           help={errors.get("phoneNumber")}
         />
-        <Input
+        <ShadcnInput
           value={streetAddress}
           onChange={setStreetAddress}
           label="Residential address (street name, number, apt)"
           invalid={errors.has("streetAddress")}
         />
         <div className="grid gap-3 md:grid-cols-3">
-          <Input value={city} onChange={setCity} label="City or town" invalid={errors.has("city")} />
+          <ShadcnInput value={city} onChange={setCity} label="City or town" invalid={errors.has("city")} />
           <Select
             value={state || undefined}
             onChange={setState}
@@ -94,7 +94,7 @@ export default function Details() {
             label="State"
             invalid={errors.has("state")}
           />
-          <Input value={zipCode} onChange={setZipCode} label="Postal code" invalid={errors.has("zipCode")} />
+          <ShadcnInput value={zipCode} onChange={setZipCode} label="Postal code" invalid={errors.has("zipCode")} />
         </div>
         <Select
           value=""
