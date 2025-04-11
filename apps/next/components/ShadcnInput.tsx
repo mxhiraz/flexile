@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Input } from "./ui/input";
-import { formGroupClasses, formControlClasses, formHelpClasses } from "./Input";
+import { cn } from "../utils";
 
 export type ShadcnInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -45,14 +45,20 @@ const ShadcnInput = ({
   }, [invalid, help, value]);
 
   return (
-    <div className={formGroupClasses}>
+    <div className="group grid gap-2">
       {label || props.children ? (
         <label htmlFor={inputId} className="cursor-pointer">
           {label || props.children}
         </label>
       ) : null}
       <div
-        className={`has-invalid:border-red flex items-center has-disabled:bg-gray-100 has-disabled:opacity-50 border-0 ${formControlClasses} ${className}`}
+        className={cn(
+          "flex items-center rounded-md border bg-white",
+          "focus-within:border-gray-200 focus-within:shadow-sm",
+          invalid && "border-red",
+          props.disabled && "bg-gray-100 opacity-50",
+          className
+        )}
       >
         {prefix ? <div className="ml-2 flex items-center text-gray-600">{prefix}</div> : null}
         <Input
@@ -64,12 +70,12 @@ const ShadcnInput = ({
           type={props.type}
           value={value ?? ""}
           onChange={(e) => onChange?.(e.target.value)}
-          className="h-full w-0 flex-1 rounded-md bg-transparent p-2 focus:outline-hidden"
+          className="h-full w-0 flex-1 rounded-md border-0 bg-transparent p-2 focus:outline-hidden focus:ring-0 focus:shadow-none"
           {...props}
         />
         {suffix ? <div className="mr-2 flex items-center text-gray-600">{suffix}</div> : null}
       </div>
-      {help ? <div className={formHelpClasses}>{help}</div> : null}
+      {help ? <div className={cn("text-xs text-gray-500", invalid && "text-red")}>{help}</div> : null}
     </div>
   );
 };
