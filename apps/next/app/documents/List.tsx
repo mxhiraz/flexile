@@ -26,7 +26,6 @@ const typeLabels = {
 type Document = RouterOutput["documents"]["list"]["documents"][number];
 
 function DocumentStatus({ document }: { document: Document }) {
-  const user = useCurrentUser();
   const completedAt = document.signatories.every((signatory) => signatory.signedAt)
     ? assertDefined(document.signatories[0]).signedAt
     : undefined;
