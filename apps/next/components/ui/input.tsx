@@ -47,7 +47,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <div
             className={cn(
               "flex items-center rounded-md border border-gray-300 bg-white shadow-sm",
-              "focus-within:ring-1 focus-within:ring-gray-200 focus-within:ring-offset-1",
+              "focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-1",
               invalid && "border-red",
               props.disabled && "bg-gray-100 opacity-50",
               className
