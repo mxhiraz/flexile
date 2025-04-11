@@ -158,8 +158,8 @@ export default function AdminList() {
               </AlertDescription>
             </Alert>
           )}
-          
-          {company.completedPaymentMethodSetup && !company.isTrusted && (
+
+          {company.completedPaymentMethodSetup && !company.isTrusted ? (
             <Alert variant="destructive">
               <ExclamationTriangleIcon />
               <AlertDescription>
@@ -170,7 +170,7 @@ export default function AdminList() {
                 </span>
               </AlertDescription>
             </Alert>
-          )}
+          ) : null}
 
           {invoiceFilter === "actionable" && data.invoices.some((invoice) => !areTaxRequirementsMet(invoice)) && (
             <Alert variant="critical">
