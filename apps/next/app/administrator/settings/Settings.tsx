@@ -5,8 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CardRow } from "@/components/Card";
 import ColorPicker from "@/components/ColorPicker";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
-import ShadcnInput from "@/components/ShadcnInput";
+import { Input } from "@/components/ui/input";
 import MutationButton from "@/components/MutationButton";
 import { Editor } from "@/components/RichText";
 import { Switch } from "@/components/ui/switch";
@@ -117,8 +116,8 @@ export default function Settings({ githubOauthUrl }: { githubOauthUrl: string })
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            <ShadcnInput value={publicName} onChange={setPublicName} label="Company name" />
-            <ShadcnInput value={website} onChange={setWebsite} label="Company website" invalid={websiteHasError} />
+            <Input value={publicName} onChange={setPublicName} label="Company name" />
+            <Input value={website} onChange={setWebsite} label="Company website" invalid={websiteHasError} />
           </div>
 
           <Editor value={description} onChange={setDescription} label="Company description" />
