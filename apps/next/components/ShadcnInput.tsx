@@ -53,8 +53,8 @@ const ShadcnInput = ({
       ) : null}
       <div
         className={cn(
-          "flex items-center rounded-md border bg-white",
-          "focus-within:border-gray-200 focus-within:shadow-sm",
+          "flex items-center rounded-md border border-gray-300 bg-white shadow-sm",
+          "focus-within:ring-1 focus-within:ring-gray-200 focus-within:ring-offset-1",
           invalid && "border-red",
           props.disabled && "bg-gray-100 opacity-50",
           className
