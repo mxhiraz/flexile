@@ -3,7 +3,6 @@ import { Set } from "immutable";
 import { useState } from "react";
 import { z } from "zod";
 import Input from "@/components/Input";
-import ShadcnInput from "@/components/ShadcnInput";
 import MutationButton from "@/components/MutationButton";
 import Select from "@/components/Select";
 import { useCurrentUser } from "@/global";
@@ -79,7 +78,7 @@ export const CompanyDetails = () => {
 
   return (
     <form className="grid gap-4" onSubmit={e(() => submit.mutate(), "prevent")}>
-      <ShadcnInput
+      <Input
         value={legalName}
         onChange={setLegalName}
         label="Your full legal name"
