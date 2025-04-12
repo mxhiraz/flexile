@@ -1,6 +1,6 @@
 import docuseal from "@docuseal/api";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, inArray, isNotNull, isNull, not, type SQLWrapper } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNotNull, isNull, not, type SQLWrapper } from "drizzle-orm";
 import { pick } from "lodash-es";
 import { z } from "zod";
 import { byExternalId, db, paginate, paginationSchema } from "@/db";
@@ -30,8 +30,9 @@ export const documentsRouter = createRouter({
       if (input.userId !== ctx.user.externalId && !ctx.companyAdministrator && !ctx.companyLawyer)
         throw new TRPCError({ code: "FORBIDDEN" });
 
-      const signable = isNotNull(documents.docusealSubmissionId);
-      const signed = isNotNull(documentSignatures.signedAt);
+      const signable = assertDefined(
+        and(isNotNull(documents.docusealSubmissionId), isNull(documentSignatures.signedAt)),
+      );
       const where = and(
         visibleDocuments(ctx.company.id, input.userId ? byExternalId(users, input.userId) : undefined),
         input.year ? eq(documents.year, input.year) : undefined,
@@ -45,17 +46,15 @@ export const documentsRouter = createRouter({
           .from(documents)
           .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
           .innerJoin(users, eq(documentSignatures.userId, users.id))
-          .where(
-            and(
-              where,
-              input.userId ? eq(documentSignatures.userId, byExternalId(users, input.userId)) : undefined,
-              input.signable != null ? (input.signable ? not(signed) : signed) : undefined,
-            ),
-          )
+          .where(where)
           .orderBy(documents.id, desc(documents.createdAt)),
         input,
       );
-      const total = await db.$count(documents, where);
+      const total = await db
+        .selectDistinct({ count: count(documents.id) })
+        .from(documents)
+        .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
+        .where(where);
       const signatories = await db.query.documentSignatures.findMany({
         columns: { documentId: true, title: true, signedAt: true },
         where: and(
@@ -63,7 +62,6 @@ export const documentsRouter = createRouter({
             documentSignatures.documentId,
             rows.map((document) => document.id),
           ),
-          input.signable != null ? (input.signable ? not(signed) : signed) : undefined,
         ),
         with: { user: { columns: simpleUser.columns } },
         orderBy: desc(documentSignatures.signedAt),
