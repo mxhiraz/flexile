@@ -50,11 +50,12 @@ export const documentsRouter = createRouter({
           .orderBy(documents.id, desc(documents.createdAt)),
         input,
       );
-      const total = await db
+      const totalResult = await db
         .selectDistinct({ count: count(documents.id) })
         .from(documents)
         .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
         .where(where);
+      const total = totalResult[0]?.count ?? 0;
       const signatories = await db.query.documentSignatures.findMany({
         columns: { documentId: true, title: true, signedAt: true },
         where: and(
