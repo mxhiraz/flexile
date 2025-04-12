@@ -77,7 +77,8 @@ const List = ({ userId, documents }: { userId: string | null; documents: Documen
       [
         userId
           ? null
-          : columnHelper.accessor("signatories.name", {
+          : columnHelper.display({
+              id: "signer",
               header: "Signer",
               cell: (info) =>
                 assertDefined(info.row.original.signatories.find((signatory) => signatory.id !== user.id)).name,

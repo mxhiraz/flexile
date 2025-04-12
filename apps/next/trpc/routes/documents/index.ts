@@ -39,7 +39,9 @@ export const documentsRouter = createRouter({
       );
       const rows = await paginate(
         db
-          .select({ ...pick(documents, "id", "name", "createdAt", "docusealSubmissionId", "type") })
+          .selectDistinctOn([documents.id], {
+            ...pick(documents, "id", "name", "createdAt", "docusealSubmissionId", "type"),
+          })
           .from(documents)
           .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
           .innerJoin(users, eq(documentSignatures.userId, users.id))
@@ -50,7 +52,7 @@ export const documentsRouter = createRouter({
               input.signable != null ? (input.signable ? not(signed) : signed) : undefined,
             ),
           )
-          .orderBy(desc(documents.createdAt), desc(documentSignatures.signedAt)),
+          .orderBy(documents.id, desc(documents.createdAt)),
         input,
       );
       const total = await db.$count(documents, where);
@@ -61,7 +63,7 @@ export const documentsRouter = createRouter({
             documentSignatures.documentId,
             rows.map((document) => document.id),
           ),
-          isNotNull(documentSignatures.signedAt),
+          input.signable != null ? (input.signable ? not(signed) : signed) : undefined,
         ),
         with: { user: { columns: simpleUser.columns } },
         orderBy: desc(documentSignatures.signedAt),

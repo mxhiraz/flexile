@@ -7,7 +7,7 @@ import { documents } from "@/db/schema";
 import { assert } from "@/utils/assert";
 
 type CreateOptions = {
-  signatures: { userId: bigint; title: string }[];
+  signatures: { userId: bigint; title: "Signer" | "Company Representative" }[];
   signed?: boolean;
 };
 
