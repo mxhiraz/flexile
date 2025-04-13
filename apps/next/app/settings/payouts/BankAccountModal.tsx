@@ -1,9 +1,9 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Map as ImmutableMap } from "immutable";
 import { set } from "lodash-es";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import ComboBox from "@/components/ComboBox";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
@@ -11,6 +11,9 @@ import RadioButtons from "@/components/RadioButtons";
 import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   CURRENCIES,
   type Currency,
@@ -18,6 +21,7 @@ import {
   currencyCodes,
   supportedCountries,
 } from "@/models/constants";
+import { cn } from "@/utils";
 import { request } from "@/utils/request";
 import { save_bank_account_onboarding_path, wise_account_requirements_path } from "@/utils/routes";
 
@@ -107,13 +111,86 @@ interface Props {
 
 const countryOptions = [...supportedCountries].map(([countryCode, name]) => ({ name, key: countryCode }));
 
+type ComboboxOptionType = { key: string; name: string };
+
+type SelectOrRadioField = Extract<Field, { type: "select" | "radio"; valuesAllowed: ComboboxOptionType[] | null }>;
+
+interface ComboboxFieldProps {
+  field: SelectOrRadioField;
+  details: ImmutableMap<string, string | null>; // Use ImmutableMap with string | null
+  setDetails: React.Dispatch<React.SetStateAction<ImmutableMap<string, string | null>>>; // Use correct setter type
+  errors: Map<string, string>;
+  isPending: boolean;
+  fieldUpdated: (field: Field) => void;
+}
+
+const ComboboxField = ({ field, details, setDetails, errors, isPending, fieldUpdated }: ComboboxFieldProps) => {
+  const comboboxOptions = useMemo(
+    () => (field.valuesAllowed ?? []).map((opt: ComboboxOptionType) => ({ value: opt.key, label: opt.name })),
+    [field.valuesAllowed],
+  );
+  const currentValue = details.get(field.key) ?? "";
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={field.key}>{field.name}</Label>
+      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={popoverOpen}
+            className={cn("w-full justify-between", errors.has(field.key) && "border-red-500")}
+            disabled={isPending}
+            id={field.key}
+          >
+            {currentValue
+              ? comboboxOptions.find((option) => option.value === currentValue)?.label
+              : `Select ${field.name}...`}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+          <Command>
+            <CommandInput placeholder={`Search ${field.name}...`} />
+            <CommandList>
+              <CommandEmpty>No {field.name} found.</CommandEmpty>
+              <CommandGroup>
+                {comboboxOptions.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value} // Use option.value for CommandItem value
+                    onSelect={(currentSelectedValue: string) => {
+                      const newValue = currentSelectedValue === currentValue ? "" : currentSelectedValue;
+                      setDetails((prev) => prev.set(field.key, newValue));
+                      setTimeout(() => fieldUpdated(field), 0);
+                      setPopoverOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn("mr-2 h-4 w-4", currentValue === option.value ? "opacity-100" : "opacity-0")}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {errors.has(field.key) && <p className="text-sm text-red-600">{errors.get(field.key)}</p>}
+    </div>
+  );
+};
+
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
   const [showBillingDetails, setShowBillingDetails] = useState(false);
   const defaultCurrency = bankAccount?.currency ?? currencyByCountryCode.get(billingDetails.country_code) ?? "USD";
   const [currency, setCurrency] = useState<Currency>(defaultCurrency);
   useEffect(() => setCurrency(defaultCurrency), [defaultCurrency]);
   const [selectedFormIndex, setSelectedFormIndex] = useState(0);
-  const [details, setDetails] = useState(ImmutableMap(bankAccount?.details ?? {}));
+  const [details, setDetails] = useState<ImmutableMap<string, string | null>>(ImmutableMap(bankAccount?.details ?? {}));
   const detailsRef = useRef(details);
   detailsRef.current = details;
   const [errors, setErrors] = useState(new Map<string, string>());
@@ -422,18 +499,14 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
         if (field.type === "select" || field.type === "radio") {
           if (!field.valuesAllowed || field.valuesAllowed.length > 5) {
             return (
-              <ComboBox
+              <ComboboxField
                 key={field.key}
-                value={details.get(field.key) ?? ""}
-                onChange={(value) => {
-                  setDetails((prev) => prev.set(field.key, value));
-                  setTimeout(() => fieldUpdated(field), 0);
-                }}
-                options={field.valuesAllowed ?? []}
-                invalid={errors.has(field.key)}
-                disabled={isPending}
-                label={field.name}
-                help={errors.get(field.key)}
+                field={field} // Type should be inferred correctly within this block
+                details={details}
+                setDetails={setDetails}
+                errors={errors}
+                isPending={isPending}
+                fieldUpdated={fieldUpdated}
               />
             );
           }

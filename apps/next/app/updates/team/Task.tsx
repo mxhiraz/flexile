@@ -14,6 +14,7 @@ import { useDebounce } from "use-debounce";
 import Input from "@/components/Input";
 import { linkClasses } from "@/components/Link";
 import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"; // Assuming command was added by shadcn cli
 import { useCurrentCompany } from "@/global";
 import type { RouterInput, RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
@@ -72,7 +73,6 @@ export const TaskInput = ({
   onClick: () => void;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const company = useCurrentCompany();
   const utils = trpc.useUtils();
 
@@ -155,22 +155,12 @@ export const TaskInput = ({
             onKeyDown={(e) => {
               switch (e.key) {
                 case "Enter": {
-                  e.preventDefault();
-                  const selected = githubSearchResults?.[selectedIndex];
-                  if (selected) onSelectIntegrationRecord(selected);
-                  else onEnter();
+                  if (!githubSearchResults?.length) {
+                    e.preventDefault(); // Prevent form submission only if we handle it
+                    onEnter();
+                  }
                   break;
                 }
-                case "ArrowDown":
-                case "ArrowUp":
-                  if (!githubSearchResults) return;
-                  e.preventDefault();
-                  setSelectedIndex(
-                    e.key === "ArrowUp"
-                      ? Math.max(0, selectedIndex - 1)
-                      : Math.min(githubSearchResults.length - 1, selectedIndex + 1),
-                  );
-                  break;
                 case "Escape":
                   setHideSearchResults(true);
                   break;
@@ -181,29 +171,7 @@ export const TaskInput = ({
           />
         )}
         {githubSearchResults?.length && !task.integrationRecord && !hideSearchResults ? (
-          <div className="absolute z-10 mt-1 rounded-md bg-white shadow-lg">
-            <ul className="max-h-60 overflow-auto py-1 text-base" role="listbox">
-              {githubSearchResults.map((item, index) => (
-                // TODO replace with shadcn combobox
-                <li
-                  key={item.external_id}
-                  className={`flex cursor-pointer items-center justify-between px-3 py-2 outline-hidden select-none ${
-                    index === selectedIndex ? "bg-gray-100" : "hover:bg-gray-50"
-                  }`}
-                  role="option"
-                  onClick={() => onSelectIntegrationRecord(item)}
-                >
-                  <div className="flex items-center gap-2">
-                    <GithubIcon integrationRecord={item} />
-                    <div className="min-w-12 whitespace-nowrap text-gray-500">#{item.resource_id}</div>
-                    <div className="font-medium">
-                      {item.description.length > 50 ? `${item.description.slice(0, 50)}...` : item.description}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <div className="absolute z-10 mt-1 rounded-md bg-white shadow-lg"></div>
         ) : null}
       </div>
       <Button
@@ -214,6 +182,34 @@ export const TaskInput = ({
         disabled={!task.name}
       >
         <TrashIcon className="size-4" />
+        {/* Shadcn Command replaces the old ul */}
+        <Command className="rounded-lg border shadow-md">
+          {/* Input is already handled by the main TaskInput Input, so CommandInput is not needed here */}
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup>
+              {githubSearchResults?.map((item) => (
+                <CommandItem
+                  key={item.external_id}
+                  value={item.external_id} // Use external_id or another unique identifier as value
+                  onSelect={() => {
+                    onSelectIntegrationRecord(item);
+                    setHideSearchResults(true); // Hide after selection
+                  }}
+                >
+                  {/* Replicate the visual structure */}
+                  <div className="flex w-full items-center gap-2">
+                    <GithubIcon integrationRecord={item} />
+                    <div className="min-w-12 whitespace-nowrap text-gray-500">#{item.resource_id}</div>
+                    <div className="truncate font-medium">
+                      {item.description} {/* CommandItem handles truncation, but maybe add explicit class */}
+                    </div>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
       </Button>
     </li>
   );
