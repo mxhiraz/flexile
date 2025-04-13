@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Slider } from "./slider";
+import { Slider as SliderComponent } from "./slider";
 
 export interface SliderProps {
   min?: number;
@@ -44,7 +44,7 @@ export function Slider({
       ) : null}
       <div className="grid grid-cols-[1fr_6rem] gap-4">
         <div className="grid">
-          <Slider
+          <SliderComponent
             id={id}
             aria-label={ariaLabel}
             min={min}
