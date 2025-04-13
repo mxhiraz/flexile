@@ -1,5 +1,7 @@
 "use client";
 
+import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Map } from "immutable";
 import { iso31662 } from "iso-3166";
@@ -8,14 +10,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import LegalCertificationModal from "@/app/onboarding/LegalCertificationModal";
-import Button from "@/components/Button";
 import { CardRow } from "@/components/Card";
 import FormSection from "@/components/FormSection";
 import { Input } from "@/components/ui/input";
-import Notice from "@/components/Notice";
 import RadioButtons from "@/components/RadioButtons";
 import Select from "@/components/Select";
 import Status from "@/components/Status";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { BusinessType, TaxClassification } from "@/db/enums";
 import { useCurrentUser } from "@/global";
 import { countries } from "@/models/constants";
@@ -192,23 +194,29 @@ export default function TaxPage() {
       >
         <CardRow className="grid gap-4">
           {!isTaxInfoConfirmed && (
-            <Notice variant="critical">
-              Confirm your tax information to avoid delays on your payments or additional tax withholding.
-            </Notice>
+            <Alert variant="destructive">
+              <ExclamationTriangleIcon />
+              <AlertDescription>
+                Confirm your tax information to avoid delays on your payments or additional tax withholding.
+              </AlertDescription>
+            </Alert>
           )}
 
           {formData.tax_id_status === "invalid" && (
-            <Notice>
-              <strong>Review your tax information</strong>
-              Since there's a mismatch between the legal name and {tinName} you provided and your government records,
-              please note that your payments could experience a tax withholding rate of 24%. If you think this may be
-              due to a typo or recent changes to your name or legal entity, please update your information.
-            </Notice>
+            <Alert>
+              <InformationCircleIcon />
+              <AlertTitle>Review your tax information</AlertTitle>
+              <AlertDescription>
+                Since there's a mismatch between the legal name and {tinName} you provided and your government records,
+                please note that your payments could experience a tax withholding rate of 24%. If you think this may be
+                due to a typo or recent changes to your name or legal entity, please update your information.
+              </AlertDescription>
+            </Alert>
           )}
 
           <Input
             value={formData.legal_name}
-            onChange={(value) => setFormData({ ...formData, legal_name: value })}
+            onChange={(e: string) => setFormData({ ...formData, legal_name: e })}
             label="Full legal name (must match your ID)"
             placeholder="Enter your full legal name"
             invalid={errors.has("legal_name")}
@@ -236,7 +244,7 @@ export default function TaxPage() {
             <div className="grid auto-cols-fr grid-flow-col items-start gap-3">
               <Input
                 value={formData.business_name ?? ""}
-                onChange={(value) => setFormData({ ...formData, business_name: value })}
+                onChange={(e: string) => setFormData({ ...formData, business_name: e })}
                 label="Business legal name"
                 placeholder="Enter business legal name"
                 invalid={errors.has("business_name")}
@@ -291,8 +299,8 @@ export default function TaxPage() {
             <Input
               value={formatUSTaxId(formData.tax_id ?? "")}
               type={maskTaxId ? "password" : "text"}
-              onChange={(value) => {
-                setFormData({ ...formData, tax_id: normalizedTaxId(value) });
+              onChange={(e: string) => {
+                setFormData({ ...formData, tax_id: normalizedTaxId(e) });
                 setTaxIdChanged(true);
               }}
               suffix={
@@ -328,7 +336,7 @@ export default function TaxPage() {
 
             <Input
               value={formData.birth_date ?? ""}
-              onChange={(value) => setFormData({ ...formData, birth_date: value })}
+              onChange={(e: string) => setFormData({ ...formData, birth_date: e })}
               label={`Date of ${formData.business_entity ? "incorporation" : "birth"} (optional)`}
               type="date"
             />
@@ -336,7 +344,7 @@ export default function TaxPage() {
 
           <Input
             value={formData.street_address}
-            onChange={(value) => setFormData({ ...formData, street_address: value })}
+            onChange={(e: string) => setFormData({ ...formData, street_address: e })}
             label="Residential address (street name, number, apartment)"
             placeholder="Enter address"
             invalid={errors.has("street_address")}
@@ -345,7 +353,7 @@ export default function TaxPage() {
 
           <Input
             value={formData.city}
-            onChange={(value) => setFormData({ ...formData, city: value })}
+            onChange={(e: string) => setFormData({ ...formData, city: e })}
             label="City"
             placeholder="Enter city"
             invalid={errors.has("city")}
@@ -368,7 +376,7 @@ export default function TaxPage() {
 
             <Input
               value={formData.zip_code}
-              onChange={(value) => setFormData({ ...formData, zip_code: value })}
+              onChange={(e: string) => setFormData({ ...formData, zip_code: e })}
               label={zipCodeLabel}
               placeholder={`Enter ${zipCodeLabel.toLowerCase()}`}
               invalid={errors.has("zip_code")}

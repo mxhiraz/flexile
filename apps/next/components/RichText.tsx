@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { RichText as ShadcnRichText, Editor as ShadcnEditor } from "@/components/ui/richtext";
 import type { Content } from "@tiptap/core";
 

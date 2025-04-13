@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { Select as ShadcnSelect } from "@/components/ui/select-shadcn";
 
 export type Option = Readonly<{ label: string; value: string }>;
@@ -41,7 +41,7 @@ export default function Select({
       invalid={invalid}
       options={options}
       placeholder={placeholder}
-      value={value}
+      value={value as string}
       onChange={onChange}
       ref={ref as React.ForwardedRef<HTMLSelectElement>}
     />

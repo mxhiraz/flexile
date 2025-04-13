@@ -1,10 +1,10 @@
 import { CurrencyDollarIcon } from "@heroicons/react/20/solid";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";

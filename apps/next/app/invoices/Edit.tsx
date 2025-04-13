@@ -10,7 +10,6 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
-import Button from "@/components/Button";
 import { Card, CardRow } from "@/components/Card";
 import DecimalInput from "@/components/DecimalInput";
 import DurationInput from "@/components/DurationInput";
@@ -19,6 +18,8 @@ import MainLayout from "@/components/layouts/Main";
 import Select from "@/components/Select";
 import Table, { createColumnHelper, useTable } from "@/components/Table";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
 import { assertDefined } from "@/utils/assert";
@@ -280,7 +281,7 @@ const Edit = () => {
               value={info.getValue()}
               placeholder="Description"
               invalid={info.row.original.errors?.includes("description")}
-              onChange={(value) => updateLineItem(info.row.index, { description: value })}
+              onChange={(e: string) => updateLineItem(info.row.index, { description: e })}
             />
           ),
           footer: () => (
@@ -291,7 +292,7 @@ const Edit = () => {
               </Button>
               {data.company.expenses.enabled ? (
                 <Button variant="link" asChild>
-                  <label className={canManageExpenses ? "hidden" : ""}>
+                  <Label className={canManageExpenses ? "hidden" : ""}>
                     <ArrowUpTrayIcon className="inline size-4" />
                     Add expense
                     <input
@@ -302,7 +303,7 @@ const Edit = () => {
                       multiple
                       onChange={createNewExpenseEntries}
                     />
-                  </label>
+                  </Label>
                 </Button>
               ) : null}
             </div>
@@ -391,7 +392,7 @@ const Edit = () => {
             value={info.row.original.description}
             aria-label="Merchant"
             invalid={info.row.original.errors?.includes("description")}
-            onChange={(description) => updateExpense(info.row.index, { description })}
+            onChange={(e: string) => updateExpense(info.row.index, { description: e })}
           />
         ),
       }),
@@ -491,7 +492,7 @@ const Edit = () => {
             <div>
               <Input
                 value={invoiceNumber}
-                onChange={setInvoiceNumber}
+                onChange={(e: string) => setInvoiceNumber(e)}
                 label="Invoice ID"
                 invalid={errorField === "invoiceNumber"}
               />
@@ -499,7 +500,7 @@ const Edit = () => {
             <div>
               <Input
                 value={issueDate}
-                onChange={setIssueDate}
+                onChange={(e: string) => setIssueDate(e)}
                 label="Date"
                 invalid={errorField === "issueDate"}
                 type="date"

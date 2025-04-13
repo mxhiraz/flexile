@@ -4,10 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import { startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
 import { useEffect, useState } from "react";
-import Button from "@/components/Button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
+import { Button } from "@/components/ui/button";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { areOverlapping } from "@/models/period";
 import { trpc } from "@/trpc/client";
@@ -127,7 +127,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
             <div className="flex-1">
               <Input
                 value={absence.startsOn}
-                onChange={(value) => updateAbsence(index, { startsOn: value })}
+                onChange={(e: string) => updateAbsence(index, { startsOn: e })}
                 type="date"
                 label="From"
                 invalid={absenceErrors.has(absence)}
@@ -136,7 +136,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
             <div className="flex-1">
               <Input
                 value={absence.endsOn}
-                onChange={(value) => updateAbsence(index, { endsOn: value })}
+                onChange={(e: string) => updateAbsence(index, { endsOn: e })}
                 type="date"
                 label="Until"
                 invalid={absenceErrors.has(absence)}

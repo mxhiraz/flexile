@@ -1,5 +1,5 @@
-import React from "react";
-import { RangeInput as ShadcnRangeInput } from "@/components/ui/rangeinput";
+import * as React from "react";
+import { Slider } from "@/components/ui/slider";
 
 const RangeInput = ({
   min,
@@ -25,7 +25,7 @@ const RangeInput = ({
   className?: string;
 }) => {
   return (
-    <ShadcnRangeInput
+    <Slider
       min={min}
       max={max}
       unit={unit}

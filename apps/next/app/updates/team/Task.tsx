@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
-import Button from "@/components/Button";
 import { Input } from "@/components/ui/input";
 import { linkClasses } from "@/components/Link";
+import { Button } from "@/components/ui/button";
 import { useCurrentCompany } from "@/global";
 import type { RouterInput, RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
@@ -152,7 +152,7 @@ export const TaskInput = ({
             value={task.name || ""}
             className="border-none bg-transparent p-0"
             placeholder="Describe your task"
-            onKeyDown={(e) => {
+            onKeyDown={(e: React.KeyboardEvent) => {
               switch (e.key) {
                 case "Enter": {
                   e.preventDefault();
@@ -176,8 +176,8 @@ export const TaskInput = ({
                   break;
               }
             }}
-            onChange={(value) => onChange({ ...task, name: value })}
-            onPaste={(event) => void handlePaste(event)}
+            onChange={(e: string) => onChange({ ...task, name: e })}
+            onPaste={(event: React.ClipboardEvent) => void handlePaste(event)}
           />
         )}
         {githubSearchResults?.length && !task.integrationRecord && !hideSearchResults ? (

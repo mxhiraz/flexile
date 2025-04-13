@@ -42,8 +42,8 @@ import { useDebounce } from "use-debounce";
 import { z } from "zod";
 import { navLinks as equityNavLinks } from "@/app/equity";
 import InvoiceStatus, { invoiceSchema } from "@/app/invoices/LegacyStatus";
-import Badge from "@/components/Badge";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { linkClasses } from "@/components/Link";
 import { useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
@@ -235,7 +235,7 @@ export default function MainLayout({
                       aria-controls={`${uid}results`}
                       onFocus={() => setSearchFocused(true)}
                       onBlur={() => setSearchFocused(false)}
-                      onKeyDown={(e) => {
+                      onKeyDown={(e: React.KeyboardEvent) => {
                         switch (e.key) {
                           case "Enter":
                             if ((searchResults?.invoices.length || 0) > 0 || (searchResults?.users.length || 0) > 0) {

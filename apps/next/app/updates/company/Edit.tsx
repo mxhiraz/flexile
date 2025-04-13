@@ -6,13 +6,13 @@ import { useMutation } from "@tanstack/react-query";
 import { startOfMonth, startOfQuarter, startOfYear, subMonths, subQuarters, subYears } from "date-fns";
 import { useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
-import Button from "@/components/Button";
 import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import { Editor as RichTextEditor } from "@/components/RichText";
 import Select from "@/components/Select";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
@@ -168,9 +168,9 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
         <div className="grid gap-3">
           <Input
             value={title}
-            onChange={(title) => {
+            onChange={(e: string) => {
               errors.delete("title");
-              setTitle(title);
+              setTitle(e);
             }}
             label="Title"
             invalid={errors.has("title")}
@@ -199,7 +199,7 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
             label="Update"
             invalid={errors.has("body")}
           />
-          <Input value={videoUrl ?? ""} onChange={(videoUrl) => setVideoUrl(videoUrl)} label="Video URL (optional)" />
+          <Input value={videoUrl ?? ""} onChange={(e: string) => setVideoUrl(e)} label="Video URL (optional)" />
         </div>
         <div className="flex flex-col gap-2">
           <div className="mb-1 text-xs text-gray-500 uppercase">Recipients ({recipientCount.toLocaleString()})</div>
