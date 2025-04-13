@@ -3,7 +3,7 @@
 [![CI](https://github.com/antiwork/flexile/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/antiwork/flexile/actions/workflows/ci.yml?query=branch%3Amain)
 [![License: Flexile Community License](https://img.shields.io/badge/License-Flexile%20Community-blue.svg)](https://github.com/antiwork/flexile/blob/main/LICENSE.md)
 
-Payroll & equity for everyone.
+Payroll & equity for everyone. Simple and efficient.
 
 ## Features
 
