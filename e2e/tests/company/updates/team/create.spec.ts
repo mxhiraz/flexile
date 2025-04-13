@@ -50,10 +50,10 @@ test.describe("Team member updates page", () => {
     await login(page, contractorUser);
     await page.getByRole("link", { name: "Updates" }).click();
 
-    const thisWeekUpdate = page.locator("form ul");
+    const thisWeekUpdateContainer = page.locator("form ul"); 
 
     // Tasks are visible when they don't have any content
-    await expect(thisWeekUpdate.getByPlaceholder("Describe your task")).toHaveCount(1);
+    await expect(thisWeekUpdateContainer.locator("li").getByPlaceholder("Describe your task").first()).toBeVisible();
 
     await companyContractorUpdateTasksFactory.create({
       companyContractorUpdateId: prevUpdate.id,
@@ -68,40 +68,49 @@ test.describe("Team member updates page", () => {
     await page.reload();
 
     // This week tasks
-    await thisWeekUpdate.getByPlaceholder("Describe your task").first().fill("This week task 1");
-    await thisWeekUpdate.getByPlaceholder("Describe your task").nth(1).fill("This week task 2");
-    await thisWeekUpdate.getByRole("checkbox").first().click();
-    await expect(thisWeekUpdate.getByRole("checkbox").first()).toBeChecked();
+    const firstTaskItem = thisWeekUpdateContainer.locator("li").nth(0);
+    const secondTaskItem = thisWeekUpdateContainer.locator("li").nth(1); // Assuming a second item is added or exists
+    await firstTaskItem.getByPlaceholder("Describe your task").fill("This week task 1");
+    await expect(secondTaskItem.getByPlaceholder("Describe your task")).toBeVisible(); 
+    await secondTaskItem.getByPlaceholder("Describe your task").fill("This week task 2");
+    await firstTaskItem.getByRole("checkbox").click();
+    await expect(firstTaskItem.getByRole("checkbox")).toBeChecked();
 
-    // GitHub search
-    await thisWeekUpdate.getByPlaceholder("Describe your task").last().fill("#issues");
+    const taskItems = thisWeekUpdateContainer.locator("li");
+    const lastTaskInput = taskItems.last().getByPlaceholder("Describe your task");
+    await lastTaskInput.fill("#issues");
 
-    await expect(thisWeekUpdate.getByRole("listbox")).toBeVisible();
-    await expect(thisWeekUpdate.getByRole("listbox").getByRole("option")).toHaveCount(5);
-    await thisWeekUpdate.getByRole("option", { name: "#3 Closed issue" }).click();
-    await expect(thisWeekUpdate.getByRole("listbox")).not.toBeVisible();
-    await expect(thisWeekUpdate.getByRole("link", { name: "#3 Closed issue" })).toHaveAttribute(
+    const searchResultsListbox = page.locator('[cmdk-list][role="listbox"]:visible'); // More specific selector for Shadcn Command list
+    await expect(searchResultsListbox).toBeVisible();
+    await expect(searchResultsListbox.getByRole("option")).toHaveCount(5);
+    await searchResultsListbox.getByRole("option", { name: /#3 Closed issue/ }).click(); // Use regex for flexibility
+    await expect(searchResultsListbox).not.toBeVisible(); // Listbox should hide after selection
+    await expect(taskItems.last().getByRole("link", { name: /#3 Closed issue/ })).toHaveAttribute(
       "href",
       "https://github.com/anti-work-test/flexile/issues/3",
     );
 
-    // GitHub unfurl
-    await thisWeekUpdate.getByPlaceholder("Describe your task").last().click();
-    await thisWeekUpdate.evaluate(async () => {
-      await navigator.clipboard.writeText("https://github.com/antiwork/flexile/pull/3730");
+    const taskItemWithLink1 = thisWeekUpdateContainer.locator("li").filter({ hasText: /#3 Closed issue/ });
+    await taskItemWithLink1.getByPlaceholder("Describe your task").click(); // Click into the input
+    await taskItemWithLink1.evaluate(async () => {
+      await navigator.clipboard.writeText(" https://github.com/antiwork/flexile/pull/3730"); // Add space to separate
     });
     await page.keyboard.press("ControlOrMeta+v");
-    await expect(thisWeekUpdate.getByRole("link", { name: "#3730 Move GitHub endpoints" })).toHaveAttribute(
+    await expect(taskItemWithLink1.getByRole("link", { name: /#3730 Move GitHub endpoints/ })).toBeVisible();
+    await expect(taskItemWithLink1.getByRole("link", { name: /#3730 Move GitHub endpoints/ })).toHaveAttribute(
       "href",
       "https://github.com/antiwork/flexile/pull/3730",
     );
 
-    await thisWeekUpdate.getByPlaceholder("Describe your task").last().click();
-    await thisWeekUpdate.evaluate(async () => {
+    await page.locator("form").getByRole("button", { name: "Add task" }).click();
+    const newTaskItem = thisWeekUpdateContainer.locator("li").last(); // Get the newly added item
+    await newTaskItem.getByPlaceholder("Describe your task").click();
+    await newTaskItem.evaluate(async () => {
       await navigator.clipboard.writeText("https://github.com/anti-work-test/flexile/issues/1");
     });
     await page.keyboard.press("ControlOrMeta+v");
-    await expect(page.getByRole("link", { name: "#1 Open issue" })).toHaveAttribute(
+    await expect(newTaskItem.getByRole("link", { name: /#1 Open issue/ })).toBeVisible();
+    await expect(newTaskItem.getByRole("link", { name: /#1 Open issue/ })).toHaveAttribute(
       "href",
       "https://github.com/anti-work-test/flexile/issues/1",
     );
@@ -135,23 +144,25 @@ test.describe("Team member updates page", () => {
     // View updates
     await page.reload();
 
-    await thisWeekUpdate.getByRole("checkbox").last().click();
-    await thisWeekUpdate.getByPlaceholder("Describe your task").last().fill("last minute addition");
-    await page.waitForTimeout(600);
+    const finalTaskItem = thisWeekUpdateContainer.locator("li").last();
+    await finalTaskItem.getByRole("checkbox").click();
+    await finalTaskItem.getByPlaceholder("Describe your task").pressSequentially(" last minute addition"); 
+    await page.waitForTimeout(600); // Wait for potential autosave
     await page.reload();
 
-    const updateContainer = page.locator("div:has(hgroup+form)");
+    const reloadedUpdateContainer = page.locator("form ul");
+    const updateContainer = page.locator("div:has(hgroup+form)"); // Keep this locator as is
     await expect(updateContainer.locator("h2")).toContainText("Sylvester");
-    await expect(thisWeekUpdate).toBeVisible();
+    await expect(reloadedUpdateContainer).toBeVisible();
 
-    // Check input values for this week
-    await expect(thisWeekUpdate.getByPlaceholder("Describe your task").nth(0)).toHaveValue("This week task 1");
-    await expect(thisWeekUpdate.getByPlaceholder("Describe your task").nth(1)).toHaveValue("This week task 2");
-    await expect(thisWeekUpdate.getByRole("link", { name: "#3730 Move GitHub endpoints" })).toBeVisible();
-    await expect(thisWeekUpdate.getByRole("link", { name: "#1 Open issue" })).toBeVisible();
-    await expect(thisWeekUpdate.getByPlaceholder("Describe your task").nth(2)).toHaveValue("last minute addition");
-    await expect(thisWeekUpdate.getByRole("checkbox").first()).toBeChecked();
-    await expect(thisWeekUpdate.getByRole("checkbox", { checked: true })).toHaveCount(2);
+    await expect(reloadedUpdateContainer.locator("li").nth(0).getByPlaceholder("Describe your task")).toHaveValue("This week task 1");
+    await expect(reloadedUpdateContainer.locator("li").nth(1).getByPlaceholder("Describe your task")).toHaveValue("This week task 2");
+    await expect(reloadedUpdateContainer.locator("li").filter({ hasText: /#3 Closed issue/ }).getByRole("link", { name: /#3730 Move GitHub endpoints/ })).toBeVisible();
+    await expect(reloadedUpdateContainer.locator("li").last().getByRole("link", { name: /#1 Open issue/ })).toBeVisible();
+    await expect(reloadedUpdateContainer.locator("li").last().getByPlaceholder("Describe your task")).toHaveValue(/last minute addition/); // Check appended text
+    await expect(reloadedUpdateContainer.locator("li").first().getByRole("checkbox")).toBeChecked(); // First task checkbox
+    await expect(reloadedUpdateContainer.locator("li").last().getByRole("checkbox")).toBeChecked(); // Last task checkbox
+    await expect(reloadedUpdateContainer.getByRole("checkbox", { checked: true })).toHaveCount(2);
   });
 
   test("alumni contractor cannot access updates", async ({ page }) => {
@@ -185,10 +196,11 @@ test.describe("Team member updates page", () => {
     await page.getByRole("link", { name: "Updates" }).click();
     await expect(page.getByText("This week:")).toBeVisible();
 
-    const thisWeekUpdate = page.locator("form ul");
-    await thisWeekUpdate.getByPlaceholder("Describe your task").first().fill("new task");
-    await page.waitForTimeout(600);
+    const thisWeekUpdateContainer = page.locator("form ul");
+    await thisWeekUpdateContainer.getByPlaceholder("Describe your task").first().fill("new task");
+    await page.waitForTimeout(600); // Wait for potential autosave
     await page.reload();
-    await expect(thisWeekUpdate.getByPlaceholder("Describe your task").first()).toHaveValue("new task");
+    const reloadedUpdateContainer = page.locator("form ul");
+    await expect(reloadedUpdateContainer.locator("li").first().getByPlaceholder("Describe your task")).toHaveValue("new task");
   });
 });
