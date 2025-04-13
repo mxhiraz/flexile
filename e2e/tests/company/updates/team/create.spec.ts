@@ -83,21 +83,21 @@ test.describe("Team member updates page", () => {
     const searchResultsListbox = page.locator('[cmdk-list][role="listbox"]:visible'); // More specific selector for Shadcn Command list
     await expect(searchResultsListbox).toBeVisible();
     await expect(searchResultsListbox.getByRole("option")).toHaveCount(5);
-    await searchResultsListbox.getByRole("option", { name: /#3 Closed issue/ }).click(); // Use regex for flexibility
+    await searchResultsListbox.getByRole("option", { name: /#3 Closed issue/u }).click(); // Use regex for flexibility
     await expect(searchResultsListbox).not.toBeVisible(); // Listbox should hide after selection
-    await expect(taskItems.last().getByRole("link", { name: /#3 Closed issue/ })).toHaveAttribute(
+    await expect(taskItems.last().getByRole("link", { name: /#3 Closed issue/u })).toHaveAttribute(
       "href",
       "https://github.com/anti-work-test/flexile/issues/3",
     );
 
-    const taskItemWithLink1 = thisWeekUpdateContainer.locator("li").filter({ hasText: /#3 Closed issue/ });
+    const taskItemWithLink1 = thisWeekUpdateContainer.locator("li").filter({ hasText: /#3 Closed issue/u });
     await taskItemWithLink1.getByPlaceholder("Describe your task").click(); // Click into the input
     await taskItemWithLink1.evaluate(async () => {
       await navigator.clipboard.writeText(" https://github.com/antiwork/flexile/pull/3730"); // Add space to separate
     });
     await page.keyboard.press("ControlOrMeta+v");
-    await expect(taskItemWithLink1.getByRole("link", { name: /#3730 Move GitHub endpoints/ })).toBeVisible();
-    await expect(taskItemWithLink1.getByRole("link", { name: /#3730 Move GitHub endpoints/ })).toHaveAttribute(
+    await expect(taskItemWithLink1.getByRole("link", { name: /#3730 Move GitHub endpoints/u })).toBeVisible();
+    await expect(taskItemWithLink1.getByRole("link", { name: /#3730 Move GitHub endpoints/u })).toHaveAttribute(
       "href",
       "https://github.com/antiwork/flexile/pull/3730",
     );
@@ -109,8 +109,8 @@ test.describe("Team member updates page", () => {
       await navigator.clipboard.writeText("https://github.com/anti-work-test/flexile/issues/1");
     });
     await page.keyboard.press("ControlOrMeta+v");
-    await expect(newTaskItem.getByRole("link", { name: /#1 Open issue/ })).toBeVisible();
-    await expect(newTaskItem.getByRole("link", { name: /#1 Open issue/ })).toHaveAttribute(
+    await expect(newTaskItem.getByRole("link", { name: /#1 Open issue/u })).toBeVisible();
+    await expect(newTaskItem.getByRole("link", { name: /#1 Open issue/u })).toHaveAttribute(
       "href",
       "https://github.com/anti-work-test/flexile/issues/1",
     );
@@ -157,9 +157,9 @@ test.describe("Team member updates page", () => {
 
     await expect(reloadedUpdateContainer.locator("li").nth(0).getByPlaceholder("Describe your task")).toHaveValue("This week task 1");
     await expect(reloadedUpdateContainer.locator("li").nth(1).getByPlaceholder("Describe your task")).toHaveValue("This week task 2");
-    await expect(reloadedUpdateContainer.locator("li").filter({ hasText: /#3 Closed issue/ }).getByRole("link", { name: /#3730 Move GitHub endpoints/ })).toBeVisible();
-    await expect(reloadedUpdateContainer.locator("li").last().getByRole("link", { name: /#1 Open issue/ })).toBeVisible();
-    await expect(reloadedUpdateContainer.locator("li").last().getByPlaceholder("Describe your task")).toHaveValue(/last minute addition/); // Check appended text
+    await expect(reloadedUpdateContainer.locator("li").filter({ hasText: /#3 Closed issue/u }).getByRole("link", { name: /#3730 Move GitHub endpoints/u })).toBeVisible();
+    await expect(reloadedUpdateContainer.locator("li").last().getByRole("link", { name: /#1 Open issue/u })).toBeVisible();
+    await expect(reloadedUpdateContainer.locator("li").last().getByPlaceholder("Describe your task")).toHaveValue(/last minute addition/u); // Check appended text
     await expect(reloadedUpdateContainer.locator("li").first().getByRole("checkbox")).toBeChecked(); // First task checkbox
     await expect(reloadedUpdateContainer.locator("li").last().getByRole("checkbox")).toBeChecked(); // Last task checkbox
     await expect(reloadedUpdateContainer.getByRole("checkbox", { checked: true })).toHaveCount(2);

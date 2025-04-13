@@ -99,7 +99,7 @@ test.describe("Investor onboarding - bank account", () => {
     await page.getByRole("button", { name: "Continue" }).click();
     await page.getByRole("combobox", { name: "Country" }).click();
     await page.locator('.PopoverContent [cmdk-input]').fill("Garbage");
-    await expect(page.getByRole("option", { name: /No Country found/i })).toBeVisible();
+    await expect(page.getByRole("option", { name: /No Country found/iu })).toBeVisible();
     await page.locator('body').click(); // Click outside to potentially trigger validation
     // await expect(page.getByText("Please select an option from the list.")).toBeVisible();
   });
@@ -128,7 +128,7 @@ test.describe("Investor onboarding - bank account", () => {
     await expect(page.getByLabel("Full name of the account holder")).toHaveValue(onboardingUser.legalName ?? "");
 
     await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByRole("combobox", { name: "State" })).toHaveText(/Hawaii/);
+    await expect(page.getByRole("combobox", { name: "State" })).toHaveText(/Hawaii/u);
     await expect(page.getByLabel("City")).toHaveValue(onboardingUser.city ?? "");
     await expect(page.getByLabel("Street address, apt number")).toHaveValue(onboardingUser.streetAddress ?? "");
     await expect(page.getByLabel("ZIP code")).toHaveValue(onboardingUser.zipCode ?? "");
@@ -175,7 +175,7 @@ test.describe("Investor onboarding - bank account", () => {
     await page.getByLabel("Transit number").fill("04841");
     await page.getByLabel("Account number").fill("3456712");
     await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByRole("combobox", { name: "Country" })).toHaveText(/United States/);
+    await expect(page.getByRole("combobox", { name: "Country" })).toHaveText(/United States/u);
     await page.getByRole("combobox", { name: "Country" }).click();
     await page.locator('.PopoverContent [cmdk-input]').fill("Canada");
     await page.getByRole("option", { name: "Canada" }).click();
