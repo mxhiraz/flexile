@@ -32,6 +32,8 @@
     "app/**/*.tsx",
     "app/**/*.ts",
     "trpc/**/*.ts",
+    "components/**/*.tsx",
+
     ".next/types/**/*.ts",
     "types.d.ts",
     "middleware.ts"
