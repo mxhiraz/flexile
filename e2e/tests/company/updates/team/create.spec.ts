@@ -50,7 +50,7 @@ test.describe("Team member updates page", () => {
     await login(page, contractorUser);
     await page.getByRole("link", { name: "Updates" }).click();
 
-    const thisWeekUpdateContainer = page.locator("form ul"); 
+    const thisWeekUpdateContainer = page.locator("form ul");
 
     // Tasks are visible when they don't have any content
     await expect(thisWeekUpdateContainer.locator("li").getByPlaceholder("Describe your task").first()).toBeVisible();
@@ -71,7 +71,7 @@ test.describe("Team member updates page", () => {
     const firstTaskItem = thisWeekUpdateContainer.locator("li").nth(0);
     const secondTaskItem = thisWeekUpdateContainer.locator("li").nth(1); // Assuming a second item is added or exists
     await firstTaskItem.getByPlaceholder("Describe your task").fill("This week task 1");
-    await expect(secondTaskItem.getByPlaceholder("Describe your task")).toBeVisible(); 
+    await expect(secondTaskItem.getByPlaceholder("Describe your task")).toBeVisible();
     await secondTaskItem.getByPlaceholder("Describe your task").fill("This week task 2");
     await firstTaskItem.getByRole("checkbox").click();
     await expect(firstTaskItem.getByRole("checkbox")).toBeChecked();
@@ -146,7 +146,7 @@ test.describe("Team member updates page", () => {
 
     const finalTaskItem = thisWeekUpdateContainer.locator("li").last();
     await finalTaskItem.getByRole("checkbox").click();
-    await finalTaskItem.getByPlaceholder("Describe your task").pressSequentially(" last minute addition"); 
+    await finalTaskItem.getByPlaceholder("Describe your task").pressSequentially(" last minute addition");
     await page.waitForTimeout(600); // Wait for potential autosave
     await page.reload();
 
@@ -155,11 +155,27 @@ test.describe("Team member updates page", () => {
     await expect(updateContainer.locator("h2")).toContainText("Sylvester");
     await expect(reloadedUpdateContainer).toBeVisible();
 
-    await expect(reloadedUpdateContainer.locator("li").nth(0).getByPlaceholder("Describe your task")).toHaveValue("This week task 1");
-    await expect(reloadedUpdateContainer.locator("li").nth(1).getByPlaceholder("Describe your task")).toHaveValue("This week task 2");
-    await expect(reloadedUpdateContainer.locator("li").filter({ hasText: /#3 Closed issue/u }).getByRole("link", { name: /#3730 Move GitHub endpoints/u })).toBeVisible();
-    await expect(reloadedUpdateContainer.locator("li").last().getByRole("link", { name: /#1 Open issue/u })).toBeVisible();
-    await expect(reloadedUpdateContainer.locator("li").last().getByPlaceholder("Describe your task")).toHaveValue(/last minute addition/u); // Check appended text
+    await expect(reloadedUpdateContainer.locator("li").nth(0).getByPlaceholder("Describe your task")).toHaveValue(
+      "This week task 1",
+    );
+    await expect(reloadedUpdateContainer.locator("li").nth(1).getByPlaceholder("Describe your task")).toHaveValue(
+      "This week task 2",
+    );
+    await expect(
+      reloadedUpdateContainer
+        .locator("li")
+        .filter({ hasText: /#3 Closed issue/u })
+        .getByRole("link", { name: /#3730 Move GitHub endpoints/u }),
+    ).toBeVisible();
+    await expect(
+      reloadedUpdateContainer
+        .locator("li")
+        .last()
+        .getByRole("link", { name: /#1 Open issue/u }),
+    ).toBeVisible();
+    await expect(reloadedUpdateContainer.locator("li").last().getByPlaceholder("Describe your task")).toHaveValue(
+      /last minute addition/u,
+    ); // Check appended text
     await expect(reloadedUpdateContainer.locator("li").first().getByRole("checkbox")).toBeChecked(); // First task checkbox
     await expect(reloadedUpdateContainer.locator("li").last().getByRole("checkbox")).toBeChecked(); // Last task checkbox
     await expect(reloadedUpdateContainer.getByRole("checkbox", { checked: true })).toHaveCount(2);
@@ -201,6 +217,8 @@ test.describe("Team member updates page", () => {
     await page.waitForTimeout(600); // Wait for potential autosave
     await page.reload();
     const reloadedUpdateContainer = page.locator("form ul");
-    await expect(reloadedUpdateContainer.locator("li").first().getByPlaceholder("Describe your task")).toHaveValue("new task");
+    await expect(reloadedUpdateContainer.locator("li").first().getByPlaceholder("Describe your task")).toHaveValue(
+      "new task",
+    );
   });
 });

@@ -98,9 +98,9 @@ test.describe("Investor onboarding - bank account", () => {
     await page.getByRole("button", { name: "Set up" }).click();
     await page.getByRole("button", { name: "Continue" }).click();
     await page.getByRole("combobox", { name: "Country" }).click();
-    await page.locator('.PopoverContent [cmdk-input]').fill("Garbage");
+    await page.locator(".PopoverContent [cmdk-input]").fill("Garbage");
     await expect(page.getByRole("option", { name: /No Country found/iu })).toBeVisible();
-    await page.locator('body').click(); // Click outside to potentially trigger validation
+    await page.locator("body").click(); // Click outside to potentially trigger validation
     // await expect(page.getByText("Please select an option from the list.")).toBeVisible();
   });
 
@@ -177,12 +177,12 @@ test.describe("Investor onboarding - bank account", () => {
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByRole("combobox", { name: "Country" })).toHaveText(/United States/u);
     await page.getByRole("combobox", { name: "Country" }).click();
-    await page.locator('.PopoverContent [cmdk-input]').fill("Canada");
+    await page.locator(".PopoverContent [cmdk-input]").fill("Canada");
     await page.getByRole("option", { name: "Canada" }).click();
     await page.getByLabel("City").fill(onboardingUser.city || "");
     await page.getByLabel("Street address, apt number").fill("59-720 Kamehameha Hwy");
     await page.getByRole("combobox", { name: "Province" }).click();
-    await page.locator('.PopoverContent [cmdk-input]').fill("Alberta");
+    await page.locator(".PopoverContent [cmdk-input]").fill("Alberta");
     await page.getByRole("option", { name: "Alberta" }).click();
     await page.getByLabel("Post code").fill("A2A 2A2");
 
@@ -231,7 +231,7 @@ test.describe("Investor onboarding - bank account", () => {
       await page.getByLabel("Currency").selectOption("USD (United States Dollar)");
       await page.getByRole("button", { name: "Continue" }).click();
       await page.getByRole("combobox", { name: "Country" }).click();
-      await page.locator('.PopoverContent [cmdk-input]').fill("United States");
+      await page.locator(".PopoverContent [cmdk-input]").fill("United States");
       await page.getByRole("option", { name: "United States" }).click();
       await expect(page.getByRole("combobox", { name: "State" })).toBeVisible();
       await expect(page.getByLabel("ZIP code")).toBeVisible();
@@ -242,7 +242,7 @@ test.describe("Investor onboarding - bank account", () => {
       await page.getByLabel("Currency").selectOption("USD (United States Dollar)");
       await page.getByRole("button", { name: "Continue" }).click();
       await page.getByRole("combobox", { name: "Country" }).click();
-      await page.locator('.PopoverContent [cmdk-input]').fill("Canada");
+      await page.locator(".PopoverContent [cmdk-input]").fill("Canada");
       await page.getByRole("option", { name: "Canada" }).click();
       await expect(page.getByRole("combobox", { name: "Province" })).toBeVisible();
       await expect(page.getByLabel("Post code")).toBeVisible();
@@ -253,7 +253,7 @@ test.describe("Investor onboarding - bank account", () => {
       await page.getByLabel("Currency").selectOption("USD (United States Dollar)");
       await page.getByRole("button", { name: "Continue" }).click();
       await page.getByRole("combobox", { name: "Country" }).click();
-      await page.locator('.PopoverContent [cmdk-input]').fill("United Kingdom");
+      await page.locator(".PopoverContent [cmdk-input]").fill("United Kingdom");
       await page.getByRole("option", { name: "United Kingdom" }).click();
       await expect(page.getByLabel("Post code")).toBeVisible();
       await expect(page.getByRole("combobox", { name: "Province" })).not.toBeVisible();
@@ -265,7 +265,7 @@ test.describe("Investor onboarding - bank account", () => {
       await page.getByLabel("Currency").selectOption("USD (United States Dollar)");
       await page.getByRole("button", { name: "Continue" }).click();
       await page.getByRole("combobox", { name: "Country" }).click();
-      await page.locator('.PopoverContent [cmdk-input]').fill("Bahamas");
+      await page.locator(".PopoverContent [cmdk-input]").fill("Bahamas");
       await page.getByRole("option", { name: "Bahamas" }).click();
       await expect(page.getByLabel("Post code")).not.toBeVisible();
       await expect(page.getByRole("combobox", { name: "Province" })).not.toBeVisible();
@@ -277,7 +277,7 @@ test.describe("Investor onboarding - bank account", () => {
       await page.getByLabel("Currency").selectOption("USD (United States Dollar)");
       await page.getByRole("button", { name: "Continue" }).click();
       await page.getByRole("combobox", { name: "Country" }).click();
-      await page.locator('.PopoverContent [cmdk-input]').fill("Japan");
+      await page.locator(".PopoverContent [cmdk-input]").fill("Japan");
       await page.getByRole("option", { name: "Japan" }).click();
       await expect(page.getByRole("combobox", { name: "Prefecture (optional)" })).toBeVisible();
     });
@@ -287,7 +287,7 @@ test.describe("Investor onboarding - bank account", () => {
       await page.getByLabel("Currency").selectOption("USD (United States Dollar)");
       await page.getByRole("button", { name: "Continue" }).click();
       await page.getByRole("combobox", { name: "Country" }).click();
-      await page.locator('.PopoverContent [cmdk-input]').fill("New Zealand");
+      await page.locator(".PopoverContent [cmdk-input]").fill("New Zealand");
       await page.getByRole("option", { name: "New Zealand" }).click();
       await expect(page.getByRole("combobox", { name: "Region (optional)" })).toBeVisible();
     });
