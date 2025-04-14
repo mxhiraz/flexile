@@ -14,7 +14,6 @@ import {
 } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/utils";
 import {
   Table as ShadcnTable,
   TableBody,
@@ -25,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/utils";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
