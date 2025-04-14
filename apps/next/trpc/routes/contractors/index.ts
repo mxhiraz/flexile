@@ -256,6 +256,7 @@ export const contractorsRouter = createRouter({
                 companyId: ctx.company.id,
                 type: DocumentType.ConsultingContract,
                 docusealSubmissionId: submission.id,
+                updatedAt: new Date(),
               })
               .returning();
             documentId = assertDefined(document).id;
@@ -265,11 +266,13 @@ export const contractorsRouter = createRouter({
                 documentId,
                 userId: ctx.companyAdministrator.userId,
                 title: "Company Representative",
+                updatedAt: new Date(),
               },
               {
                 documentId,
                 userId: contractor.userId,
                 title: "Signer",
+                updatedAt: new Date(),
               },
             ]);
           }
