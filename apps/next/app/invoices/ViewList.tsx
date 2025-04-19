@@ -1,22 +1,23 @@
 import { CurrencyDollarIcon, ExclamationTriangleIcon, PencilIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
-import { formatISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { formatISO } from "date-fns";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
 import { StatusWithTooltip } from "@/app/invoices/Status";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
+import { DatePicker } from "@/components/DatePicker";
 import DecimalInput from "@/components/DecimalInput";
 import DurationInput from "@/components/DurationInput";
-import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
 import { linkClasses } from "@/components/Link";
-import Placeholder from "@/components/Placeholder";
+import { Placeholder } from "@/components/Placeholder";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { trpc } from "@/trpc/client";
 import { assert } from "@/utils/assert";
@@ -160,6 +161,12 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
   const [date, setDate] = useState(initialInvoiceDate);
   const [lockModalOpen, setLockModalOpen] = useState(false);
 
+  const selectedDate = useMemo(() => (date ? new Date(date + "T00:00:00") : undefined), [date]);
+
+  const handleDateSelect = (newDate: Date | undefined) => {
+    setDate(newDate ? formatISO(newDate, { representation: "date" }) : initialInvoiceDate);
+  };
+
   const totalAmountInCents = isProjectBased
     ? (amountUsd ?? 0) * 100
     : Math.ceil(((duration ?? 0) / 60) * (payRateInSubunits ?? 0));
@@ -219,7 +226,7 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
     <Card className={disabled ? "pointer-events-none opacity-50" : ""}>
       <CardContent className="grid gap-4">
         <h4 className="text-sm uppercase">Quick invoice</h4>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3 md:items-start">
           <div className="grid gap-2">
             {isProjectBased ? (
               <DecimalInput
@@ -246,8 +253,9 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
               <div className="text-xs">Total invoice amount: {formatMoneyFromCents(totalAmountInCents)}</div>
             ) : null}
           </div>
-          <div>
-            <Input value={date} onChange={setDate} label="Invoice date" type="date" disabled={submit.isPending} />
+          <div className="grid gap-2">
+            <Label>Invoice date</Label>
+            <DatePicker selected={selectedDate} onSelect={handleDateSelect} />
           </div>
           <div className="text-right">
             <span>{equityCalculation.amountInCents > 0 ? "Net amount in cash" : "Total to invoice"}</span>
