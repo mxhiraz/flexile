@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { formatISO } from "date-fns";
+import { formatISO, parseISO } from "date-fns";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
 import { StatusWithTooltip } from "@/app/invoices/Status";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
@@ -161,7 +161,7 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
   const [date, setDate] = useState(initialInvoiceDate);
   const [lockModalOpen, setLockModalOpen] = useState(false);
 
-  const selectedDate = useMemo(() => (date ? new Date(date + "T00:00:00") : undefined), [date]);
+  const selectedDate = useMemo(() => (date ? parseISO(date) : undefined), [date]);
 
   const handleDateSelect = (newDate: Date | undefined) => {
     setDate(newDate ? formatISO(newDate, { representation: "date" }) : initialInvoiceDate);
