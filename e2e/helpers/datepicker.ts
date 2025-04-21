@@ -1,4 +1,5 @@
-import { type Page } from "@playwright/test";
+import { type Page, expect } from "@playwright/test";
+import { format } from "date-fns";
 
 /**
  * Selects a date from a DatePicker component triggered by an associated label.
@@ -10,7 +11,8 @@ import { type Page } from "@playwright/test";
  */
 export async function selectDateFromDatePicker(page: Page, label: string, targetDate: Date) {
   // 1. Click the trigger button associated with the label
-  await page.getByLabel(label).click();
+  const triggerButton = page.getByLabel(label);
+  await triggerButton.click();
 
   // 2. Wait for the calendar popover to appear using the data-slot attribute
   const popoverLocator = page.locator('[data-slot="popover-content"]');
@@ -20,13 +22,13 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
   // This helper currently assumes the target month/year is already visible.
 
   // 3. Click the specific day button within the calendar popover.
-  //    Targeting the button by its text content (day number).
+  //    Using getByRole for better targeting.
   const day = String(targetDate.getDate());
-  //    NOTE: If this locator fails, inspect the calendar using Playwright Trace Viewer
-  //    or page.pause() to find the correct locator. It might need refinement,
-  //    e.g., using getByRole('button', { name: day, exact: true }) or a CSS selector like '[class*="day_button"]'.
-  await popoverLocator.getByText(day, { exact: true }).click();
+  await popoverLocator.getByRole("button", { name: day, exact: true }).click();
 
-  // 4. Wait for the popover to close (ensures selection is complete)
-  await popoverLocator.waitFor({ state: "hidden" });
+  // 4. Wait for the trigger button text to update (ensures selection is complete and popover likely closed)
+  const expectedButtonText = format(targetDate, "PPP");
+  await expect(triggerButton).toContainText(expectedButtonText);
+  // Optional: A small explicit wait if timing is still tricky, but expect should handle most cases.
+  // await page.waitForTimeout(100);
 }
