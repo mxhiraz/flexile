@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import React from "react";
+import React, { useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,14 +11,20 @@ import { cn } from "@/utils";
 export function DatePicker({
   selected,
   onSelect,
+  id,
 }: {
   selected: Date | undefined;
   onSelect: (date: Date | undefined) => void;
+  id?: string;
 }) {
+  const generatedId = useId();
+  const inputId = id || generatedId;
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          id={inputId}
           variant="outline"
           className={cn("w-auto justify-start text-left font-normal", !selected && "text-muted-foreground")}
         >

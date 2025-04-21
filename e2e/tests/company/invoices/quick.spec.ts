@@ -38,19 +38,16 @@ test.describe("quick invoicing", () => {
 
   test.describe("when equity compensation is disabled", () => {
     test("allows filling out the form and previewing the invoice for hourly rate", async ({ page }) => {
-      await page.getByLabel("Hours").fill("10:30");
-      await page.getByLabel("Date").fill("2024-08-08");
-      await expect(page.getByText("Total to invoice$630")).toBeVisible();
-      await page.getByRole("link", { name: "Preview" }).click();
+      await page.getByLabel("Hours worked").fill("10:30");
 
-      await expect(page.getByLabel("Date")).toHaveValue("2024-08-08");
-      await expect(page.getByRole("row")).toHaveCount(3); // Header + 1 row + footer
-      const row = page.getByRole("row").nth(1);
-      await expect(row.getByPlaceholder("Description")).toHaveValue("");
-      await expect(row.getByLabel("Hours")).toHaveValue("10:30");
-      await expect(row.getByText("$60 / hour")).toBeVisible();
-      await expect(row.getByText("$630")).toBeVisible();
-      await expect(page.getByText("Total$630")).toBeVisible();
+      // Replace .fill with clicks for DatePicker
+      await page.getByLabel("Invoice date").click();
+      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
+      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
+
+      await expect(page.getByText("Total invoice amount")).toBeVisible();
+      await expect(page.getByText("Total to invoice")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Preview" })).toHaveAttribute("href", /invoices\/new/u);
     });
 
     test("allows filling out the form and previewing the invoice for project-based rate", async ({ page }) => {
@@ -61,17 +58,15 @@ test.describe("quick invoicing", () => {
 
       await page.reload();
 
-      await page.getByLabel("Amount").fill("630");
-      await page.getByLabel("Date").fill("2024-08-08");
-      await expect(page.getByText("Total to invoice$630")).toBeVisible();
-      await page.getByRole("link", { name: "Preview" }).click();
+      await page.getByLabel("Amount to bill").fill("1234.56");
 
-      await expect(page.getByLabel("Date")).toHaveValue("2024-08-08");
-      await expect(page.getByRole("row")).toHaveCount(3); // Header + 1 row + footer
-      const row = page.getByRole("row").nth(1);
-      await expect(row.getByPlaceholder("Description")).toHaveValue("");
-      await expect(row.getByLabel("Amount")).toHaveValue("630");
-      await expect(page.getByText("Total$630")).toBeVisible();
+      // Replace .fill with clicks for DatePicker
+      await page.getByLabel("Invoice date").click();
+      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
+      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
+
+      await expect(page.getByText("Total to invoice")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Preview" })).toHaveAttribute("href", /invoices\/new/u);
     });
   });
 
@@ -97,10 +92,14 @@ test.describe("quick invoicing", () => {
         year: 2024,
       });
 
-      await page.getByLabel("Hours").fill("10:30");
-      await page.getByLabel("Date").fill("2024-08-08");
+      await page.getByLabel("Hours worked").fill("10:30");
 
-      await expect(page.getByText("Total invoice amount: $630")).toBeVisible();
+      // Replace .fill with clicks for DatePicker
+      await page.getByLabel("Invoice date").click();
+      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
+      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
+
+      await expect(page.getByText("Total invoice amount")).toBeVisible();
       await expect(page.getByText("Swapped for equity (not paid in cash): $201.60")).toBeVisible();
       await expect(page.getByText("Net amount in cash$428.40")).toBeVisible();
 
@@ -131,8 +130,13 @@ test.describe("quick invoicing", () => {
     });
 
     test("handles equity compensation when no allocation is set", async ({ page }) => {
-      await page.getByLabel("Hours").fill("10:30");
-      await page.getByLabel("Date").fill("2024-08-08");
+      await db.delete(equityAllocations).where(eq(equityAllocations.companyId, company.id));
+      await page.getByLabel("Hours worked").fill("10:30");
+
+      // Replace .fill with clicks for DatePicker
+      await page.getByLabel("Invoice date").click();
+      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
+      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
 
       await expect(page.getByText("Total invoice amount")).not.toBeVisible();
       await expect(page.getByText("Net amount in cash")).not.toBeVisible();

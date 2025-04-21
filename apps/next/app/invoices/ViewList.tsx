@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { formatISO, parseISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useId } from "react";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
 import { StatusWithTooltip } from "@/app/invoices/Status";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
@@ -160,6 +160,7 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
   const [amountUsd, setAmountUsd] = useState<number | null>(payRateInSubunits ? payRateInSubunits / 100 : null);
   const [date, setDate] = useState(initialInvoiceDate);
   const [lockModalOpen, setLockModalOpen] = useState(false);
+  const datePickerId = useId();
 
   const selectedDate = useMemo(() => (date ? parseISO(date) : undefined), [date]);
 
@@ -254,8 +255,8 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
             ) : null}
           </div>
           <div className="grid gap-2">
-            <Label>Invoice date</Label>
-            <DatePicker selected={selectedDate} onSelect={handleDateSelect} />
+            <Label htmlFor={datePickerId}>Invoice date</Label>
+            <DatePicker id={datePickerId} selected={selectedDate} onSelect={handleDateSelect} />
           </div>
           <div className="text-right">
             <span>{equityCalculation.amountInCents > 0 ? "Net amount in cash" : "Total to invoice"}</span>
