@@ -6,6 +6,7 @@ import { equityAllocationsFactory } from "@test/factories/equityAllocations";
 import { equityGrantsFactory } from "@test/factories/equityGrants";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test } from "@test/index";
 import { desc, eq } from "drizzle-orm";
 import { PayRateType } from "@/db/enums";
@@ -40,10 +41,7 @@ test.describe("quick invoicing", () => {
     test("allows filling out the form and previewing the invoice for hourly rate", async ({ page }) => {
       await page.getByLabel("Hours worked").fill("10:30");
 
-      // Replace .fill with clicks for DatePicker
-      await page.getByLabel("Invoice date").click();
-      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
-      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
+      await selectDateFromDatePicker(page, "Invoice date", new Date(2024, 7, 8));
 
       await expect(page.getByText("Total invoice amount")).toBeVisible();
       await expect(page.getByText("Total to invoice")).toBeVisible();
@@ -60,10 +58,7 @@ test.describe("quick invoicing", () => {
 
       await page.getByLabel("Amount to bill").fill("1234.56");
 
-      // Replace .fill with clicks for DatePicker
-      await page.getByLabel("Invoice date").click();
-      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
-      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
+      await selectDateFromDatePicker(page, "Invoice date", new Date(2024, 7, 8));
 
       await expect(page.getByText("Total to invoice")).toBeVisible();
       await expect(page.getByRole("link", { name: "Preview" })).toHaveAttribute("href", /invoices\/new/u);
@@ -94,10 +89,7 @@ test.describe("quick invoicing", () => {
 
       await page.getByLabel("Hours worked").fill("10:30");
 
-      // Replace .fill with clicks for DatePicker
-      await page.getByLabel("Invoice date").click();
-      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
-      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
+      await selectDateFromDatePicker(page, "Invoice date", new Date(2024, 7, 8));
 
       await expect(page.getByText("Total invoice amount")).toBeVisible();
       await expect(page.getByText("Swapped for equity (not paid in cash): $201.60")).toBeVisible();
@@ -133,10 +125,7 @@ test.describe("quick invoicing", () => {
       await db.delete(equityAllocations).where(eq(equityAllocations.companyContractorId, companyContractor.id));
       await page.getByLabel("Hours worked").fill("10:30");
 
-      // Replace .fill with clicks for DatePicker
-      await page.getByLabel("Invoice date").click();
-      await page.locator('[role="dialog"]').waitFor({ state: "visible" });
-      await page.locator('[role="dialog"]').getByRole("button", { name: "8", exact: true }).click();
+      await selectDateFromDatePicker(page, "Invoice date", new Date(2024, 7, 8));
 
       await expect(page.getByText("Total invoice amount")).not.toBeVisible();
       await expect(page.getByText("Net amount in cash")).not.toBeVisible();
