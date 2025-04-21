@@ -9,7 +9,7 @@ import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 import { desc, eq } from "drizzle-orm";
 import { PayRateType } from "@/db/enums";
-import { companies, companyContractors, invoices, users } from "@/db/schema";
+import { companies, companyContractors, equityAllocations, invoices, users } from "@/db/schema";
 
 test.describe("quick invoicing", () => {
   let company: typeof companies.$inferSelect;
@@ -130,7 +130,7 @@ test.describe("quick invoicing", () => {
     });
 
     test("handles equity compensation when no allocation is set", async ({ page }) => {
-      await db.delete(equityAllocations).where(eq(equityAllocations.companyId, company.id));
+      await db.delete(equityAllocations).where(eq(equityAllocations.companyContractorId, companyContractor.id));
       await page.getByLabel("Hours worked").fill("10:30");
 
       // Replace .fill with clicks for DatePicker
