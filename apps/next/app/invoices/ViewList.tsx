@@ -13,7 +13,7 @@ import DecimalInput from "@/components/DecimalInput";
 import DurationInput from "@/components/DurationInput";
 import MainLayout from "@/components/layouts/Main";
 import { linkClasses } from "@/components/Link";
-import { Placeholder } from "@/components/Placeholder";
+import Placeholder from "@/components/Placeholder";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
