@@ -13,22 +13,25 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
   const triggerButton = page.getByLabel(label);
   await triggerButton.click();
 
-  const popoverLocator = page.locator('[data-slot="popover-content"]');
+  // Try using role="dialog" again for the popover
+  const popoverLocator = page.locator('[role="dialog"]');
   await popoverLocator.waitFor({ state: "visible" });
 
   // --- Navigation Logic ---
   const targetMonth = getMonth(targetDate);
   const targetYear = getYear(targetDate);
 
-  // Update captionLocator to use the table's aria-label
-  const captionTableLocator = popoverLocator.locator('table[role="grid"]');
+  // Locate elements within the dialog popover
+  const captionTableLocator = popoverLocator.locator('table[role="grid"][aria-label]');
   const prevButtonLocator = popoverLocator.getByLabel(/previous month/iu);
   const nextButtonLocator = popoverLocator.getByLabel(/next month/iu);
 
   let attempts = 0;
-  const maxAttempts = 600; // Increased max attempts (50 years)
+  const maxAttempts = 600;
 
   while (attempts < maxAttempts) {
+    // Explicitly wait for the table/caption locator before getting attribute
+    await captionTableLocator.waitFor({ state: "visible", timeout: 5000 }); // Add explicit wait with timeout
     const captionText = await captionTableLocator.getAttribute("aria-label");
     if (!captionText) throw new Error("Could not find calendar caption aria-label.");
 
@@ -39,32 +42,29 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
     } catch (_e) {
       throw new Error(`Could not parse calendar caption aria-label: "${captionText}"`);
     }
-
     const currentMonth = getMonth(currentDate);
     const currentYear = getYear(currentDate);
 
-    // Check if we are in the correct month and year
     if (currentYear === targetYear && currentMonth === targetMonth) {
-      break; // Found the target month/year
+      break;
     }
 
-    // Prioritize year navigation first
+    // Prioritize year navigation first, keep force click
     if (currentYear !== targetYear) {
       if (currentYear > targetYear) {
-        await prevButtonLocator.click();
+        await prevButtonLocator.click({ force: true });
       } else {
-        await nextButtonLocator.click();
+        await nextButtonLocator.click({ force: true });
       }
-      // If year matches, navigate month
     } else if (currentMonth !== targetMonth) {
       if (currentMonth > targetMonth) {
-        await prevButtonLocator.click();
+        await prevButtonLocator.click({ force: true });
       } else {
-        await nextButtonLocator.click();
+        await nextButtonLocator.click({ force: true });
       }
     }
 
-    await page.waitForTimeout(50); // Brief pause for UI update
+    await page.waitForTimeout(100); // Slightly longer pause
     attempts++;
   }
 

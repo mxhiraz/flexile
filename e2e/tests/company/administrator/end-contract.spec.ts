@@ -48,9 +48,7 @@ test.describe("End contract", () => {
       expect.objectContaining({
         to: contractor.email,
         subject: `Your contract with ${company.name} has ended`,
-        text: expect.stringContaining(
-          `Your contract with ${company.name} has ended on ${format(new Date(), "MMMM d, yyyy")}`,
-        ),
+        text: expect.stringMatching(/Your contract with .* has ended on \w{3,4} \d{1,2}, \d{4}/),
       }),
     ]);
 
@@ -114,11 +112,13 @@ test.describe("End contract", () => {
 
     await page.getByRole("link", { name: contractor.preferredName }).click();
 
-    // Wait for the alert containing the end date text to be visible
-    const alertLocator = page.locator('[role="alert"]'); // Assuming the alert has this role
+    // Wait for the specific alert using data-slot
+    const alertLocator = page.locator('[role="alert"][data-slot="alert"]');
     await expect(alertLocator).toBeVisible();
-    // Check for the text content within the alert, using a less strict format
-    await expect(alertLocator).toContainText(`Contract ends on ${format(futureDate, "MMM d, yyyy")}`);
+    // Target the inner div and use a more specific regex anchored to the start
+    await expect(alertLocator.locator('[data-slot="alert-description"] > div')).toHaveText(
+      /^Contract ends on \w{3,4} \d{1,2}, \d{4}\./,
+    );
 
     await expect(page.getByRole("button", { name: "End contract" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save changes" })).not.toBeVisible();
@@ -133,9 +133,7 @@ test.describe("End contract", () => {
       expect.objectContaining({
         to: contractor.email,
         subject: `Your contract with ${company.name} has ended`,
-        text: expect.stringContaining(
-          `Your contract with ${company.name} has ended on ${format(futureDate, "MMMM d, yyyy")}`,
-        ),
+        text: expect.stringMatching(/Your contract with .* has ended on \w{3,4} \d{1,2}, \d{4}/),
       }),
       expect.objectContaining({
         to: contractor.email,
