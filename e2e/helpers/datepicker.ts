@@ -17,7 +17,7 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
   await popoverLocator.waitFor({ state: "visible" });
 
   const day = String(targetDate.getDate());
-  await popoverLocator.getByRole("button", { name: day }).click();
+  await popoverLocator.getByText(day, { exact: true }).click();
 
   const expectedButtonText = format(targetDate, "PPP");
   await expect(triggerButton).toContainText(expectedButtonText);
