@@ -7,7 +7,7 @@ import { formatISO, parseISO } from "date-fns";
 import { List } from "immutable";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import React, { useState, useMemo, useId, useRef } from "react";
+import React, { useId, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
 import ComboBox from "@/components/ComboBox";
