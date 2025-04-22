@@ -7,13 +7,13 @@ import { githubIntegrationsFactory } from "@test/factories/githubIntegrations";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { startsOn } from "@test/helpers/date";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test } from "@test/index";
 import { addDays, nextFriday, nextWednesday, startOfWeek, subDays } from "date-fns";
 import { format } from "date-fns/format";
 import { nextThursday } from "date-fns/nextThursday";
 import { nextTuesday } from "date-fns/nextTuesday";
 import { z } from "zod";
-import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 
 test.describe("Team member updates page", () => {
   test("view team updates", async ({ page, next }) => {
