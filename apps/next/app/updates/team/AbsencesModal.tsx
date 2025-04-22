@@ -165,7 +165,11 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
                   onSelect={handleEndsOnSelect}
                   invalid={hasError}
                 />
+<<<<<<< HEAD
                 {hasError ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
+=======
+                {hasError && errorMessage ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
+>>>>>>> 0da7c1a (fix import order)
               </div>
               <div className="flex items-end">
                 <Button

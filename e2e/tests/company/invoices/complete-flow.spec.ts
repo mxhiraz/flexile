@@ -4,6 +4,7 @@ import { companyAdministratorsFactory } from "@test/factories/companyAdministrat
 import { companyContractorsFactory } from "@test/factories/companyContractors";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, type Page, test } from "@test/index";
 
 type User = Awaited<ReturnType<typeof usersFactory.create>>["user"];
@@ -38,7 +39,7 @@ test.describe("Invoice submission, approval and rejection", () => {
 
     await page.locator("header").getByRole("link", { name: "New invoice" }).click();
     await page.getByLabel("Invoice ID").fill("CUSTOM-1");
-    await page.getByLabel("Date").fill("2024-11-01");
+    await selectDateFromDatePicker(page, "Date", new Date(2024, 10, 1));
     await page.getByPlaceholder("HH:MM").first().fill("01:23");
     await page.waitForTimeout(500); // TODO (dani) avoid this
     await page.getByPlaceholder("Description").fill("first item");
@@ -59,7 +60,7 @@ test.describe("Invoice submission, approval and rejection", () => {
     await page.getByPlaceholder("Description").fill("woops too little time");
     await page.getByPlaceholder("HH:MM").fill("0:23");
     await page.getByLabel("Invoice ID").fill("CUSTOM-2");
-    await page.getByLabel("Date").fill("2024-12-01");
+    await selectDateFromDatePicker(page, "Date", new Date(2024, 11, 1));
     await page.waitForTimeout(300); // TODO (dani) avoid this
     await page.getByRole("button", { name: "Send invoice" }).click();
 
@@ -87,7 +88,7 @@ test.describe("Invoice submission, approval and rejection", () => {
     await page.locator("header").getByRole("link", { name: "New invoice" }).click();
     await page.getByPlaceholder("Description").fill("line item");
     await page.getByPlaceholder("HH:MM").fill("10:23");
-    await page.getByLabel("Date").fill("2024-11-20");
+    await selectDateFromDatePicker(page, "Date", new Date(2024, 10, 20));
     await page.waitForTimeout(200); // TODO (dani) avoid this
     await page.getByRole("button", { name: "Send invoice" }).click();
     await expect(page.getByText("Awaiting approval")).toBeVisible();
