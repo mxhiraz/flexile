@@ -6,6 +6,7 @@ import { userComplianceInfosFactory } from "@test/factories/userComplianceInfos"
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { mockDocuseal } from "@test/helpers/docuseal";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test } from "@test/index";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { BusinessType, DocumentType, TaxClassification } from "@/db/enums";
@@ -115,7 +116,7 @@ test.describe("Tax settings", () => {
       await page.getByLabel("Business legal name").fill("Flexile Inc.");
       await page.getByLabel("Tax classification").selectOption(TaxClassification.Partnership.toString());
       await page.getByLabel("Tax ID (EIN)").fill("55-5666789");
-      await page.getByLabel("Date of incorporation (optional)").fill("1980-06-07");
+      await selectDateFromDatePicker(page, "Date of incorporation (optional)", new Date(1980, 5, 7));
       await page.getByLabel("Residential address (street name, number, apartment)").fill("123 Grove St");
       await page.getByLabel("State").selectOption("New York");
       await page.getByLabel("City").fill("New York");

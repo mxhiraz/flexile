@@ -4,6 +4,7 @@ import { companiesFactory } from "@test/factories/companies";
 import { companyContractorsFactory } from "@test/factories/companyContractors";
 import { login } from "@test/helpers/auth";
 import { mockDocuseal } from "@test/helpers/docuseal";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test, withinModal } from "@test/index";
 import { addDays, addYears, format, formatISO } from "date-fns";
 import { eq } from "drizzle-orm";
@@ -29,8 +30,9 @@ test.describe("End contract", () => {
     await page.getByRole("link", { name: contractor.preferredName }).click();
     await page.getByRole("button", { name: "End contract" }).click();
 
-    const today = formatISO(new Date(), { representation: "date" });
-    await expect(page.getByLabel("End date")).toHaveValue(today);
+    const today = new Date();
+    const todayString = formatISO(today, { representation: "date" });
+    await expect(page.getByLabel("End date")).toHaveValue(todayString);
 
     await page.getByRole("button", { name: "Yes, end contract" }).click();
 
@@ -61,7 +63,7 @@ test.describe("End contract", () => {
     await mockForm(page);
     await page.getByLabel("Email").fill(contractor.email);
     await page.getByLabel("Average hours").fill("25");
-    await page.getByLabel("Start date").fill(formatISO(addYears(new Date(), 1), { representation: "date" }));
+    await selectDateFromDatePicker(page, "Start date", addYears(new Date(), 1));
     await page.getByRole("button", { name: "Send invite" }).click();
     await withinModal(
       async (modal) => {
@@ -102,13 +104,12 @@ test.describe("End contract", () => {
     assert(contractor.preferredName != null, "Contractor preferred name is required");
 
     const futureDate = addDays(new Date(), 30);
-    const futureDateString = formatISO(futureDate, { representation: "date" });
 
     await page.getByRole("link", { name: "People" }).click();
     await page.getByRole("link", { name: contractor.preferredName }).click();
     await page.getByRole("button", { name: "End contract" }).click();
 
-    await page.getByLabel("End date").fill(futureDateString);
+    await selectDateFromDatePicker(page, "End date", futureDate);
     await page.getByRole("button", { name: "Yes, end contract" }).click();
 
     await page.getByRole("link", { name: contractor.preferredName }).click();

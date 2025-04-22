@@ -8,8 +8,9 @@ import { usersFactory } from "@test/factories/users";
 import { selectComboboxOption } from "@test/helpers";
 import { login } from "@test/helpers/auth";
 import { mockDocuseal as mockDocusealHelper } from "@test/helpers/docuseal";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, type Page, test, withinModal } from "@test/index";
-import { addMonths, format, formatISO } from "date-fns";
+import { addMonths, format } from "date-fns";
 import { desc, eq } from "drizzle-orm";
 import type { NextFixture } from "next/experimental/testmode/playwright";
 import { companies, companyContractors, users } from "@/db/schema";
@@ -56,7 +57,7 @@ test.describe("New Contractor", () => {
     await page.getByRole("link", { name: "Invite contractor" }).click();
     await expect(page.getByText("Who's joining?")).toBeVisible();
     await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Start date").fill(formatISO(date, { representation: "date" }));
+    await selectDateFromDatePicker(page, "Start date", date);
     return { email, date };
   };
 

@@ -8,6 +8,7 @@ import { usersFactory } from "@test/factories/users";
 import { selectComboboxOption } from "@test/helpers";
 import { login } from "@test/helpers/auth";
 import { mockDocuseal } from "@test/helpers/docuseal";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test, withinModal } from "@test/index";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema";
@@ -37,7 +38,7 @@ test.describe("Contractor for multiple companies", () => {
     await page.getByRole("link", { name: "Invite contractor" }).click();
 
     await page.getByLabel("Email").fill(contractorUser.email);
-    await page.getByLabel("Start date").fill("2025-08-08");
+    await selectDateFromDatePicker(page, "Start date", new Date(2025, 7, 8));
     await page.getByLabel("Average hours").fill("25");
     await page.getByLabel("Rate").fill("110");
     await page.getByRole("button", { name: "Send invite" }).click();
