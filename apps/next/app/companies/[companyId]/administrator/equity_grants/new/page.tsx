@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { formatISO, parseISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, useId } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { optionGrantTypeDisplayNames, relationshipDisplayNames, vestingTriggerDisplayNames } from "@/app/equity/grants";
 import { DatePicker } from "@/components/DatePicker";
@@ -15,10 +15,10 @@ import NumberInput from "@/components/NumberInput";
 import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
 import { assertDefined } from "@/utils/assert";
-import { Label } from "@/components/ui/label";
 
 const MAX_VESTING_DURATION_IN_MONTHS = 120;
 

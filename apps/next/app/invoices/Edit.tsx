@@ -7,10 +7,11 @@ import { formatISO, parseISO } from "date-fns";
 import { List } from "immutable";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, useMemo, useId } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
 import ComboBox from "@/components/ComboBox";
+import { DatePicker } from "@/components/DatePicker";
 import DecimalInput from "@/components/DecimalInput";
 import DurationInput from "@/components/DurationInput";
 import Input from "@/components/Input";
@@ -32,7 +33,6 @@ import {
   new_company_invoice_path,
 } from "@/utils/routes";
 import { LegacyAddress as Address } from ".";
-import { DatePicker } from "@/components/DatePicker";
 
 const addressSchema = z.object({
   street_address: z.string(),

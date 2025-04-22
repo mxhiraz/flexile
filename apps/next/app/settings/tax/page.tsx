@@ -8,7 +8,7 @@ import { Map } from "immutable";
 import { iso31662 } from "iso-3166";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useId } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { z } from "zod";
 import LegalCertificationModal from "@/app/onboarding/LegalCertificationModal";
 import { DatePicker } from "@/components/DatePicker";
@@ -20,6 +20,7 @@ import Status from "@/components/Status";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { BusinessType, TaxClassification } from "@/db/enums";
 import { useCurrentUser } from "@/global";
 import { countries } from "@/models/constants";
@@ -29,7 +30,6 @@ import { request } from "@/utils/request";
 import { settings_tax_path } from "@/utils/routes";
 import { useOnChange } from "@/utils/useOnChange";
 import SettingsLayout from "../Layout";
-import { Label } from "@/components/ui/label";
 
 const dataSchema = z.object({
   birth_date: z.string().nullable(),

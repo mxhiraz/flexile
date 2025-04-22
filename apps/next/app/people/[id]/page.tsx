@@ -14,7 +14,7 @@ import { areIntervalsOverlapping, format, formatISO, isFuture, parseISO } from "
 import { Decimal } from "decimal.js";
 import { useParams, useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useEffect, useMemo, useState, useId } from "react";
+import React, { useEffect, useId, useMemo, useState } from "react";
 import DividendStatusIndicator from "@/app/equity/DividendStatusIndicator";
 import EquityGrantExerciseStatusIndicator from "@/app/equity/EquityGrantExerciseStatusIndicator";
 import DetailsModal from "@/app/equity/grants/DetailsModal";
@@ -23,6 +23,7 @@ import RoleSelector from "@/app/roles/Selector";
 import { formatAbsencesForUpdate } from "@/app/updates/team/CompanyWorkerUpdate";
 import { Task as CompanyWorkerTask } from "@/app/updates/team/Task";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
+import { DatePicker } from "@/components/DatePicker";
 import DecimalInput from "@/components/DecimalInput";
 import FormSection from "@/components/FormSection";
 import Input from "@/components/Input";
@@ -49,7 +50,6 @@ import { formatMoney, formatMoneyFromCents } from "@/utils/formatMoney";
 import { request } from "@/utils/request";
 import { approve_company_invoices_path, company_equity_exercise_payment_path } from "@/utils/routes";
 import { formatDate, formatDuration } from "@/utils/time";
-import { DatePicker } from "@/components/DatePicker";
 
 export default function ContractorPage() {
   const currentUser = useCurrentUser();

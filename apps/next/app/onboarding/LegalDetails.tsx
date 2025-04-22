@@ -6,21 +6,21 @@ import { Set } from "immutable";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo, useId } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { z } from "zod";
+import { DatePicker } from "@/components/DatePicker";
 import Input from "@/components/Input";
 import OnboardingLayout from "@/components/layouts/Onboarding";
 import { linkClasses } from "@/components/Link";
 import MutationButton from "@/components/MutationButton";
 import RadioButtons from "@/components/RadioButtons";
 import Select from "@/components/Select";
+import { Label } from "@/components/ui/label";
 import { e } from "@/utils";
 import { getTinName } from "@/utils/legal";
 import { request } from "@/utils/request";
 import { legal_onboarding_path, save_legal_onboarding_path } from "@/utils/routes";
 import LegalCertificationModal from "./LegalCertificationModal";
-import { DatePicker } from "@/components/DatePicker";
-import { Label } from "@/components/ui/label";
 
 const LegalDetails = <T extends string>({
   header,

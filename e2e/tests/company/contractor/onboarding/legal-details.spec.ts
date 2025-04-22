@@ -4,10 +4,10 @@ import { companyAdministratorsFactory } from "@test/factories/companyAdministrat
 import { companyContractorsFactory } from "@test/factories/companyContractors";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, type Page, test, withinModal } from "@test/index";
 import { eq } from "drizzle-orm";
 import { companies, companyAdministrators, userComplianceInfos, users } from "@/db/schema";
-import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 
 test.describe("Contractor onboarding - legal details", () => {
   let company: typeof companies.$inferSelect;

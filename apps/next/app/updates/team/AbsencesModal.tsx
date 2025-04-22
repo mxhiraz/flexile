@@ -3,7 +3,7 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
 import { formatISO, parseISO, startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
-import { useEffect, useState, useMemo, useId } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
@@ -165,7 +165,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
                   onSelect={handleEndsOnSelect}
                   invalid={hasError}
                 />
-                {hasError && <p className="text-destructive text-sm">{errorMessage}</p>}
+                {hasError ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
               </div>
               <div className="flex items-end">
                 <Button
