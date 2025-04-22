@@ -13,6 +13,7 @@ import { format } from "date-fns/format";
 import { nextThursday } from "date-fns/nextThursday";
 import { nextTuesday } from "date-fns/nextTuesday";
 import { z } from "zod";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 
 test.describe("Team member updates page", () => {
   test("view team updates", async ({ page, next }) => {
@@ -110,8 +111,10 @@ test.describe("Team member updates page", () => {
     await expect(page.getByText("Off this week: Sylvester")).not.toBeVisible();
     await page.getByRole("button", { name: "Log time off" }).click();
     const thisWeek = startOfWeek(new Date());
-    await page.getByLabel("From").fill(format(nextTuesday(thisWeek), "yyyy-MM-dd"));
-    await page.getByLabel("Until").fill(format(nextWednesday(thisWeek), "yyyy-MM-dd"));
+    const fromDate = nextTuesday(thisWeek);
+    await selectDateFromDatePicker(page, "From", fromDate);
+    const untilDate = nextWednesday(thisWeek);
+    await selectDateFromDatePicker(page, "Until", untilDate);
     await page.getByRole("button", { name: "Add more" }).click();
     await page
       .getByLabel("From")

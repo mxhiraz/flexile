@@ -26,14 +26,12 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
   const nextButtonLocator = popoverLocator.getByLabel(/next month/iu);
 
   let attempts = 0;
-  const maxAttempts = 24; // Max 2 years navigation
+  const maxAttempts = 600; // Increased max attempts (50 years)
 
   while (attempts < maxAttempts) {
-    // Read the aria-label from the table
     const captionText = await captionTableLocator.getAttribute("aria-label");
     if (!captionText) throw new Error("Could not find calendar caption aria-label.");
 
-    // Attempt to parse the current date from the caption aria-label
     let currentDate: Date;
     try {
       currentDate = new Date(captionText.trim());
@@ -45,17 +43,28 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
     const currentMonth = getMonth(currentDate);
     const currentYear = getYear(currentDate);
 
+    // Check if we are in the correct month and year
     if (currentYear === targetYear && currentMonth === targetMonth) {
-      break;
+      break; // Found the target month/year
     }
 
-    if (currentYear < targetYear || (currentYear === targetYear && currentMonth < targetMonth)) {
-      await nextButtonLocator.click();
-    } else {
-      await prevButtonLocator.click();
+    // Prioritize year navigation first
+    if (currentYear !== targetYear) {
+      if (currentYear > targetYear) {
+        await prevButtonLocator.click({ force: true });
+      } else {
+        await nextButtonLocator.click({ force: true });
+      }
+      // If year matches, navigate month
+    } else if (currentMonth !== targetMonth) {
+      if (currentMonth > targetMonth) {
+        await prevButtonLocator.click({ force: true });
+      } else {
+        await nextButtonLocator.click({ force: true });
+      }
     }
 
-    await page.waitForTimeout(50);
+    await page.waitForTimeout(50); // Brief pause for UI update
     attempts++;
   }
 

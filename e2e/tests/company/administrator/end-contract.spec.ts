@@ -6,7 +6,7 @@ import { login } from "@test/helpers/auth";
 import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { mockDocuseal } from "@test/helpers/docuseal";
 import { expect, test, withinModal } from "@test/index";
-import { addDays, addYears, format, formatISO } from "date-fns";
+import { addDays, addYears, format } from "date-fns";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema";
 import { assert } from "@/utils/assert";
@@ -31,8 +31,8 @@ test.describe("End contract", () => {
     await page.getByRole("button", { name: "End contract" }).click();
 
     const today = new Date();
-    const todayString = formatISO(today, { representation: "date" });
-    await expect(page.getByLabel("End date")).toHaveValue(todayString);
+    const expectedButtonText = format(today, "PPP");
+    await expect(page.getByLabel("End date")).toContainText(expectedButtonText);
 
     await page.getByRole("button", { name: "Yes, end contract" }).click();
 
