@@ -28,7 +28,6 @@ import DecimalInput from "@/components/DecimalInput";
 import FormSection from "@/components/FormSection";
 import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
-import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";
 import Placeholder from "@/components/Placeholder";
@@ -50,6 +49,7 @@ import { formatMoney, formatMoneyFromCents } from "@/utils/formatMoney";
 import { request } from "@/utils/request";
 import { approve_company_invoices_path, company_equity_exercise_payment_path } from "@/utils/routes";
 import { formatDate, formatDuration } from "@/utils/time";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export default function ContractorPage() {
   const currentUser = useCurrentUser();
@@ -283,156 +283,162 @@ export default function ContractorPage() {
         ) : null
       }
     >
-      <Modal
-        open={completeTrialModalOpen}
-        onClose={() => setCompleteTrialModalOpen(false)}
-        title={`Hire ${user.displayName}?`}
-      >
-        <p>
-          You're hiring {user.displayName} as a {selectedRole?.name} for{" "}
-          {formatMoneyFromCents(selectedRole?.payRateInSubunits ?? 0)} / hour. Do you want to proceed?
-        </p>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => setCompleteTrialModalOpen(false)}>
-            No, cancel
-          </Button>
-          <MutationButton mutation={completeTrialMutation}>Yes, hire</MutationButton>
-        </div>
-      </Modal>
+      <Dialog open={completeTrialModalOpen} onOpenChange={(isOpen) => !isOpen && setCompleteTrialModalOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{`Hire ${user.displayName}?`}</DialogTitle>
+          </DialogHeader>
+          <p>
+            You're hiring {user.displayName} as a {selectedRole?.name} for{" "}
+            {formatMoneyFromCents(selectedRole?.payRateInSubunits ?? 0)} / hour. Do you want to proceed?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCompleteTrialModalOpen(false)}>
+              No, cancel
+            </Button>
+            <MutationButton mutation={completeTrialMutation}>Yes, hire</MutationButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <Modal
-        open={endModalOpen}
-        onClose={() => setEndModalOpen(false)}
-        title={`End contract with ${user.displayName}?`}
-        footer={
-          <>
+      <Dialog open={endModalOpen} onOpenChange={(isOpen) => !isOpen && setEndModalOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{`End contract with ${user.displayName}?`}</DialogTitle>
+          </DialogHeader>
+          <p>This action cannot be undone.</p>
+          <div className="grid gap-2">
+            <Label htmlFor={endDatePickerId}>End date</Label>
+            <DatePicker id={endDatePickerId} selected={selectedEndDate} onSelect={handleEndDateSelect} />
+          </div>
+          <div className="grid gap-3">
+            <Status variant="success">{user.displayName} will be able to submit invoices after contract end.</Status>
+            <Status variant="success">{user.displayName} will receive upcoming payments.</Status>
+            <Status variant="success">
+              {user.displayName} will be able to see and download their invoice history.
+            </Status>
+            <Status variant="critical">
+              {user.displayName} won't see any of {company.name}'s information.
+            </Status>
+          </div>
+          <DialogFooter>
             <Button variant="outline" onClick={() => setEndModalOpen(false)}>
               No, cancel
             </Button>
             <MutationButton mutation={endContractMutation}>Yes, end contract</MutationButton>
-          </>
-        }
-      >
-        <p>This action cannot be undone.</p>
-        <div className="grid gap-2">
-          <Label htmlFor={endDatePickerId}>End date</Label>
-          <DatePicker id={endDatePickerId} selected={selectedEndDate} onSelect={handleEndDateSelect} />
-        </div>
-        <div className="grid gap-3">
-          <Status variant="success">{user.displayName} will be able to submit invoices after contract end.</Status>
-          <Status variant="success">{user.displayName} will receive upcoming payments.</Status>
-          <Status variant="success">{user.displayName} will be able to see and download their invoice history.</Status>
-          <Status variant="critical">
-            {user.displayName} won't see any of {company.name}'s information.
-          </Status>
-        </div>
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <Modal
-        open={cancelModalOpen}
-        onClose={() => setCancelModalOpen(false)}
-        title={`Cancel contract end with ${user.displayName}?`}
-        footer={
-          <>
+      <Dialog open={cancelModalOpen} onOpenChange={(isOpen) => !isOpen && setCancelModalOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{`Cancel contract end with ${user.displayName}?`}</DialogTitle>
+          </DialogHeader>
+          <p>This will remove the scheduled end date for this contract.</p>
+          <DialogFooter>
             <Button variant="outline" onClick={() => setCancelModalOpen(false)}>
               No, keep end date
             </Button>
             <MutationButton mutation={cancelContractEndMutation}>Yes, cancel contract end</MutationButton>
-          </>
-        }
-      >
-        <p>This will remove the scheduled end date for this contract.</p>
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <Modal open={issuePaymentModalOpen} onClose={closeIssuePaymentModal} title="Issue one-time payment">
-        <div className="grid gap-4">
-          <DecimalInput
-            value={paymentAmountInCents ? paymentAmountInCents / 100 : null}
-            onChange={(value) => {
-              if (value !== null) {
-                const cents = new Decimal(value).mul(100).toNumber();
-                setPaymentAmountInCents(cents);
-              } else {
-                setPaymentAmountInCents(null);
-              }
-            }}
-            label="Amount"
-            placeholder="Enter amount"
-            prefix="$"
-          />
-          <Input
-            value={paymentDescription}
-            onChange={setPaymentDescription}
-            label="What is this for?"
-            placeholder="Enter payment description"
-          />
-          {company.flags.includes("equity_compensation") ? (
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <Label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="equityType"
-                    checked={equityType === "fixed"}
-                    onChange={() => setEquityType("fixed")}
-                    className="h-4 w-4"
-                  />
-                  Fixed equity percentage
-                </Label>
-                <Label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="equityType"
-                    checked={equityType === "range"}
-                    onChange={() => setEquityType("range")}
-                    className="h-4 w-4"
-                  />
-                  Equity percentage range
-                </Label>
-              </div>
-
-              {equityType === "fixed" ? (
-                <NumberInput
-                  value={fixedEquityPercentage}
-                  onChange={setFixedEquityPercentage}
-                  placeholder="Enter percentage"
-                  suffix="%"
-                />
-              ) : (
-                <div className="space-y-2">
-                  <Slider
-                    defaultValue={[equityRange[0], equityRange[1]]}
-                    minStepsBetweenThumbs={1}
-                    onValueChange={([min, max]) => setEquityRange([min ?? equityRange[0], max ?? equityRange[1]])}
-                  />
-                  <div className="flex justify-between text-gray-600">
-                    <span>{(equityRange[0] / 100).toLocaleString(undefined, { style: "percent" })}</span>
-                    <span>{(equityRange[1] / 100).toLocaleString(undefined, { style: "percent" })}</span>
-                  </div>
+      <Dialog open={issuePaymentModalOpen} onOpenChange={(isOpen) => !isOpen && closeIssuePaymentModal()}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Issue one-time payment</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <DecimalInput
+              value={paymentAmountInCents ? paymentAmountInCents / 100 : null}
+              onChange={(value) => {
+                if (value !== null) {
+                  const cents = new Decimal(value).mul(100).toNumber();
+                  setPaymentAmountInCents(cents);
+                } else {
+                  setPaymentAmountInCents(null);
+                }
+              }}
+              label="Amount"
+              placeholder="Enter amount"
+              prefix="$"
+            />
+            <Input
+              value={paymentDescription}
+              onChange={setPaymentDescription}
+              label="What is this for?"
+              placeholder="Enter payment description"
+            />
+            {company.flags.includes("equity_compensation") ? (
+              <div className="space-y-4">
+                <div className="flex flex-col gap-2">
+                  <Label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="equityType"
+                      checked={equityType === "fixed"}
+                      onChange={() => setEquityType("fixed")}
+                      className="h-4 w-4"
+                    />
+                    Fixed equity percentage
+                  </Label>
+                  <Label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="equityType"
+                      checked={equityType === "range"}
+                      onChange={() => setEquityType("range")}
+                      className="h-4 w-4"
+                    />
+                    Equity percentage range
+                  </Label>
                 </div>
-              )}
-            </div>
-          ) : null}
-        </div>
 
-        {issuePaymentError ? <small className="text-red">{issuePaymentError}</small> : null}
+                {equityType === "fixed" ? (
+                  <NumberInput
+                    value={fixedEquityPercentage}
+                    onChange={setFixedEquityPercentage}
+                    placeholder="Enter percentage"
+                    suffix="%"
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <Slider
+                      defaultValue={[equityRange[0], equityRange[1]]}
+                      minStepsBetweenThumbs={1}
+                      onValueChange={([min, max]) => setEquityRange([min ?? equityRange[0], max ?? equityRange[1]])}
+                    />
+                    <div className="flex justify-between text-gray-600">
+                      <span>{(equityRange[0] / 100).toLocaleString(undefined, { style: "percent" })}</span>
+                      <span>{(equityRange[1] / 100).toLocaleString(undefined, { style: "percent" })}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
 
-        <small className="text-gray-600">
-          Your'll be able to initiate payment once it has been accepted by the recipient
-          {company.requiredInvoiceApprovals > 1 ? " and has sufficient approvals" : ""}.
-        </small>
+          {issuePaymentError ? <small className="text-red">{issuePaymentError}</small> : null}
 
-        <div className="flex justify-end">
-          <MutationButton
-            mutation={issuePaymentMutation}
-            successText="Payment submitted!"
-            loadingText="Saving..."
-            disabled={!hasValidPaymentInfo()}
-          >
-            Issue payment
-          </MutationButton>
-        </div>
-      </Modal>
+          <small className="text-gray-600">
+            You'll be able to initiate payment once it has been accepted by the recipient
+            {company.requiredInvoiceApprovals > 1 ? " and has sufficient approvals" : ""}.
+          </small>
+
+          <DialogFooter>
+            <MutationButton
+              mutation={issuePaymentMutation}
+              successText="Payment submitted!"
+              loadingText="Saving..."
+              disabled={!hasValidPaymentInfo()}
+            >
+              Issue payment
+            </MutationButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Tabs links={tabs.map((tab) => ({ label: tab.label, route: `?tab=${tab.tab}` }))} />
 

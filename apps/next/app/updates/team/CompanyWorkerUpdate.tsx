@@ -11,6 +11,7 @@ import { Task, TaskInput } from "@/app/updates/team/Task";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCurrentCompany } from "@/global";
 import type { RouterInput, RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
@@ -148,6 +149,11 @@ const EditableCompanyWorkerUpdate = ({ data }: { data: TeamMemberData }) => {
     setTasks(List([...(update?.tasks || []), newTask()]));
   }, [periodStartsOn]);
 
+  const handleAbsencesModalClose = () => {
+    void utils.workerAbsences.list.refetch();
+    setShowAbsencesModal(false);
+  };
+
   return (
     <form onSubmit={(e) => e.preventDefault()}>
       <Card>
@@ -196,13 +202,11 @@ const EditableCompanyWorkerUpdate = ({ data }: { data: TeamMemberData }) => {
           ) : null}
         </CardFooter>
       </Card>
-      <AbsencesModal
-        open={showAbsencesModal}
-        onClose={() => {
-          void utils.workerAbsences.list.refetch();
-          setShowAbsencesModal(false);
-        }}
-      />
+      <Dialog open={showAbsencesModal} onOpenChange={(isOpen) => !isOpen && handleAbsencesModalClose()}>
+        <DialogContent className="lg:min-w-[65ch]">
+          <AbsencesModal onClose={handleAbsencesModalClose} />
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };

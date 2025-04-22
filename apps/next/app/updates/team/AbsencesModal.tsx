@@ -5,7 +5,7 @@ import { formatISO, parseISO, startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
 import { useEffect, useId, useMemo, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
-import Modal from "@/components/Modal";
+import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import MutationButton from "@/components/MutationButton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,7 @@ type CompanyWorkerAbsenceForm = {
   startsOn: string | null;
   endsOn: string | null;
 };
-const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+const AbsencesModal = ({ onClose }: { onClose: () => void }) => {
   const company = useCurrentCompany();
   const user = useCurrentUser();
 
@@ -120,8 +120,12 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
   });
 
   return (
-    <Modal title="Time off" open={open} onClose={onClose} className="lg:min-w-[65ch]">
-      <div className="grid gap-4">
+    <>
+      <DialogHeader>
+        <DialogTitle>Time off</DialogTitle>
+      </DialogHeader>
+
+      <div className="grid gap-4 py-4">
         {absences.size === 0 ? "no time off" : null}
         {absences.map((absence, index) => {
           const startsOnDatePickerId = useId();
@@ -195,6 +199,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
           );
         })}
       </div>
+
       <div className="mb-4">
         <Button
           variant="link"
@@ -205,10 +210,13 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
           <span>Add more</span>
         </Button>
       </div>
-      <MutationButton mutation={submit} loadingText="Saving..." successText="Saved!" idleVariant="primary">
-        Save time off
-      </MutationButton>
-    </Modal>
+
+      <DialogFooter>
+        <MutationButton mutation={submit} loadingText="Saving..." successText="Saved!" idleVariant="primary">
+          Save time off
+        </MutationButton>
+      </DialogFooter>
+    </>
   );
 };
 

@@ -113,7 +113,13 @@ test.describe("End contract", () => {
     await page.getByRole("button", { name: "Yes, end contract" }).click();
 
     await page.getByRole("link", { name: contractor.preferredName }).click();
-    await expect(page.getByText(`Contract ends on ${format(futureDate, "MMM d, yyyy")}`)).toBeVisible();
+
+    // Wait for the alert containing the end date text to be visible
+    const alertLocator = page.locator('[role="alert"]'); // Assuming the alert has this role
+    await expect(alertLocator).toBeVisible();
+    // Check for the text content within the alert, using a less strict format
+    await expect(alertLocator).toContainText(`Contract ends on ${format(futureDate, "MMM d, yyyy")}`);
+
     await expect(page.getByRole("button", { name: "End contract" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save changes" })).not.toBeVisible();
 

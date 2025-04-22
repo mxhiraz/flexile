@@ -51,16 +51,16 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
     // Prioritize year navigation first
     if (currentYear !== targetYear) {
       if (currentYear > targetYear) {
-        await prevButtonLocator.click({ force: true });
+        await prevButtonLocator.click();
       } else {
-        await nextButtonLocator.click({ force: true });
+        await nextButtonLocator.click();
       }
       // If year matches, navigate month
     } else if (currentMonth !== targetMonth) {
       if (currentMonth > targetMonth) {
-        await prevButtonLocator.click({ force: true });
+        await prevButtonLocator.click();
       } else {
-        await nextButtonLocator.click({ force: true });
+        await nextButtonLocator.click();
       }
     }
 
