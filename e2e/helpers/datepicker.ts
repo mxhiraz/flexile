@@ -1,4 +1,4 @@
-import { type Page, expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { format, getMonth, getYear } from "date-fns";
 
 /**
