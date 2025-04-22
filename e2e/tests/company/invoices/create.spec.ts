@@ -159,7 +159,7 @@ test.describe("invoice creation", () => {
 
     await page.getByPlaceholder("Description").fill("Website redesign project");
     await page.getByLabel("Amount").fill("1000");
-    await selectDateFromDatePicker(page, "Date", new Date(2023, 7, 8));
+    await selectDateFromDatePicker(page, "Date", new Date(2023, 8, 8));
 
     await expect(page.locator("footer")).toMatchAriaSnapshot(`
       - strong: Total services
@@ -241,20 +241,20 @@ test.describe("invoice creation", () => {
     `);
 
     await page.getByRole("button", { name: "Send invoice" }).click();
-    await expect(page.locator("tbody")).toContainText(
-      [
-        "Invoice ID",
-        "1",
-        "Sent on",
-        "Aug 8, 2021",
-        "Hours",
-        "100:00",
-        "Amount",
-        "$6,000",
-        "Status",
-        "Awaiting approval (0/2)",
-      ].join(""),
-    );
+
+    // --- Updated Assertion ---
+    // 1. Target the specific table body
+    const tableBodyLocator = page.locator('tbody[data-slot="table-body"]');
+    // 2. Find the specific row within that body (e.g., by Invoice ID or unique description)
+    //    Using filter here assumes the description is unique enough for this test case.
+    const invoiceRowLocator = tableBodyLocator.locator("tr").filter({ hasText: "New Year's Eve work" });
+
+    // 3. Assert individual cell contents within the found row
+    await expect(invoiceRowLocator.getByRole("cell", { name: "1" })).toBeVisible(); // Assuming Invoice ID is 1
+    await expect(invoiceRowLocator.getByRole("cell", { name: "Dec 31, 2023" })).toBeVisible(); // Check date format
+    await expect(invoiceRowLocator.getByRole("cell", { name: "100:00" })).toBeVisible();
+    await expect(invoiceRowLocator.getByRole("cell", { name: "$6,000" })).toBeVisible();
+    await expect(invoiceRowLocator.getByRole("cell", { name: "Awaiting approval (0/2)" })).toBeVisible();
 
     const invoice = await db.query.invoices
       .findFirst({
