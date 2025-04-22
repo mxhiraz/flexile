@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { and, eq, not } from "drizzle-orm";
 import { companies, companyRoles, consolidatedInvoices, invoiceApprovals, invoices, users } from "@/db/schema";
 import { assert } from "@/utils/assert";
+import { formatDate } from "@/utils/time";
 
 type Company = Awaited<ReturnType<typeof companiesFactory.create>>["company"];
 type User = Awaited<ReturnType<typeof usersFactory.create>>["user"];
@@ -153,7 +154,7 @@ test.describe("Invoices admin flow", () => {
 
         targetInvoiceRowSelector = {
           Contractor: companyContractor.user.legalName,
-          "Sent on": format(targetInvoice.invoiceDate, "MMM d, yyyy"),
+          "Sent on": formatDate(targetInvoice.invoiceDate),
           Hours: expectedHours,
           Amount: "$60",
         };
@@ -173,7 +174,7 @@ test.describe("Invoices admin flow", () => {
           assert(anotherInvoiceUser.legalName !== null);
           anotherInvoiceRowSelector = {
             Contractor: anotherInvoiceUser.legalName,
-            "Sent on": format(targetInvoice.invoiceDate, "MMM d, yyyy"),
+            "Sent on": formatDate(targetInvoice.invoiceDate),
             Hours: "02:00",
             Amount: "$75",
           };
