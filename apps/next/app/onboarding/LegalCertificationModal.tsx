@@ -3,8 +3,8 @@ import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import Input from "@/components/Input";
 import { linkClasses } from "@/components/Link";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import MutationButton from "@/components/MutationButton";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const LegalCertificationModal = ({
   open,
@@ -34,7 +34,7 @@ const LegalCertificationModal = ({
   });
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose?.()}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-prose">
         <DialogHeader>
           <DialogTitle>{`${certificateType} Certification and Tax Forms Delivery`}</DialogTitle>
