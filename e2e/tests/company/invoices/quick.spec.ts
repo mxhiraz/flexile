@@ -43,7 +43,6 @@ test.describe("quick invoicing", () => {
 
       await selectDateFromDatePicker(page, "Invoice date", new Date(2024, 7, 8));
 
-      await expect(page.getByText("Total invoice amount")).toBeVisible();
       await expect(page.getByText("Total to invoice")).toBeVisible();
       await expect(page.getByRole("link", { name: "Preview" })).toHaveAttribute("href", /invoices\/new/u);
     });

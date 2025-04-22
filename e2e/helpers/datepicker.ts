@@ -22,8 +22,8 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
 
   // Update captionLocator to use the table's aria-label
   const captionTableLocator = popoverLocator.locator('table[role="grid"]');
-  const prevButtonLocator = popoverLocator.getByLabel(/previous month/i);
-  const nextButtonLocator = popoverLocator.getByLabel(/next month/i);
+  const prevButtonLocator = popoverLocator.getByLabel(/previous month/iu);
+  const nextButtonLocator = popoverLocator.getByLabel(/next month/iu);
 
   let attempts = 0;
   const maxAttempts = 24; // Max 2 years navigation
@@ -38,7 +38,7 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
     try {
       currentDate = new Date(captionText.trim());
       if (isNaN(currentDate.getTime())) throw new Error("Invalid Date");
-    } catch (e) {
+    } catch (_e) {
       throw new Error(`Could not parse calendar caption aria-label: "${captionText}"`);
     }
 
@@ -66,6 +66,9 @@ export async function selectDateFromDatePicker(page: Page, label: string, target
 
   const day = String(targetDate.getDate());
   await popoverLocator.getByText(day, { exact: true }).click();
+
+  // Press Escape key to ensure the popover closes
+  await page.keyboard.press("Escape");
 
   const expectedButtonText = format(targetDate, "PPP");
   await expect(triggerButton).toContainText(expectedButtonText);
