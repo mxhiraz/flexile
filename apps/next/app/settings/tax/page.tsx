@@ -3,13 +3,15 @@
 import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { formatISO, parseISO } from "date-fns";
 import { Map } from "immutable";
 import { iso31662 } from "iso-3166";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useId } from "react";
 import { z } from "zod";
 import LegalCertificationModal from "@/app/onboarding/LegalCertificationModal";
+import { DatePicker } from "@/components/DatePicker";
 import FormSection from "@/components/FormSection";
 import Input from "@/components/Input";
 import RadioButtons from "@/components/RadioButtons";
@@ -27,6 +29,7 @@ import { request } from "@/utils/request";
 import { settings_tax_path } from "@/utils/routes";
 import { useOnChange } from "@/utils/useOnChange";
 import SettingsLayout from "../Layout";
+import { Label } from "@/components/ui/label";
 
 const dataSchema = z.object({
   birth_date: z.string().nullable(),
@@ -72,6 +75,17 @@ export default function TaxPage() {
   const [taxIdChanged, setTaxIdChanged] = useState(false);
   const [taxIdStatus, setTaxIdStatus] = useState<Data["tax_id_status"]>(null);
   const [maskTaxId, setMaskTaxId] = useState(true);
+  const birthDatePickerId = useId();
+
+  const selectedBirthDate = useMemo(
+    () => (formData.birth_date ? parseISO(formData.birth_date) : undefined),
+    [formData.birth_date],
+  );
+
+  const handleBirthDateSelect = (newDate: Date | undefined) => {
+    setFormData({ ...formData, birth_date: newDate ? formatISO(newDate, { representation: "date" }) : null });
+  };
+
   Object.entries(formData).forEach(([key, value]) =>
     useOnChange(() => {
       setTaxInfoChanged(true);
@@ -334,12 +348,12 @@ export default function TaxPage() {
               autoComplete="flexile-tax-id"
             />
 
-            <Input
-              value={formData.birth_date ?? ""}
-              onChange={(value) => setFormData({ ...formData, birth_date: value })}
-              label={`Date of ${formData.business_entity ? "incorporation" : "birth"} (optional)`}
-              type="date"
-            />
+            <div className="grid gap-2">
+              <Label
+                htmlFor={birthDatePickerId}
+              >{`Date of ${formData.business_entity ? "incorporation" : "birth"} (optional)`}</Label>
+              <DatePicker id={birthDatePickerId} selected={selectedBirthDate} onSelect={handleBirthDateSelect} />
+            </div>
           </div>
 
           <Input

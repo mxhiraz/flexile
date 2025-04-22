@@ -1,12 +1,13 @@
 "use client";
 import { PaperAirplaneIcon } from "@heroicons/react/16/solid";
-import { formatISO } from "date-fns";
+import { formatISO, parseISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { parseAsInteger, useQueryState } from "nuqs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useId } from "react";
 import TemplateSelector from "@/app/document_templates/TemplateSelector";
 import RoleSelector from "@/app/roles/Selector";
+import { DatePicker } from "@/components/DatePicker";
 import DecimalInput from "@/components/DecimalInput";
 import FormSection from "@/components/FormSection";
 import Input from "@/components/Input";
@@ -16,6 +17,7 @@ import NumberInput from "@/components/NumberInput";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useCurrentCompany } from "@/global";
 import { DEFAULT_WORKING_HOURS_PER_WEEK } from "@/models";
 import { AVG_TRIAL_HOURS } from "@/models/constants";
@@ -48,6 +50,16 @@ function Create() {
   const [hours, setHours] = useState(0);
   const [skipTrial, setSkipTrial] = useState(false);
   const [startDate, setStartDate] = useState(formatISO(new Date(), { representation: "date" }));
+  const startDatePickerId = useId();
+
+  const selectedStartDate = useMemo(() => (startDate ? parseISO(startDate) : undefined), [startDate]);
+
+  const handleStartDateSelect = (newDate: Date | undefined) => {
+    setStartDate(
+      newDate ? formatISO(newDate, { representation: "date" }) : formatISO(new Date(), { representation: "date" }),
+    );
+  };
+
   const defaultHours = role?.trialEnabled ? AVG_TRIAL_HOURS : (application?.hoursPerWeek ?? 0);
   useEffect(() => {
     setEmail(application?.email ?? "");
@@ -96,15 +108,20 @@ function Create() {
         <CardContent>
           <div className="grid gap-4">
             <Input value={email} onChange={setEmail} type="email" label="Email" placeholder="Contractor's email" />
-            <Input value={startDate} onChange={setStartDate} type="date" label="Start date" />
-            <RoleSelector value={roleId ?? null} onChange={setRoleId} />
-            {role?.trialEnabled && role.payRateType !== PayRateType.Salary ? (
-              <Checkbox
-                checked={skipTrial}
-                onCheckedChange={(checked) => setSkipTrial(checked === true)}
-                label="Skip trial period"
-              />
-            ) : null}
+            <div className="grid gap-2">
+              <Label htmlFor={startDatePickerId}>Start date</Label>
+              <DatePicker id={startDatePickerId} selected={selectedStartDate} onSelect={handleStartDateSelect} />
+            </div>
+            <div className="grid gap-2">
+              <RoleSelector value={roleId ?? null} onChange={setRoleId} />
+              {role?.trialEnabled && role.payRateType !== PayRateType.Salary ? (
+                <Checkbox
+                  checked={skipTrial}
+                  onCheckedChange={(checked) => setSkipTrial(checked === true)}
+                  label="Skip trial period"
+                />
+              ) : null}
+            </div>
             <DecimalInput
               value={rateUsd}
               onChange={(value) => setRateUsd(value ?? 0)}
@@ -147,8 +164,6 @@ function Create() {
               companyId: company.id,
               applicationId,
               email,
-              // startDate only contains the date without a timezone. Appending T00:00:00 ensures the date is
-              // parsed as midnight in the local timezone rather than UTC.
               startedAt: formatISO(new Date(`${startDate}T00:00:00`)),
               payRateInSubunits: rateUsd * 100,
               payRateType: role?.payRateType ?? PayRateType.Hourly,

@@ -1,13 +1,14 @@
 import { utc } from "@date-fns/utc";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
-import { startOfWeek } from "date-fns";
+import { formatISO, parseISO, startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
-import { useEffect, useState } from "react";
-import Input from "@/components/Input";
+import { useEffect, useState, useMemo, useId } from "react";
+import { DatePicker } from "@/components/DatePicker";
 import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { areOverlapping } from "@/models/period";
 import { trpc } from "@/trpc/client";
@@ -122,53 +123,77 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
     <Modal title="Time off" open={open} onClose={onClose} className="lg:min-w-[65ch]">
       <div className="grid gap-4">
         {absences.size === 0 ? "no time off" : null}
-        {absences.map((absence, index) => (
-          <div key={absence.id || `absence-${index}`} className="flex flex-col gap-2 lg:flex-row">
-            <div className="flex-1">
-              <Input
-                value={absence.startsOn}
-                onChange={(value) => updateAbsence(index, { startsOn: value })}
-                type="date"
-                label="From"
-                invalid={absenceErrors.has(absence)}
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                value={absence.endsOn}
-                onChange={(value) => updateAbsence(index, { endsOn: value })}
-                type="date"
-                label="Until"
-                invalid={absenceErrors.has(absence)}
-                help={absenceErrors.get(absence)}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button
-                variant="link"
-                aria-label="Remove"
-                className="flex justify-center lg:p-3 lg:pr-1"
-                disabled={absences.size === 1 && absence.id === null}
-                onClick={() => {
-                  const absenceId = absence.id;
-                  if (absenceId !== null) {
-                    setToBeDeletedAbsenceIds((toBeDeletedAbsenceIds) => toBeDeletedAbsenceIds.push(absenceId));
-                  }
-                  setAbsences((absences) => {
-                    let newAbsences = absences.delete(index);
-                    if (newAbsences.size === 0) {
-                      newAbsences = newAbsences.push({ id: null, startsOn: null, endsOn: null });
+        {absences.map((absence, index) => {
+          const startsOnDatePickerId = useId();
+          const endsOnDatePickerId = useId();
+
+          const selectedStartsOn = useMemo(
+            () => (absence.startsOn ? parseISO(absence.startsOn) : undefined),
+            [absence.startsOn],
+          );
+          const selectedEndsOn = useMemo(
+            () => (absence.endsOn ? parseISO(absence.endsOn) : undefined),
+            [absence.endsOn],
+          );
+
+          const handleStartsOnSelect = (newDate: Date | undefined) => {
+            updateAbsence(index, { startsOn: newDate ? formatISO(newDate, { representation: "date" }) : null });
+          };
+          const handleEndsOnSelect = (newDate: Date | undefined) => {
+            updateAbsence(index, { endsOn: newDate ? formatISO(newDate, { representation: "date" }) : null });
+          };
+
+          const hasError = absenceErrors.has(absence);
+          const errorMessage = absenceErrors.get(absence);
+
+          return (
+            <div key={absence.id || `absence-${index}`} className="flex flex-col gap-2 lg:flex-row">
+              <div className="grid flex-1 gap-2">
+                <Label htmlFor={startsOnDatePickerId}>From</Label>
+                <DatePicker
+                  id={startsOnDatePickerId}
+                  selected={selectedStartsOn}
+                  onSelect={handleStartsOnSelect}
+                  invalid={hasError}
+                />
+              </div>
+              <div className="grid flex-1 gap-2">
+                <Label htmlFor={endsOnDatePickerId}>Until</Label>
+                <DatePicker
+                  id={endsOnDatePickerId}
+                  selected={selectedEndsOn}
+                  onSelect={handleEndsOnSelect}
+                  invalid={hasError}
+                />
+                {hasError && <p className="text-destructive text-sm">{errorMessage}</p>}
+              </div>
+              <div className="flex items-end">
+                <Button
+                  variant="link"
+                  aria-label="Remove"
+                  className="flex justify-center lg:p-3 lg:pr-1"
+                  disabled={absences.size === 1 && absence.id === null}
+                  onClick={() => {
+                    const absenceId = absence.id;
+                    if (absenceId !== null) {
+                      setToBeDeletedAbsenceIds((toBeDeletedAbsenceIds) => toBeDeletedAbsenceIds.push(absenceId));
                     }
-                    return newAbsences;
-                  });
-                }}
-              >
-                <TrashIcon className="size-4" />
-                <span className="lg:hidden"> Delete</span>
-              </Button>
+                    setAbsences((absences) => {
+                      let newAbsences = absences.delete(index);
+                      if (newAbsences.size === 0) {
+                        newAbsences = newAbsences.push({ id: null, startsOn: null, endsOn: null });
+                      }
+                      return newAbsences;
+                    });
+                  }}
+                >
+                  <TrashIcon className="size-4" />
+                  <span className="lg:hidden"> Delete</span>
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <div className="mb-4">
         <Button

@@ -11,6 +11,7 @@ import { optionPoolsFactory } from "@test/factories/optionPools";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { mockDocuseal } from "@test/helpers/docuseal";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test, withinModal } from "@test/index";
 import { and, desc, eq } from "drizzle-orm";
 import { DocumentTemplateType } from "@/db/enums";
@@ -124,7 +125,7 @@ test.describe("New Contractor", () => {
     await page.goto("/invoices");
     await page.getByRole("link", { name: "New invoice" }).first().click();
     await page.getByLabel("Invoice ID").fill("CUSTOM-1");
-    await page.getByLabel("Date").fill("2024-10-15");
+    await selectDateFromDatePicker(page, "Date", new Date(2024, 9, 15));
     await page.getByPlaceholder("HH:MM").first().fill("05:30");
     await page.waitForTimeout(500); // TODO (techdebt): avoid this
     await page.getByPlaceholder("Description").fill("Software development work");
@@ -147,7 +148,7 @@ test.describe("New Contractor", () => {
     await page.goto("/invoices");
     await page.getByRole("link", { name: "New invoice" }).first().click();
     await page.getByLabel("Invoice ID").fill("CUSTOM-2");
-    await page.getByLabel("Date").fill("2024-11-01");
+    await selectDateFromDatePicker(page, "Date", new Date(2024, 10, 1));
     await page.getByLabel("Amount").fill("1000");
     await page.waitForTimeout(500); // TODO (techdebt): avoid this
     await page.getByPlaceholder("Description").fill("Promotional video production work");

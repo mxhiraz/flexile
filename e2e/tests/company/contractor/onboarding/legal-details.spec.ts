@@ -7,6 +7,7 @@ import { login } from "@test/helpers/auth";
 import { expect, type Page, test, withinModal } from "@test/index";
 import { eq } from "drizzle-orm";
 import { companies, companyAdministrators, userComplianceInfos, users } from "@/db/schema";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 
 test.describe("Contractor onboarding - legal details", () => {
   let company: typeof companies.$inferSelect;
@@ -85,7 +86,7 @@ test.describe("Contractor onboarding - legal details", () => {
       await page.getByLabel("I'm an individual").check();
 
       await fillInUSAddress(page);
-      await page.getByLabel("Date of birth").fill("1980-06-07");
+      await selectDateFromDatePicker(page, "Date of birth", new Date(1980, 5, 7));
       await page.getByLabel("Tax identification number (SSN or ITIN)").fill("12345678");
       await page.getByRole("button", { name: "Continue" }).click();
 
@@ -135,7 +136,7 @@ test.describe("Contractor onboarding - legal details", () => {
       );
 
       await fillInUSAddress(page);
-      await page.getByLabel("Date of birth").fill("1980-06-07");
+      await selectDateFromDatePicker(page, "Date of birth", new Date(1980, 5, 7));
 
       await page.getByLabel("Tax identification number (EIN)").fill("123456789");
       await expect(page.getByLabel("Tax identification number (EIN)")).toHaveValue("12 - 3456789");
@@ -177,7 +178,7 @@ test.describe("Contractor onboarding - legal details", () => {
         await fillInFranceAddress(page);
 
         await page.getByLabel("Foreign tax identification number").fill("1234567890");
-        await page.getByLabel("Date of birth").fill("1980-06-07");
+        await selectDateFromDatePicker(page, "Date of birth", new Date(1980, 5, 7));
         await page.getByRole("button", { name: "Continue" }).click();
 
         await expect(page.getByLabel("Foreign tax identification number")).toHaveValue("1234567890");
@@ -223,7 +224,7 @@ test.describe("Contractor onboarding - legal details", () => {
         await page.getByLabel("Full legal name of entity").fill("Antiwork Inc.");
         await fillInFranceAddress(page);
         await page.getByLabel("Foreign tax identification number").fill("1234567890");
-        await page.getByLabel("Date of birth").fill("1980-06-07");
+        await selectDateFromDatePicker(page, "Date of birth", new Date(1980, 5, 7));
 
         await page.getByRole("button", { name: "Continue" }).click();
 

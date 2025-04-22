@@ -1,13 +1,14 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { formatISO, parseISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useId } from "react";
 import { z } from "zod";
 import { optionGrantTypeDisplayNames, relationshipDisplayNames, vestingTriggerDisplayNames } from "@/app/equity/grants";
+import { DatePicker } from "@/components/DatePicker";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";
@@ -17,6 +18,7 @@ import { CardContent } from "@/components/ui/card";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
 import { assertDefined } from "@/utils/assert";
+import { Label } from "@/components/ui/label";
 
 const MAX_VESTING_DURATION_IN_MONTHS = 120;
 
@@ -120,6 +122,7 @@ export default function NewEquityGrant() {
   const [deathExercisePeriodInMonths, setDeathExercisePeriodInMonths] = useState<number | null>(null);
   const [disabilityExercisePeriodInMonths, setDisabilityExercisePeriodInMonths] = useState<number | null>(null);
   const [retirementExercisePeriodInMonths, setRetirementExercisePeriodInMonths] = useState<number | null>(null);
+  const [boardApprovalDate, setBoardApprovalDate] = useState(today);
 
   const [errorInfo, setErrorInfo] = useState<ErrorInfo | null>(null);
 
@@ -386,6 +389,11 @@ export default function NewEquityGrant() {
       return false;
     }
 
+    if (!boardApprovalDate) {
+      setErrorInfo({ error: "Must be present.", attribute_name: null });
+      return false;
+    }
+
     setErrorInfo(null);
     return true;
   };
@@ -445,6 +453,25 @@ export default function NewEquityGrant() {
       });
     },
   });
+
+  const boardApprovalDatePickerId = useId();
+  const vestingCommencementDatePickerId = useId();
+
+  const selectedBoardApprovalDate = useMemo(
+    () => (boardApprovalDate ? parseISO(boardApprovalDate) : undefined),
+    [boardApprovalDate],
+  );
+  const selectedVestingCommencementDate = useMemo(
+    () => (vestingCommencementDate ? parseISO(vestingCommencementDate) : undefined),
+    [vestingCommencementDate],
+  );
+
+  const handleBoardApprovalDateSelect = (newDate: Date | undefined) => {
+    setBoardApprovalDate(newDate ? formatISO(newDate, { representation: "date" }) : today);
+  };
+  const handleVestingCommencementDateSelect = (newDate: Date | undefined) => {
+    setVestingCommencementDate(newDate ? formatISO(newDate, { representation: "date" }) : today);
+  };
 
   return (
     <MainLayout
@@ -536,6 +563,20 @@ export default function NewEquityGrant() {
           </fieldset>
         </CardContent>
       </FormSection>
+      <FormSection title="Board Approval">
+        <CardContent className="grid gap-4">
+          <fieldset>
+            <div className="grid gap-2">
+              <Label htmlFor={boardApprovalDatePickerId}>Board approval date</Label>
+              <DatePicker
+                id={boardApprovalDatePickerId}
+                selected={selectedBoardApprovalDate}
+                onSelect={handleBoardApprovalDateSelect}
+              />
+            </div>
+          </fieldset>
+        </CardContent>
+      </FormSection>
       <FormSection title="Vesting details">
         <CardContent className="grid gap-4">
           <fieldset>
@@ -563,14 +604,15 @@ export default function NewEquityGrant() {
                 />
               </fieldset>
               <fieldset>
-                <Input
-                  label="Vesting commencement date"
-                  type="date"
-                  value={vestingCommencementDate}
-                  onChange={setVestingCommencementDate}
-                  ref={vestingCommencementRef}
-                  {...invalidFieldAttrs("vesting_commencement_date", errorInfo)}
-                />
+                <div className="grid gap-2">
+                  <Label htmlFor={vestingCommencementDatePickerId}>Vesting commencement date</Label>
+                  <DatePicker
+                    id={vestingCommencementDatePickerId}
+                    selected={selectedVestingCommencementDate}
+                    onSelect={handleVestingCommencementDateSelect}
+                    invalid={errorInfo?.attribute_name === "vesting_commencement_date"}
+                  />
+                </div>
               </fieldset>
               {vestingScheduleId === "custom" ? (
                 <>

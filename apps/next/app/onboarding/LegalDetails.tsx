@@ -1,11 +1,12 @@
 "use client";
 
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { formatISO, parseISO } from "date-fns";
 import { Set } from "immutable";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useId } from "react";
 import { z } from "zod";
 import Input from "@/components/Input";
 import OnboardingLayout from "@/components/layouts/Onboarding";
@@ -18,6 +19,8 @@ import { getTinName } from "@/utils/legal";
 import { request } from "@/utils/request";
 import { legal_onboarding_path, save_legal_onboarding_path } from "@/utils/routes";
 import LegalCertificationModal from "./LegalCertificationModal";
+import { DatePicker } from "@/components/DatePicker";
+import { Label } from "@/components/ui/label";
 
 const LegalDetails = <T extends string>({
   header,
@@ -69,6 +72,13 @@ const LegalDetails = <T extends string>({
   const [state, setState] = useState(data.user.state);
   const [city, setCity] = useState(data.user.city);
   const [zipCode, setZipCode] = useState(data.user.zip_code);
+  const birthDatePickerId = useId();
+
+  const selectedBirthDate = useMemo(() => (birthDate ? parseISO(birthDate) : undefined), [birthDate]);
+
+  const handleBirthDateSelect = (newDate: Date | undefined) => {
+    setBirthDate(newDate ? formatISO(newDate, { representation: "date" }) : null);
+  };
 
   const tinDigits = tin?.replace(/\D/gu, "");
   const tinName = getTinName(isBusinessEntity);
@@ -177,13 +187,15 @@ const LegalDetails = <T extends string>({
               }
             />
 
-            <Input
-              value={birthDate}
-              onChange={setBirthDate}
-              type="date"
-              label="Date of birth"
-              invalid={errors.has("birth_date")}
-            />
+            <div className="grid gap-2">
+              <Label htmlFor={birthDatePickerId}>Date of birth</Label>
+              <DatePicker
+                id={birthDatePickerId}
+                selected={selectedBirthDate}
+                onSelect={handleBirthDateSelect}
+                invalid={errors.has("birth_date")}
+              />
+            </div>
           </>
         ) : null}
 

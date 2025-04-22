@@ -10,11 +10,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/react-query";
-import { areIntervalsOverlapping, format, formatISO, isFuture } from "date-fns";
+import { areIntervalsOverlapping, format, formatISO, isFuture, parseISO } from "date-fns";
 import { Decimal } from "decimal.js";
 import { useParams, useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useId } from "react";
 import DividendStatusIndicator from "@/app/equity/DividendStatusIndicator";
 import EquityGrantExerciseStatusIndicator from "@/app/equity/EquityGrantExerciseStatusIndicator";
 import DetailsModal from "@/app/equity/grants/DetailsModal";
@@ -49,6 +49,7 @@ import { formatMoney, formatMoneyFromCents } from "@/utils/formatMoney";
 import { request } from "@/utils/request";
 import { approve_company_invoices_path, company_equity_exercise_payment_path } from "@/utils/routes";
 import { formatDate, formatDuration } from "@/utils/time";
+import { DatePicker } from "@/components/DatePicker";
 
 export default function ContractorPage() {
   const currentUser = useCurrentUser();
@@ -94,6 +95,13 @@ export default function ContractorPage() {
   const [endModalOpen, setEndModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [endDate, setEndDate] = useState(formatISO(new Date(), { representation: "date" }));
+  const endDatePickerId = useId();
+  const selectedEndDate = useMemo(() => (endDate ? parseISO(endDate) : undefined), [endDate]);
+  const handleEndDateSelect = (newDate: Date | undefined) => {
+    setEndDate(
+      newDate ? formatISO(newDate, { representation: "date" }) : formatISO(new Date(), { representation: "date" }),
+    );
+  };
   const [completeTrialModalOpen, setCompleteTrialModalOpen] = useState(false);
   const [issuePaymentModalOpen, setIssuePaymentModalOpen] = useState(false);
   const [paymentAmountInCents, setPaymentAmountInCents] = useState<number | null>(null);
@@ -306,7 +314,10 @@ export default function ContractorPage() {
         }
       >
         <p>This action cannot be undone.</p>
-        <Input type="date" label="End date" value={endDate} onChange={setEndDate} />
+        <div className="grid gap-2">
+          <Label htmlFor={endDatePickerId}>End date</Label>
+          <DatePicker id={endDatePickerId} selected={selectedEndDate} onSelect={handleEndDateSelect} />
+        </div>
         <div className="grid gap-3">
           <Status variant="success">{user.displayName} will be able to submit invoices after contract end.</Status>
           <Status variant="success">{user.displayName} will receive upcoming payments.</Status>

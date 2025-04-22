@@ -12,10 +12,12 @@ export function DatePicker({
   selected,
   onSelect,
   id,
+  invalid,
 }: {
   selected: Date | undefined;
   onSelect: (date: Date | undefined) => void;
   id?: string;
+  invalid?: boolean;
 }) {
   const generatedId = useId();
   const inputId = id || generatedId;
@@ -26,7 +28,11 @@ export function DatePicker({
         <Button
           id={inputId}
           variant="outline"
-          className={cn("w-auto justify-start text-left font-normal", !selected && "text-muted-foreground")}
+          className={cn(
+            "w-auto justify-start text-left font-normal",
+            !selected && "text-muted-foreground",
+            invalid && "border-destructive ring-destructive/20 dark:ring-destructive/40 focus-visible:ring-[3px]",
+          )}
         >
           <CalendarIcon className="opacity-60" size={20} />
           {selected ? format(selected, "PPP") : <span>Pick a date</span>}

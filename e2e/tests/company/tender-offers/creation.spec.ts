@@ -2,6 +2,7 @@ import { db, takeOrThrow } from "@test/db";
 import { companiesFactory } from "@test/factories/companies";
 import { companyAdministratorsFactory } from "@test/factories/companyAdministrators";
 import { login } from "@test/helpers/auth";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test } from "@test/index";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema";
@@ -29,8 +30,8 @@ test.describe("Tender offer creation", () => {
     await page.getByRole("link", { name: "New tender offer" }).click();
 
     await page.getByLabel("Minimum valuation").fill("100000000");
-    await page.getByLabel("Start date").fill("2022-08-08");
-    await page.getByLabel("End date").fill("2022-09-09");
+    await selectDateFromDatePicker(page, "Start date", new Date(2022, 7, 8));
+    await selectDateFromDatePicker(page, "End date", new Date(2022, 8, 9));
     await page.getByLabel("Attachment").setInputFiles("e2e/samples/sample.zip");
 
     await page.getByRole("button", { name: "Create tender offer" }).click();

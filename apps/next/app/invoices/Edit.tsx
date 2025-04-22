@@ -3,11 +3,11 @@
 import { ArrowUpTrayIcon, PlusIcon } from "@heroicons/react/16/solid";
 import { PaperAirplaneIcon, PaperClipIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { formatISO } from "date-fns";
+import { formatISO, parseISO } from "date-fns";
 import { List } from "immutable";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo, useId } from "react";
 import { z } from "zod";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
 import ComboBox from "@/components/ComboBox";
@@ -32,6 +32,7 @@ import {
   new_company_invoice_path,
 } from "@/utils/routes";
 import { LegacyAddress as Address } from ".";
+import { DatePicker } from "@/components/DatePicker";
 
 const addressSchema = z.object({
   street_address: z.string(),
@@ -121,6 +122,15 @@ const Edit = () => {
   const [issueDate, setIssueDate] = useState(
     searchParams.get("date") || formatISO(data.invoice.invoice_date, { representation: "date" }),
   );
+  const issueDatePickerId = useId();
+
+  const selectedIssueDate = useMemo(() => (issueDate ? parseISO(issueDate) : undefined), [issueDate]);
+
+  const handleIssueDateSelect = (newDate: Date | undefined) => {
+    const fallbackDate = formatISO(new Date(), { representation: "date" });
+    setIssueDate(newDate ? formatISO(newDate, { representation: "date" }) : fallbackDate);
+  };
+
   const invoiceYear = new Date(issueDate).getFullYear() || new Date().getFullYear();
   const [notes, setNotes] = useState(data.invoice.notes ?? "");
   const [lineItems, setLineItems] = useState<List<InvoiceFormLineItem>>(() => {
@@ -324,13 +334,13 @@ const Edit = () => {
                 invalid={errorField === "invoiceNumber"}
               />
             </div>
-            <div>
-              <Input
-                value={issueDate}
-                onChange={setIssueDate}
-                label="Date"
+            <div className="grid gap-2">
+              <Label htmlFor={issueDatePickerId}>Date</Label>
+              <DatePicker
+                id={issueDatePickerId}
+                selected={selectedIssueDate}
+                onSelect={handleIssueDateSelect}
                 invalid={errorField === "issueDate"}
-                type="date"
               />
             </div>
           </div>

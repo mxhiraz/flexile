@@ -7,6 +7,7 @@ import { equityAllocationsFactory } from "@test/factories/equityAllocations";
 import { equityGrantsFactory } from "@test/factories/equityGrants";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
+import { selectDateFromDatePicker } from "@test/helpers/datepicker";
 import { expect, test } from "@test/index";
 import { subDays } from "date-fns";
 import { desc, eq } from "drizzle-orm";
@@ -99,7 +100,7 @@ test.describe("invoice creation", () => {
 
     await page.getByLabel("Hours").fill("3:25");
     await page.getByPlaceholder("Description").fill("I worked on invoices");
-    await page.getByLabel("Date").fill("2023-08-08");
+    await selectDateFromDatePicker(page, "Date", new Date(2023, 7, 8));
 
     await expect(page.locator("footer")).toMatchAriaSnapshot(`
       - strong: Total services
@@ -158,7 +159,7 @@ test.describe("invoice creation", () => {
 
     await page.getByPlaceholder("Description").fill("Website redesign project");
     await page.getByLabel("Amount").fill("1000");
-    await page.getByLabel("Date").fill("2023-08-08");
+    await selectDateFromDatePicker(page, "Date", new Date(2023, 7, 8));
 
     await expect(page.locator("footer")).toMatchAriaSnapshot(`
       - strong: Total services
@@ -213,7 +214,7 @@ test.describe("invoice creation", () => {
 
     await page.getByLabel("Hours").fill("03:25");
     await page.getByPlaceholder("Description").fill("I worked on invoices");
-    await page.getByLabel("Date").fill("2021-08-08");
+    await selectDateFromDatePicker(page, "Date", new Date(2021, 7, 8));
 
     await expect(page.locator("footer")).toMatchAriaSnapshot(`
       - strong: Total
@@ -223,7 +224,8 @@ test.describe("invoice creation", () => {
     await expect(page.getByText("Net amount in cash")).not.toBeVisible();
 
     await page.getByLabel("Hours").fill("100:00");
-    await page.getByPlaceholder("Description").fill("I worked on invoices");
+    await page.getByPlaceholder("Description").fill("New Year's Eve work");
+    await selectDateFromDatePicker(page, "Date", new Date(2023, 11, 31));
 
     await expect(page.locator("footer")).toMatchAriaSnapshot(`
       - strong: Total services
