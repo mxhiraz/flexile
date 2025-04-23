@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
-import Input from "@/components/Input";
 import { linkClasses } from "@/components/Link";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { useCurrentCompany } from "@/global";
@@ -177,7 +177,7 @@ export const TaskInput = ({
                   break;
               }
             }}
-            onChange={(value) => onChange({ ...task, name: value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...task, name: e.target.value })}
             onPaste={(event) => void handlePaste(event)}
           />
         )}
