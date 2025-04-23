@@ -1,4 +1,5 @@
 import { clerk } from "@clerk/testing/playwright";
+import { faker } from "@faker-js/faker";
 import { db } from "@test/db";
 import { companiesFactory } from "@test/factories/companies";
 import { companyAdministratorsFactory } from "@test/factories/companyAdministrators";
@@ -25,7 +26,7 @@ test.describe("Contractor for multiple companies", () => {
 
     const { company: secondCompany } = await companiesFactory.create({ name: "Second Company" });
     await companyRolesFactory.create({ companyId: secondCompany.id, activelyHiring: true });
-    const { user: adminUser } = await usersFactory.create({ email: "admin@example.com" });
+    const { user: adminUser } = await usersFactory.create();
     await companyAdministratorsFactory.create({ companyId: secondCompany.id, userId: adminUser.id });
     const { mockForm } = mockDocuseal(next, {
       submitters: () => ({ "Company Representative": adminUser, Signer: contractorUser }),
@@ -70,12 +71,11 @@ test.describe("Contractor for multiple companies", () => {
   });
 
   test("contractor invites a company", async ({ page, next }) => {
+    const email = faker.internet.email().toLowerCase();
     const { user } = await usersFactory.create({ invitingCompany: true });
     const { mockForm } = mockDocuseal(next, {
       submitters: async () => ({
-        "Company Representative": assertDefined(
-          await db.query.users.findFirst({ where: eq(users.email, "test+clerk_test@example.com") }),
-        ),
+        "Company Representative": assertDefined(await db.query.users.findFirst({ where: eq(users.email, email) })),
         Signer: user,
       }),
     });
@@ -85,7 +85,7 @@ test.describe("Contractor for multiple companies", () => {
     await page.getByRole("link", { name: "Invite companies" }).click();
     await page.getByRole("link", { name: "Invite company" }).click();
 
-    await page.getByLabel("Email").fill("test+clerk_test@example.com");
+    await page.getByLabel("Email").fill(email);
     await page.getByLabel("Company name").fill("Test Company");
     await page.getByLabel("Role name").fill("Person");
     await page.getByLabel("Average hours").fill("25");
@@ -102,7 +102,7 @@ test.describe("Contractor for multiple companies", () => {
     );
     await expect(page.getByRole("row").filter({ hasText: "Test Company" })).toBeVisible();
     const adminUser = await db.query.users.findFirst({
-      where: eq(users.email, "test+clerk_test@example.com"),
+      where: eq(users.email, email),
       with: { companyAdministrators: { with: { company: true } } },
     });
     const company = adminUser?.companyAdministrators[0]?.company;
