@@ -1,13 +1,13 @@
 import { utc } from "@date-fns/utc";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
-import { formatISO, parseISO, startOfWeek } from "date-fns";
+import { parseISO, startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
 import MutationButton from "@/components/MutationButton";
 import { Button } from "@/components/ui/button";
-import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { areOverlapping } from "@/models/period";
@@ -17,12 +17,13 @@ import { formatServerDate } from "@/utils/time";
 
 type CompanyWorkerAbsenceForm = {
   id: bigint | null;
-  startsOn: string | null;
-  endsOn: string | null;
+  startsOn: Date | null;
+  endsOn: Date | null;
 };
-const AbsencesModal = ({ onClose }: { onClose: () => void }) => {
+const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const company = useCurrentCompany();
   const user = useCurrentUser();
+  const uid = useId();
 
   const currentPeriodStartsOn = formatServerDate(startOfWeek(new Date(), { in: utc }));
   const [workerAbsences] = trpc.workerAbsences.list.useSuspenseQuery({
@@ -31,11 +32,16 @@ const AbsencesModal = ({ onClose }: { onClose: () => void }) => {
     from: currentPeriodStartsOn,
   });
 
+  const absencesData = workerAbsences.map((absence) => ({
+    id: absence.id,
+    startsOn: parseISO(absence.startsOn),
+    endsOn: parseISO(absence.endsOn),
+  }));
   const [absences, setAbsences] = useState<List<CompanyWorkerAbsenceForm>>(
-    List([...workerAbsences, { id: null, startsOn: null, endsOn: null }]),
+    List([...absencesData, { id: null, startsOn: null, endsOn: null }]),
   );
   useEffect(() => {
-    setAbsences(List([...workerAbsences, { id: null, startsOn: null, endsOn: null }]));
+    setAbsences(List([...absencesData, { id: null, startsOn: null, endsOn: null }]));
   }, [workerAbsences]);
   const [toBeDeletedAbsenceIds, setToBeDeletedAbsenceIds] = useState<List<bigint>>(List());
   const [absenceErrors, setAbsenceErrors] = useState(Map<CompanyWorkerAbsenceForm, string>());
@@ -93,19 +99,13 @@ const AbsencesModal = ({ onClose }: { onClose: () => void }) => {
         }));
       await Promise.all([
         ...validAbsences.map((absence) => {
-          if (absence.id === null) {
-            return createAbsenceMutation.mutateAsync({
-              companyId: company.id,
-              startsOn: absence.startsOn,
-              endsOn: absence.endsOn,
-            });
-          }
-          return updateAbsenceMutation.mutateAsync({
+          const data = {
             companyId: company.id,
-            id: absence.id,
-            startsOn: absence.startsOn,
-            endsOn: absence.endsOn,
-          });
+            startsOn: formatServerDate(absence.startsOn),
+            endsOn: formatServerDate(absence.endsOn),
+          };
+          if (absence.id === null) return createAbsenceMutation.mutateAsync(data);
+          return updateAbsenceMutation.mutateAsync({ ...data, id: absence.id });
         }),
         ...toBeDeletedAbsenceIds.map((id) => deleteAbsenceMutation.mutateAsync({ companyId: company.id, id })),
       ]);
@@ -120,56 +120,36 @@ const AbsencesModal = ({ onClose }: { onClose: () => void }) => {
   });
 
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>Time off</DialogTitle>
-      </DialogHeader>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="lg:min-w-[65ch]">
+        <DialogHeader>
+          <DialogTitle>Time off</DialogTitle>
+        </DialogHeader>
 
-      <div className="grid gap-4 py-4">
-        {absences.size === 0 ? "no time off" : null}
-        {absences.map((absence, index) => {
-          const startsOnDatePickerId = useId();
-          const endsOnDatePickerId = useId();
-
-          const selectedStartsOn = useMemo(
-            () => (absence.startsOn ? parseISO(absence.startsOn) : undefined),
-            [absence.startsOn],
-          );
-          const selectedEndsOn = useMemo(
-            () => (absence.endsOn ? parseISO(absence.endsOn) : undefined),
-            [absence.endsOn],
-          );
-
-          const handleStartsOnSelect = (newDate: Date | undefined) => {
-            updateAbsence(index, { startsOn: newDate ? formatISO(newDate, { representation: "date" }) : null });
-          };
-          const handleEndsOnSelect = (newDate: Date | undefined) => {
-            updateAbsence(index, { endsOn: newDate ? formatISO(newDate, { representation: "date" }) : null });
-          };
-
-          const hasError = absenceErrors.has(absence);
-          const errorMessage = absenceErrors.get(absence);
-
-          return (
+        <div className="grid gap-4 py-4">
+          {absences.size === 0 ? "no time off" : null}
+          {absences.map((absence, index) => (
             <div key={absence.id || `absence-${index}`} className="flex flex-col gap-2 lg:flex-row">
               <div className="grid flex-1 gap-2">
-                <Label htmlFor={startsOnDatePickerId}>From</Label>
+                <Label htmlFor={`startsOn-${index}`}>From</Label>
                 <DatePicker
-                  id={startsOnDatePickerId}
-                  selected={selectedStartsOn}
-                  onSelect={handleStartsOnSelect}
-                  invalid={hasError}
+                  id={`${uid}-startsOn-${index}`}
+                  value={absence.startsOn}
+                  onChange={(date) => updateAbsence(index, { startsOn: date })}
+                  invalid={absenceErrors.has(absence)}
                 />
               </div>
               <div className="grid flex-1 gap-2">
-                <Label htmlFor={endsOnDatePickerId}>Until</Label>
+                <Label htmlFor={`endsOn-${index}`}>Until</Label>
                 <DatePicker
-                  id={endsOnDatePickerId}
-                  selected={selectedEndsOn}
-                  onSelect={handleEndsOnSelect}
-                  invalid={hasError}
+                  id={`${uid}-endsOn-${index}`}
+                  value={absence.endsOn}
+                  onChange={(date) => updateAbsence(index, { endsOn: date })}
+                  invalid={absenceErrors.has(absence)}
                 />
-                {hasError && errorMessage ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
+                {absenceErrors.has(absence) && absenceErrors.get(absence) ? (
+                  <p className="text-destructive text-sm">{absenceErrors.get(absence)}</p>
+                ) : null}
               </div>
               <div className="flex items-end">
                 <Button
@@ -196,27 +176,27 @@ const AbsencesModal = ({ onClose }: { onClose: () => void }) => {
                 </Button>
               </div>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
 
-      <div className="mb-4">
-        <Button
-          variant="link"
-          className="flex items-center gap-2"
-          onClick={() => setAbsences((absences) => absences.push({ id: null, startsOn: null, endsOn: null }))}
-        >
-          <PlusIcon className="size-4" />
-          <span>Add more</span>
-        </Button>
-      </div>
+        <div className="mb-4">
+          <Button
+            variant="link"
+            className="flex items-center gap-2"
+            onClick={() => setAbsences((absences) => absences.push({ id: null, startsOn: null, endsOn: null }))}
+          >
+            <PlusIcon className="size-4" />
+            <span>Add more</span>
+          </Button>
+        </div>
 
-      <DialogFooter>
-        <MutationButton mutation={submit} loadingText="Saving..." successText="Saved!" idleVariant="primary">
-          Save time off
-        </MutationButton>
-      </DialogFooter>
-    </>
+        <DialogFooter>
+          <MutationButton mutation={submit} loadingText="Saving..." successText="Saved!" idleVariant="primary">
+            Save time off
+          </MutationButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

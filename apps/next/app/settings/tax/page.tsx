@@ -77,15 +77,6 @@ export default function TaxPage() {
   const [maskTaxId, setMaskTaxId] = useState(true);
   const birthDatePickerId = useId();
 
-  const selectedBirthDate = useMemo(
-    () => (formData.birth_date ? parseISO(formData.birth_date) : undefined),
-    [formData.birth_date],
-  );
-
-  const handleBirthDateSelect = (newDate: Date | undefined) => {
-    setFormData({ ...formData, birth_date: newDate ? formatISO(newDate, { representation: "date" }) : null });
-  };
-
   Object.entries(formData).forEach(([key, value]) =>
     useOnChange(() => {
       setTaxInfoChanged(true);
@@ -352,7 +343,13 @@ export default function TaxPage() {
               <Label
                 htmlFor={birthDatePickerId}
               >{`Date of ${formData.business_entity ? "incorporation" : "birth"} (optional)`}</Label>
-              <DatePicker id={birthDatePickerId} selected={selectedBirthDate} onSelect={handleBirthDateSelect} />
+              <DatePicker
+                id={birthDatePickerId}
+                value={formData.birth_date ? parseISO(formData.birth_date) : undefined}
+                onChange={(date) =>
+                  setFormData({ ...formData, birth_date: formatISO(date, { representation: "date" }) })
+                }
+              />
             </div>
           </div>
 

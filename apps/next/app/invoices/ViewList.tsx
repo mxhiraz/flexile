@@ -1,7 +1,7 @@
 import { CurrencyDollarIcon, ExclamationTriangleIcon, PencilIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
-import { formatISO, parseISO } from "date-fns";
+import { formatISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState } from "react";
@@ -154,19 +154,12 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
   });
   assert(!!user.roles.worker);
   const payRateInSubunits = user.roles.worker.payRateInSubunits;
-  const initialInvoiceDate = formatISO(nextInvoiceDate, { representation: "date" });
 
   const [duration, setDuration] = useState<number | null>(null);
   const [amountUsd, setAmountUsd] = useState<number | null>(payRateInSubunits ? payRateInSubunits / 100 : null);
-  const [date, setDate] = useState(initialInvoiceDate);
+  const [date, setDate] = useState(nextInvoiceDate);
   const [lockModalOpen, setLockModalOpen] = useState(false);
   const datePickerId = useId();
-
-  const selectedDate = useMemo(() => (date ? parseISO(date) : undefined), [date]);
-
-  const handleDateSelect = (newDate: Date | undefined) => {
-    setDate(newDate ? formatISO(newDate, { representation: "date" }) : initialInvoiceDate);
-  };
 
   const totalAmountInCents = isProjectBased
     ? (amountUsd ?? 0) * 100
@@ -174,7 +167,7 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
 
   const invoiceYear = new Date(date).getFullYear() || new Date().getFullYear();
 
-  const newSearchParams = new URLSearchParams({ date });
+  const newSearchParams = new URLSearchParams({ date: formatISO(date, { representation: "date" }) });
   if (isProjectBased) newSearchParams.set("amount", String(amountUsd));
   else newSearchParams.set("duration", String(duration));
   const newCompanyInvoiceRoute = `/invoices/new?${newSearchParams.toString()}`;
@@ -210,7 +203,7 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
       if (response.ok) {
         setDuration(null);
         setAmountUsd(null);
-        setDate(initialInvoiceDate);
+        setDate(nextInvoiceDate);
 
         await refetch();
       }
@@ -256,7 +249,7 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
           </div>
           <div className="grid gap-2">
             <Label htmlFor={datePickerId}>Invoice date</Label>
-            <DatePicker id={datePickerId} selected={selectedDate} onSelect={handleDateSelect} />
+            <DatePicker id={datePickerId} value={date} onChange={setDate} />
           </div>
           <div className="text-right">
             <span>{equityCalculation.amountInCents > 0 ? "Net amount in cash" : "Total to invoice"}</span>

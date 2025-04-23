@@ -7,7 +7,7 @@ import { formatISO, parseISO } from "date-fns";
 import { List } from "immutable";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import React, { useId, useMemo, useRef, useState } from "react";
+import React, { useId, useRef, useState } from "react";
 import { z } from "zod";
 import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal";
 import ComboBox from "@/components/ComboBox";
@@ -119,19 +119,10 @@ const Edit = () => {
   });
 
   const [invoiceNumber, setInvoiceNumber] = useState(data.invoice.invoice_number);
-  const [issueDate, setIssueDate] = useState(
-    searchParams.get("date") || formatISO(data.invoice.invoice_date, { representation: "date" }),
-  );
+  const [issueDate, setIssueDate] = useState(parseISO(searchParams.get("date") || data.invoice.invoice_date));
   const issueDatePickerId = useId();
 
-  const selectedIssueDate = useMemo(() => (issueDate ? parseISO(issueDate) : undefined), [issueDate]);
-
-  const handleIssueDateSelect = (newDate: Date | undefined) => {
-    const fallbackDate = formatISO(new Date(), { representation: "date" });
-    setIssueDate(newDate ? formatISO(newDate, { representation: "date" }) : fallbackDate);
-  };
-
-  const invoiceYear = new Date(issueDate).getFullYear() || new Date().getFullYear();
+  const invoiceYear = issueDate.getFullYear() || new Date().getFullYear();
   const [notes, setNotes] = useState(data.invoice.notes ?? "");
   const [lineItems, setLineItems] = useState<List<InvoiceFormLineItem>>(() => {
     if (data.invoice.line_items.length) return List(data.invoice.line_items);
@@ -179,7 +170,7 @@ const Edit = () => {
 
       const formData = new FormData();
       formData.append("invoice[invoice_number]", invoiceNumber);
-      formData.append("invoice[invoice_date]", issueDate);
+      formData.append("invoice[invoice_date]", formatISO(issueDate, { representation: "date" }));
       for (const lineItem of lineItems) {
         if (lineItem.id) {
           formData.append("invoice_line_items[][id]", lineItem.id.toString());
@@ -338,8 +329,8 @@ const Edit = () => {
               <Label htmlFor={issueDatePickerId}>Date</Label>
               <DatePicker
                 id={issueDatePickerId}
-                selected={selectedIssueDate}
-                onSelect={handleIssueDateSelect}
+                value={issueDate}
+                onChange={setIssueDate}
                 invalid={errorField === "issueDate"}
               />
             </div>

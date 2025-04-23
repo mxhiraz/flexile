@@ -1,12 +1,12 @@
 "use client";
 
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { formatISO, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import { Set } from "immutable";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { z } from "zod";
 import { DatePicker } from "@/components/DatePicker";
 import Input from "@/components/Input";
@@ -67,18 +67,12 @@ const LegalDetails = <T extends string>({
   const [isBusinessEntity, setIsBusinessEntity] = useState(data.user.business_entity);
   const [businessName, setBusinessName] = useState(data.user.business_name);
   const [tin, setTin] = useState(data.user.tax_id);
-  const [birthDate, setBirthDate] = useState(data.user.birth_date);
+  const [birthDate, setBirthDate] = useState(data.user.birth_date ? parseISO(data.user.birth_date) : undefined);
   const [streetAddress, setStreetAddress] = useState(data.user.street_address);
   const [state, setState] = useState(data.user.state);
   const [city, setCity] = useState(data.user.city);
   const [zipCode, setZipCode] = useState(data.user.zip_code);
   const birthDatePickerId = useId();
-
-  const selectedBirthDate = useMemo(() => (birthDate ? parseISO(birthDate) : undefined), [birthDate]);
-
-  const handleBirthDateSelect = (newDate: Date | undefined) => {
-    setBirthDate(newDate ? formatISO(newDate, { representation: "date" }) : null);
-  };
 
   const tinDigits = tin?.replace(/\D/gu, "");
   const tinName = getTinName(isBusinessEntity);
@@ -191,8 +185,8 @@ const LegalDetails = <T extends string>({
               <Label htmlFor={birthDatePickerId}>Date of birth</Label>
               <DatePicker
                 id={birthDatePickerId}
-                selected={selectedBirthDate}
-                onSelect={handleBirthDateSelect}
+                value={birthDate}
+                onChange={setBirthDate}
                 invalid={errors.has("birth_date")}
               />
             </div>

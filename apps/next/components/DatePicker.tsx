@@ -9,13 +9,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/utils";
 
 export function DatePicker({
-  selected,
-  onSelect,
+  value,
+  onChange,
   id,
   invalid,
 }: {
-  selected: Date | undefined;
-  onSelect: (date: Date | undefined) => void;
+  value: Date | null | undefined;
+  onChange: (date: Date) => void;
   id?: string;
   invalid?: boolean;
 }) {
@@ -30,16 +30,16 @@ export function DatePicker({
           variant="outline"
           className={cn(
             "w-auto justify-start text-left font-normal",
-            !selected && "text-muted-foreground",
+            !value && "text-muted-foreground",
             invalid && "border-destructive ring-destructive/20 dark:ring-destructive/40 focus-visible:ring-[3px]",
           )}
         >
           <CalendarIcon className="opacity-60" size={20} />
-          {selected ? format(selected, "PPP") : <span>Pick a date</span>}
+          {value ? format(value, "PPP") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar mode="single" selected={selected} onSelect={onSelect} autoFocus />
+        <Calendar mode="single" selected={value} onSelect={onChange} autoFocus />
       </PopoverContent>
     </Popover>
   );

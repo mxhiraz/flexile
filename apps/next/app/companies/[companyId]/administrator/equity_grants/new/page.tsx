@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { optionGrantTypeDisplayNames, relationshipDisplayNames, vestingTriggerDisplayNames } from "@/app/equity/grants";
 import ComboBox from "@/components/ComboBox";
+import { DatePicker } from "@/components/DatePicker";
 import FormSection from "@/components/FormSection";
 import MainLayout from "@/components/layouts/Main";
 import { MutationStatusButton } from "@/components/MutationButton";
@@ -15,7 +16,6 @@ import NumberInput from "@/components/NumberInput";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { optionGrantIssueDateRelationships, optionGrantTypes, optionGrantVestingTriggers } from "@/db/enums";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
@@ -360,7 +360,7 @@ export default function NewEquityGrant() {
                       <FormItem>
                         <FormLabel>Vesting commencement date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <DatePicker {...field} selected={field.value} onSelect={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

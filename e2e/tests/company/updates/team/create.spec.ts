@@ -111,10 +111,8 @@ test.describe("Team member updates page", () => {
     await expect(page.getByText("Off this week: Sylvester")).not.toBeVisible();
     await page.getByRole("button", { name: "Log time off" }).click();
     const thisWeek = startOfWeek(new Date());
-    const fromDate = nextTuesday(thisWeek);
-    await selectDateFromDatePicker(page, "From", fromDate);
-    const untilDate = nextWednesday(thisWeek);
-    await selectDateFromDatePicker(page, "Until", untilDate);
+    await selectDateFromDatePicker(page, "From", nextTuesday(thisWeek));
+    await selectDateFromDatePicker(page, "Until", nextWednesday(thisWeek));
     await page.getByRole("button", { name: "Add more" }).click();
     await page
       .getByLabel("From")

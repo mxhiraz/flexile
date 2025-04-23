@@ -1,9 +1,8 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
-import { formatISO, parseISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useId, useMemo, useState } from "react";
+import React, { useId, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
 import FormSection from "@/components/FormSection";
 import MainLayout from "@/components/layouts/Main";
@@ -20,23 +19,13 @@ export default function NewTenderOffer() {
   const company = useCurrentCompany();
   const router = useRouter();
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [minimumValuation, setMinimumValuation] = useState(0);
   const [attachment, setAttachment] = useState<File | undefined>(undefined);
 
   const startDatePickerId = useId();
   const endDatePickerId = useId();
-
-  const selectedStartDate = useMemo(() => (startDate ? parseISO(startDate) : undefined), [startDate]);
-  const selectedEndDate = useMemo(() => (endDate ? parseISO(endDate) : undefined), [endDate]);
-
-  const handleStartDateSelect = (newDate: Date | undefined) => {
-    setStartDate(newDate ? formatISO(newDate, { representation: "date" }) : "");
-  };
-  const handleEndDateSelect = (newDate: Date | undefined) => {
-    setEndDate(newDate ? formatISO(newDate, { representation: "date" }) : "");
-  };
 
   const createUploadUrl = trpc.files.createDirectUploadUrl.useMutation();
   const createTenderOffer = trpc.tenderOffers.create.useMutation();
@@ -90,11 +79,11 @@ export default function NewTenderOffer() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor={startDatePickerId}>Start date</Label>
-              <DatePicker id={startDatePickerId} selected={selectedStartDate} onSelect={handleStartDateSelect} />
+              <DatePicker id={startDatePickerId} value={startDate} onChange={setStartDate} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor={endDatePickerId}>End date</Label>
-              <DatePicker id={endDatePickerId} selected={selectedEndDate} onSelect={handleEndDateSelect} />
+              <DatePicker id={endDatePickerId} value={endDate} onChange={setEndDate} />
             </div>
             <NumberInput
               value={minimumValuation}
