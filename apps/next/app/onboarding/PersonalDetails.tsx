@@ -87,12 +87,14 @@ const PersonalDetails = <T extends string>({ nextLinkTo }: { nextLinkTo: Route<T
 
   const countryOptions = [...countries].map(([code, name]) => ({ value: code, label: name }));
   
-  const onSubmit = form.handleSubmit(() => submit.mutate());
+  const handleSubmit = () => {
+    submit.mutate();
+  };
 
   return (
     <>
       <Form {...form}>
-        <form className="grid gap-4" onSubmit={e(() => onSubmit(), "prevent")}>
+        <form className="grid gap-4" onSubmit={e(() => form.handleSubmit(handleSubmit)(), "prevent")}>
           <FormField
             control={form.control}
             name="legal_name"
