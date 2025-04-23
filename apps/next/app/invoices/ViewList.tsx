@@ -9,7 +9,8 @@ import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal"
 import { StatusWithTooltip } from "@/app/invoices/Status";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import DurationInput from "@/components/DurationInput";
-import Input from "@/components/Input";
+import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import { linkClasses } from "@/components/Link";
 import NumberInput from "@/components/NumberInput";
@@ -259,7 +260,18 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
             ) : null}
           </div>
           <div>
-            <Input value={date} onChange={setDate} label="Invoice date" type="date" disabled={submit.isPending} />
+            <FormItem>
+              <FormLabel htmlFor="invoice-date">Invoice date</FormLabel>
+              <FormControl>
+                <Input 
+                  id="invoice-date"
+                  value={date} 
+                  onChange={(e) => setDate(e.target.value)} 
+                  type="date" 
+                  disabled={submit.isPending} 
+                />
+              </FormControl>
+            </FormItem>
           </div>
           <div className="text-right">
             <span>{equityCalculation.amountInCents > 0 ? "Net amount in cash" : "Total to invoice"}</span>
