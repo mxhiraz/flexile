@@ -19,7 +19,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { optionGrantIssueDateRelationships, optionGrantTypes, optionGrantVestingTriggers } from "@/db/enums";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
-import { assertDefined } from "@/utils/assert";
+import { formatServerDate } from "@/utils/time";
 
 const MAX_VESTING_DURATION_IN_MONTHS = 120;
 
@@ -32,7 +32,7 @@ const formSchema = z.object({
   optionExpiryMonths: z.number().min(0),
   vestingTrigger: z.enum(optionGrantVestingTriggers),
   vestingScheduleId: z.string().nullish(),
-  vestingCommencementDate: z.string().nullish(),
+  vestingCommencementDate: z.date().nullish(),
   totalVestingDurationMonths: z.number().nullish(),
   cliffDurationMonths: z.number().nullish(),
   vestingFrequencyMonths: z.string().nullish(),
@@ -54,7 +54,6 @@ const refinedSchema = formSchema.refine(
 type FormValues = z.infer<typeof formSchema>;
 
 export default function NewEquityGrant() {
-  const today = assertDefined(new Date().toISOString().split("T")[0]);
   const router = useRouter();
   const trpcUtils = trpc.useUtils();
   const company = useCurrentCompany();
@@ -67,7 +66,7 @@ export default function NewEquityGrant() {
       optionPoolId: data.optionPools[0]?.id ?? "",
       numberOfShares: 0,
       optionGrantType: "nso",
-      vestingCommencementDate: today,
+      vestingCommencementDate: new Date(),
       vestingTrigger: "invoice_paid",
     },
     context: {
@@ -167,7 +166,7 @@ export default function NewEquityGrant() {
       totalVestingDurationMonths: values.totalVestingDurationMonths ?? null,
       cliffDurationMonths: values.cliffDurationMonths ?? null,
       vestingFrequencyMonths: values.vestingFrequencyMonths ?? null,
-      vestingCommencementDate: values.vestingCommencementDate ?? null,
+      vestingCommencementDate: values.vestingCommencementDate ? formatServerDate(values.vestingCommencementDate) : null,
       vestingScheduleId: values.vestingScheduleId ?? null,
     });
   });
@@ -360,7 +359,7 @@ export default function NewEquityGrant() {
                       <FormItem>
                         <FormLabel>Vesting commencement date</FormLabel>
                         <FormControl>
-                          <DatePicker {...field} selected={field.value} onSelect={field.onChange} />
+                          <DatePicker {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
