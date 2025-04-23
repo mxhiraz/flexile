@@ -109,11 +109,9 @@ export default function ViewList() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>You have an unsigned contract. Please sign it before creating new invoices.</div>
               <Button asChild variant="outline" size="small" disabled={!!unsignedContractId}>
-                <Link
-                  href={`/documents?${new URLSearchParams({ sign: unsignedContractId.toString(), next: "/invoices" })}`}
-                >
-                  Review & sign
-                </Link>
+                <a href={`/documents?sign=${unsignedContractId.toString()}&next=/invoices`}>
+                  Review and sign
+                </a>
               </Button>
             </div>
           </AlertDescription>
