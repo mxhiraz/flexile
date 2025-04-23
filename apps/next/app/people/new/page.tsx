@@ -1,6 +1,5 @@
 "use client";
 import { PaperAirplaneIcon } from "@heroicons/react/16/solid";
-import { formatISO } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { parseAsInteger, useQueryState } from "nuqs";
@@ -71,8 +70,7 @@ function Create() {
     email &&
     ((role?.payRateType === PayRateType.Hourly && hours) ||
       role?.payRateType === PayRateType.ProjectBased ||
-      role?.payRateType === PayRateType.Salary) &&
-    startDate.length > 0;
+      role?.payRateType === PayRateType.Salary);
 
   const trpcUtils = trpc.useUtils();
   const saveMutation = trpc.contractors.create.useMutation({
@@ -160,9 +158,7 @@ function Create() {
               companyId: company.id,
               applicationId,
               email,
-              // startDate only contains the date without a timezone. Appending T00:00:00 ensures the date is
-              // parsed as midnight in the local timezone rather than UTC.
-              startedAt: formatISO(new Date(`${startDate}T00:00:00`)),
+              startedAt: startDate,
               payRateInSubunits: rateUsd * 100,
               payRateType: role?.payRateType ?? PayRateType.Hourly,
               onTrial,

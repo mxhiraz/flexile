@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { z } from "zod";
 import { DatePicker } from "@/components/DatePicker";
-import Input from "@/components/Input";
 import OnboardingLayout from "@/components/layouts/Onboarding";
 import { linkClasses } from "@/components/Link";
 import MutationButton from "@/components/MutationButton";
