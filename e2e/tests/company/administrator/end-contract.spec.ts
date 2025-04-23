@@ -48,7 +48,9 @@ test.describe("End contract", () => {
       expect.objectContaining({
         to: contractor.email,
         subject: `Your contract with ${company.name} has ended`,
-        text: expect.stringMatching(/Your contract with .* has ended on \w{3,4} \d{1,2}, \d{4}/u),
+        text: expect.stringContaining(
+          `Your contract with ${company.name} has ended on ${format(new Date(), "MMMM d, yyyy")}`,
+        ),
       }),
     ]);
 
@@ -107,19 +109,12 @@ test.describe("End contract", () => {
     await page.getByRole("link", { name: contractor.preferredName }).click();
     await page.getByRole("button", { name: "End contract" }).click();
 
+    await page.waitForTimeout(100000);
     await selectDateFromDatePicker(page, "End date", futureDate);
     await page.getByRole("button", { name: "Yes, end contract" }).click();
 
     await page.getByRole("link", { name: contractor.preferredName }).click();
-
-    // Wait for the specific alert using data-slot
-    const alertLocator = page.locator('[role="alert"][data-slot="alert"]');
-    await expect(alertLocator).toBeVisible();
-    // Target the inner div and use a more specific regex anchored to the start
-    await expect(alertLocator.locator('[data-slot="alert-description"] > div')).toHaveText(
-      /^Contract ends on \w{3,4} \d{1,2}, \d{4}\./u,
-    );
-
+    await expect(page.getByText(`Contract ends on ${format(futureDate, "MMM d, yyyy")}`)).toBeVisible();
     await expect(page.getByRole("button", { name: "End contract" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save changes" })).not.toBeVisible();
 
@@ -133,7 +128,9 @@ test.describe("End contract", () => {
       expect.objectContaining({
         to: contractor.email,
         subject: `Your contract with ${company.name} has ended`,
-        text: expect.stringMatching(/Your contract with .* has ended on \w{3,4} \d{1,2}, \d{4}/u),
+        text: expect.stringContaining(
+          `Your contract with ${company.name} has ended on ${format(futureDate, "MMMM d, yyyy")}`,
+        ),
       }),
       expect.objectContaining({
         to: contractor.email,
