@@ -8,7 +8,6 @@ import React, { useEffect, useId, useState } from "react";
 import TemplateSelector from "@/app/document_templates/TemplateSelector";
 import RoleSelector from "@/app/roles/Selector";
 import { DatePicker } from "@/components/DatePicker";
-import DecimalInput from "@/components/DecimalInput";
 import FormSection from "@/components/FormSection";
 import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
@@ -104,37 +103,42 @@ function Create() {
               <Label htmlFor={startDatePickerId}>Start date</Label>
               <DatePicker id={startDatePickerId} value={startDate} onChange={setStartDate} />
             </div>
-            <div className="grid gap-2">
-              <RoleSelector value={roleId ?? null} onChange={setRoleId} />
-              {role?.trialEnabled && role.payRateType !== PayRateType.Salary ? (
-                <Checkbox
-                  checked={skipTrial}
-                  onCheckedChange={(checked) => setSkipTrial(checked === true)}
-                  label="Skip trial period"
-                />
-              ) : null}
-            </div>
-            <DecimalInput
-              value={rateUsd}
-              onChange={(value) => setRateUsd(value ?? 0)}
-              label="Rate"
-              prefix="$"
-              suffix={
-                role?.payRateType === PayRateType.ProjectBased
-                  ? "/ project"
-                  : role?.payRateType === PayRateType.Salary
-                    ? "/ year"
-                    : "/ hour"
-              }
-            />
-            {role?.payRateType === PayRateType.Hourly && (
-              <NumberInput
-                value={hours}
-                onChange={(value) => setHours(value ?? 0)}
-                label="Average hours"
-                placeholder={DEFAULT_WORKING_HOURS_PER_WEEK.toString()}
-                suffix="/ week"
+            <RoleSelector value={roleId ?? null} onChange={setRoleId} />
+            {role?.trialEnabled && role.payRateType !== PayRateType.Salary ? (
+              <Checkbox
+                checked={skipTrial}
+                onCheckedChange={(checked) => setSkipTrial(checked === true)}
+                label="Skip trial period"
               />
+            ) : null}
+            <div className="grid gap-2">
+              <Label htmlFor="rate">Rate</Label>
+              <NumberInput
+                id="rate"
+                value={rateUsd}
+                onChange={(value) => setRateUsd(value ?? 0)}
+                prefix="$"
+                suffix={
+                  role?.payRateType === PayRateType.ProjectBased
+                    ? "/ project"
+                    : role?.payRateType === PayRateType.Salary
+                      ? "/ year"
+                      : "/ hour"
+                }
+                decimal
+              />
+            </div>
+            {role?.payRateType === PayRateType.Hourly && (
+              <div className="grid gap-2">
+                <Label htmlFor="hours">Average hours</Label>
+                <NumberInput
+                  id="hours"
+                  value={hours}
+                  onChange={(value) => setHours(value ?? 0)}
+                  placeholder={DEFAULT_WORKING_HOURS_PER_WEEK.toString()}
+                  suffix="/ week"
+                />
+              </div>
             )}
           </div>
 

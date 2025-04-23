@@ -9,10 +9,10 @@ import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal"
 import { StatusWithTooltip } from "@/app/invoices/Status";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import { DatePicker } from "@/components/DatePicker";
-import DecimalInput from "@/components/DecimalInput";
 import DurationInput from "@/components/DurationInput";
 import MainLayout from "@/components/layouts/Main";
 import { linkClasses } from "@/components/Link";
+import NumberInput from "@/components/NumberInput";
 import Placeholder from "@/components/Placeholder";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -223,18 +223,29 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
         <div className="grid gap-3 md:grid-cols-3 md:items-start">
           <div className="grid gap-2">
             {isProjectBased ? (
-              <DecimalInput
-                value={amountUsd}
-                onChange={setAmountUsd}
-                label="Amount to bill"
-                min={1}
-                step={0.01}
-                placeholder={payRateInSubunits ? String(payRateInSubunits / 100) : undefined}
-                prefix="$"
-                disabled={submit.isPending}
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="amount-to-bill">Amount to bill</Label>
+                <NumberInput
+                  id="amount-to-bill"
+                  value={amountUsd}
+                  onChange={setAmountUsd}
+                  min={1}
+                  step={0.01}
+                  placeholder={payRateInSubunits ? String(payRateInSubunits / 100) : undefined}
+                  prefix="$"
+                  disabled={submit.isPending}
+                />
+              </div>
             ) : (
-              <DurationInput value={duration} onChange={setDuration} label="Hours worked" disabled={submit.isPending} />
+              <div className="grid gap-2">
+                <Label htmlFor="quick-invoice-hours">Hours worked</Label>
+                <DurationInput
+                  id="quick-invoice-hours"
+                  value={duration}
+                  onChange={setDuration}
+                  disabled={submit.isPending}
+                />
+              </div>
             )}
             {equityAllocation !== null &&
             equityCalculation.selectedPercentage == null &&
