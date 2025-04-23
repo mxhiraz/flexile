@@ -16,7 +16,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import MutationButton from "@/components/MutationButton";
-import Modal from "@/components/Modal";
 import Placeholder from "@/components/Placeholder";
 import Status, { type Variant as StatusVariant } from "@/components/Status";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
