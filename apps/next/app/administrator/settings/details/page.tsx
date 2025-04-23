@@ -4,10 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Map } from "immutable";
 import { useEffect, useState } from "react";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
 import MutationButton from "@/components/MutationButton";
 import Select from "@/components/Select";
 import { CardContent, CardFooter } from "@/components/ui/card";
+import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useCurrentCompany } from "@/global";
 import { usStates } from "@/models";
 import { trpc } from "@/trpc/client";
@@ -62,50 +63,110 @@ export default function Details() {
     >
       <CardContent>
         <div className="grid gap-4">
-          <Input value={name} onChange={setName} label="Company's legal name" invalid={errors.has("name")} autoFocus />
-          <Input
-            value={taxId}
-            onChange={(value) => setTaxId(formatTaxId(value))}
-            label="EIN"
-            placeholder="XX-XXXXXXX"
-            invalid={errors.has("taxId")}
-            help={errors.get("taxId")}
-          />
-          <Input
-            value={phoneNumber}
-            onChange={(value) => setPhoneNumber(formatPhoneNumber(value))}
-            label="Phone number"
-            placeholder="(000) 000-0000"
-            invalid={errors.has("phoneNumber")}
-            help={errors.get("phoneNumber")}
-          />
-          <Input
-            value={streetAddress}
-            onChange={setStreetAddress}
-            label="Residential address (street name, number, apt)"
-            invalid={errors.has("streetAddress")}
-          />
+          <FormItem>
+            <FormLabel>Company's legal name</FormLabel>
+            <FormControl>
+              <Input 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                className={errors.has("name") ? "border-red-500" : ""} 
+                autoFocus 
+              />
+            </FormControl>
+            {errors.has("name") && <FormMessage>{errors.get("name")}</FormMessage>}
+          </FormItem>
+          
+          <FormItem>
+            <FormLabel>EIN</FormLabel>
+            <FormControl>
+              <Input
+                value={taxId}
+                onChange={(e) => setTaxId(formatTaxId(e.target.value))}
+                placeholder="XX-XXXXXXX"
+                className={errors.has("taxId") ? "border-red-500" : ""}
+              />
+            </FormControl>
+            {errors.has("taxId") && <FormMessage>{errors.get("taxId")}</FormMessage>}
+          </FormItem>
+          
+          <FormItem>
+            <FormLabel>Phone number</FormLabel>
+            <FormControl>
+              <Input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))}
+                placeholder="(000) 000-0000"
+                className={errors.has("phoneNumber") ? "border-red-500" : ""}
+              />
+            </FormControl>
+            {errors.has("phoneNumber") && <FormMessage>{errors.get("phoneNumber")}</FormMessage>}
+          </FormItem>
+          
+          <FormItem>
+            <FormLabel>Residential address (street name, number, apt)</FormLabel>
+            <FormControl>
+              <Input
+                value={streetAddress}
+                onChange={(e) => setStreetAddress(e.target.value)}
+                className={errors.has("streetAddress") ? "border-red-500" : ""}
+              />
+            </FormControl>
+            {errors.has("streetAddress") && <FormMessage>{errors.get("streetAddress")}</FormMessage>}
+          </FormItem>
+          
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={city} onChange={setCity} label="City or town" invalid={errors.has("city")} />
-            <Select
-              value={state || undefined}
-              onChange={setState}
-              placeholder="Choose State"
-              options={usStates.map(({ name, code }) => ({ value: code, label: name }))}
-              label="State"
-              invalid={errors.has("state")}
-            />
-            <Input value={zipCode} onChange={setZipCode} label="Postal code" invalid={errors.has("zipCode")} />
+            <FormItem>
+              <FormLabel>City or town</FormLabel>
+              <FormControl>
+                <Input 
+                  value={city} 
+                  onChange={(e) => setCity(e.target.value)} 
+                  className={errors.has("city") ? "border-red-500" : ""} 
+                />
+              </FormControl>
+              {errors.has("city") && <FormMessage>{errors.get("city")}</FormMessage>}
+            </FormItem>
+            
+            <FormItem>
+              <FormLabel>State</FormLabel>
+              <FormControl>
+                <Select
+                  value={state || undefined}
+                  onChange={setState}
+                  placeholder="Choose State"
+                  options={usStates.map(({ name, code }) => ({ value: code, label: name }))}
+                  invalid={errors.has("state")}
+                />
+              </FormControl>
+              {errors.has("state") && <FormMessage>{errors.get("state")}</FormMessage>}
+            </FormItem>
+            
+            <FormItem>
+              <FormLabel>Postal code</FormLabel>
+              <FormControl>
+                <Input 
+                  value={zipCode} 
+                  onChange={(e) => setZipCode(e.target.value)} 
+                  className={errors.has("zipCode") ? "border-red-500" : ""} 
+                />
+              </FormControl>
+              {errors.has("zipCode") && <FormMessage>{errors.get("zipCode")}</FormMessage>}
+            </FormItem>
           </div>
-          <Select
-            value=""
-            onChange={(value) => value}
-            placeholder="United States"
-            options={[]}
-            label="Country"
-            disabled
-            help="Flexile is currently available only to companies incorporated in the United States."
-          />
+          
+          <FormItem>
+            <FormLabel>Country</FormLabel>
+            <FormControl>
+              <Select
+                value=""
+                onChange={(value) => value}
+                placeholder="United States"
+                options={[]}
+                disabled
+              />
+            </FormControl>
+            <FormMessage>Flexile is currently available only to companies incorporated in the United States.</FormMessage>
+          </FormItem>
         </div>
       </CardContent>
       <CardFooter>
