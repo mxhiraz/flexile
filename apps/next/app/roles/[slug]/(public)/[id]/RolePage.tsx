@@ -10,7 +10,6 @@ import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
-import Input from "@/components/Input";
 import SimpleLayout from "@/components/layouts/Simple";
 import MutationButton from "@/components/MutationButton";
 import RangeInput from "@/components/RangeInput";
@@ -19,6 +18,8 @@ import Select from "@/components/Select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { DEFAULT_WORKING_HOURS_PER_WEEK, MAX_WORKING_HOURS_PER_WEEK, WORKING_WEEKS_PER_YEAR } from "@/models";
 import { countryInfos } from "@/models/constants";
 import { PayRateType, trpc } from "@/trpc/client";
@@ -234,20 +235,30 @@ export default function RolePage({ countryCode }: { countryCode: string }) {
         <Card>
           <CardContent>
             <div className="grid gap-4">
-              <Input
-                value={values.name}
-                onChange={(name) => updateValues({ name })}
-                label="Name"
-                invalid={errors.has("name")}
-              />
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input
+                    value={values.name}
+                    onChange={(e) => updateValues({ name: e.target.value })}
+                    className={errors.has("name") ? "border-red-500" : ""}
+                  />
+                </FormControl>
+                {errors.has("name") && <FormMessage>Name is required</FormMessage>}
+              </FormItem>
 
-              <Input
-                value={values.email}
-                onChange={(email) => updateValues({ email })}
-                label="Email"
-                type="email"
-                invalid={errors.has("email")}
-              />
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    value={values.email}
+                    onChange={(e) => updateValues({ email: e.target.value })}
+                    type="email"
+                    className={errors.has("email") ? "border-red-500" : ""}
+                  />
+                </FormControl>
+                {errors.has("email") && <FormMessage>Email is required</FormMessage>}
+              </FormItem>
 
               <Select
                 value={values.countryCode}
@@ -284,13 +295,17 @@ export default function RolePage({ countryCode }: { countryCode: string }) {
                 </>
               )}
 
-              <RichTextEditor
-                value={values.description}
-                onChange={(value) => updateValues({ description: value })}
-                label="Briefly describe your career and provide links to key projects as proof of work"
-                invalid={errors.has("description")}
-                className="h-48"
-              />
+              <FormItem>
+                <FormLabel>Briefly describe your career and provide links to key projects as proof of work</FormLabel>
+                <FormControl>
+                  <RichTextEditor
+                    value={values.description}
+                    onChange={(value) => updateValues({ description: value })}
+                    className={`h-48 ${errors.has("description") ? "border-red-500" : ""}`}
+                  />
+                </FormControl>
+                {errors.has("description") && <FormMessage>Description is required</FormMessage>}
+              </FormItem>
             </div>
           </CardContent>
           <CardFooter className="border-0 pt-0 [&>button]:w-full">
