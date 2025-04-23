@@ -3,11 +3,12 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
 import { startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
-import { useEffect, useState } from "react";
-import Input from "@/components/Input";
-import Modal from "@/components/Modal";
+import React, { useEffect, useState } from "react";
 import MutationButton from "@/components/MutationButton";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { areOverlapping } from "@/models/period";
 import { trpc } from "@/trpc/client";
@@ -119,71 +120,90 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
   });
 
   return (
-    <Modal title="Time off" open={open} onClose={onClose} className="lg:min-w-[65ch]">
-      <div className="grid gap-4">
-        {absences.size === 0 ? "no time off" : null}
-        {absences.map((absence, index) => (
-          <div key={absence.id || `absence-${index}`} className="flex flex-col gap-2 lg:flex-row">
-            <div className="flex-1">
-              <Input
-                value={absence.startsOn}
-                onChange={(value) => updateAbsence(index, { startsOn: value })}
-                type="date"
-                label="From"
-                invalid={absenceErrors.has(absence)}
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                value={absence.endsOn}
-                onChange={(value) => updateAbsence(index, { endsOn: value })}
-                type="date"
-                label="Until"
-                invalid={absenceErrors.has(absence)}
-                help={absenceErrors.get(absence)}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button
-                variant="link"
-                aria-label="Remove"
-                className="flex justify-center lg:p-3 lg:pr-1"
-                disabled={absences.size === 1 && absence.id === null}
-                onClick={() => {
-                  const absenceId = absence.id;
-                  if (absenceId !== null) {
-                    setToBeDeletedAbsenceIds((toBeDeletedAbsenceIds) => toBeDeletedAbsenceIds.push(absenceId));
-                  }
-                  setAbsences((absences) => {
-                    let newAbsences = absences.delete(index);
-                    if (newAbsences.size === 0) {
-                      newAbsences = newAbsences.push({ id: null, startsOn: null, endsOn: null });
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="lg:min-w-[65ch]">
+        <DialogHeader>
+          <DialogTitle>Time off</DialogTitle>
+        </DialogHeader>
+        
+        <div className="grid gap-4">
+          {absences.size === 0 ? "no time off" : null}
+          {absences.map((absence, index) => (
+            <div key={absence.id || `absence-${index}`} className="flex flex-col gap-2 lg:flex-row">
+              <div className="flex-1">
+                <FormItem>
+                  <FormLabel>From</FormLabel>
+                  <FormControl>
+                    <Input
+                      value={absence.startsOn || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateAbsence(index, { startsOn: e.target.value })}
+                      type="date"
+                      className={absenceErrors.has(absence) ? "border-red-500" : ""}
+                    />
+                  </FormControl>
+                </FormItem>
+              </div>
+              <div className="flex-1">
+                <FormItem>
+                  <FormLabel>Until</FormLabel>
+                  <FormControl>
+                    <Input
+                      value={absence.endsOn || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateAbsence(index, { endsOn: e.target.value })}
+                      type="date"
+                      className={absenceErrors.has(absence) ? "border-red-500" : ""}
+                    />
+                  </FormControl>
+                  {absenceErrors.has(absence) && (
+                    <FormMessage>{absenceErrors.get(absence)}</FormMessage>
+                  )}
+                </FormItem>
+              </div>
+              <div className="flex items-end">
+                <Button
+                  variant="link"
+                  aria-label="Remove"
+                  className="flex justify-center lg:p-3 lg:pr-1"
+                  disabled={absences.size === 1 && absence.id === null}
+                  onClick={() => {
+                    const absenceId = absence.id;
+                    if (absenceId !== null) {
+                      setToBeDeletedAbsenceIds((toBeDeletedAbsenceIds) => toBeDeletedAbsenceIds.push(absenceId));
                     }
-                    return newAbsences;
-                  });
-                }}
-              >
-                <TrashIcon className="size-4" />
-                <span className="lg:hidden"> Delete</span>
-              </Button>
+                    setAbsences((absences) => {
+                      let newAbsences = absences.delete(index);
+                      if (newAbsences.size === 0) {
+                        newAbsences = newAbsences.push({ id: null, startsOn: null, endsOn: null });
+                      }
+                      return newAbsences;
+                    });
+                  }}
+                >
+                  <TrashIcon className="size-4" />
+                  <span className="lg:hidden"> Delete</span>
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-      <div className="mb-4">
-        <Button
-          variant="link"
-          className="flex items-center gap-2"
-          onClick={() => setAbsences((absences) => absences.push({ id: null, startsOn: null, endsOn: null }))}
-        >
-          <PlusIcon className="size-4" />
-          <span>Add more</span>
-        </Button>
-      </div>
-      <MutationButton mutation={submit} loadingText="Saving..." successText="Saved!" idleVariant="primary">
-        Save time off
-      </MutationButton>
-    </Modal>
+          ))}
+        </div>
+        <div className="mb-4">
+          <Button
+            variant="link"
+            className="flex items-center gap-2"
+            onClick={() => setAbsences((absences) => absences.push({ id: null, startsOn: null, endsOn: null }))}
+          >
+            <PlusIcon className="size-4" />
+            <span>Add more</span>
+          </Button>
+        </div>
+        
+        <DialogFooter>
+          <MutationButton mutation={submit} loadingText="Saving..." successText="Saved!" idleVariant="primary">
+            Save time off
+          </MutationButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
