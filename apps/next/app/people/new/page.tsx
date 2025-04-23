@@ -8,13 +8,14 @@ import React, { useEffect, useState } from "react";
 import TemplateSelector from "@/app/document_templates/TemplateSelector";
 import RoleSelector from "@/app/roles/Selector";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrentCompany } from "@/global";
 import { DEFAULT_WORKING_HOURS_PER_WEEK } from "@/models";
@@ -95,8 +96,29 @@ function Create() {
       <FormSection title="Details">
         <CardContent>
           <div className="grid gap-4">
-            <Input value={email} onChange={setEmail} type="email" label="Email" placeholder="Contractor's email" />
-            <Input value={startDate} onChange={setStartDate} type="date" label="Start date" />
+            <FormItem>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <FormControl>
+                <Input 
+                  id="email"
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  type="email" 
+                  placeholder="Contractor's email" 
+                />
+              </FormControl>
+            </FormItem>
+            <FormItem>
+              <FormLabel htmlFor="start-date">Start date</FormLabel>
+              <FormControl>
+                <Input 
+                  id="start-date"
+                  value={startDate} 
+                  onChange={(e) => setStartDate(e.target.value)} 
+                  type="date" 
+                />
+              </FormControl>
+            </FormItem>
             <RoleSelector value={roleId ?? null} onChange={setRoleId} />
             {role?.trialEnabled && role.payRateType !== PayRateType.Salary ? (
               <Checkbox
