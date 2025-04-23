@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
+import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
@@ -74,8 +75,18 @@ export default function NewTenderOffer() {
       <FormSection title="Details">
         <CardContent>
           <div className="grid gap-4">
-            <Input value={startDate} onChange={setStartDate} type="date" label="Start date" />
-            <Input value={endDate} onChange={setEndDate} type="date" label="End date" />
+            <FormItem>
+              <FormLabel>Start date</FormLabel>
+              <FormControl>
+                <Input value={startDate} onChange={(e) => setStartDate(e.target.value)} type="date" />
+              </FormControl>
+            </FormItem>
+            <FormItem>
+              <FormLabel>End date</FormLabel>
+              <FormControl>
+                <Input value={endDate} onChange={(e) => setEndDate(e.target.value)} type="date" />
+              </FormControl>
+            </FormItem>
             <div className="grid gap-2">
               <Label htmlFor="minimum-valuation">Minimum valuation</Label>
               <NumberInput
