@@ -116,7 +116,7 @@ test.describe("Tax settings", () => {
       await page.getByLabel("Business legal name").fill("Flexile Inc.");
       await page.getByLabel("Tax classification").selectOption(TaxClassification.Partnership.toString());
       await page.getByLabel("Tax ID (EIN)").fill("55-5666789");
-      await selectDateFromDatePicker(page, "Date of incorporation (optional)", new Date(1980, 5, 7));
+      await selectDateFromDatePicker(page, "Date of incorporation (optional)", new Date(2020, 5, 7));
       await page.getByLabel("Residential address (street name, number, apartment)").fill("123 Grove St");
       await page.getByLabel("State").selectOption("New York");
       await page.getByLabel("City").fill("New York");
