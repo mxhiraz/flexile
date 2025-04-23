@@ -4,12 +4,12 @@ import { fromUnixTime } from "date-fns";
 import { Map } from "immutable";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Input from "@/components/Input";
-import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
@@ -89,80 +89,87 @@ const StripeMicrodepositVerification = () => {
         </AlertDescription>
       </Alert>
 
-      <Modal
-        open={showVerificationModal}
-        onClose={() => setShowVerificationModal(false)}
-        title="Verify your bank account"
-      >
-        {microdepositVerificationDetails.microdeposit_type === "descriptor_code" ? (
-          <p>
-            Check your {microdepositVerificationDetails.bank_account_number || ""} bank account for a $0.01 deposit from
-            Stripe on {arrivalDate}. The transaction's description will have your 6-digit verification code starting
-            with 'SM'.
-          </p>
-        ) : (
-          <p>
-            Check your {microdepositVerificationDetails.bank_account_number || ""} bank account for
-            <strong>two deposits</strong> from Stripe on {arrivalDate}. The transactions' description will read
-            "ACCTVERIFY".
-          </p>
-        )}
+      <Dialog open={showVerificationModal} onOpenChange={(open) => setShowVerificationModal(open)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Verify your bank account</DialogTitle>
+          </DialogHeader>
+          
+          {microdepositVerificationDetails.microdeposit_type === "descriptor_code" ? (
+            <p>
+              Check your {microdepositVerificationDetails.bank_account_number || ""} bank account for a $0.01 deposit from
+              Stripe on {arrivalDate}. The transaction's description will have your 6-digit verification code starting
+              with 'SM'.
+            </p>
+          ) : (
+            <p>
+              Check your {microdepositVerificationDetails.bank_account_number || ""} bank account for
+              <strong>two deposits</strong> from Stripe on {arrivalDate}. The transactions' description will read
+              "ACCTVERIFY".
+            </p>
+          )}
 
-        <p>
-          If {microdepositVerificationDetails.microdeposit_type === "descriptor_code" ? "it's" : "they're"} not visible
-          yet, please check in 1-2 days.
-        </p>
+          <p>
+            If {microdepositVerificationDetails.microdeposit_type === "descriptor_code" ? "it's" : "they're"} not visible
+            yet, please check in 1-2 days.
+          </p>
 
-        {microdepositVerificationDetails.microdeposit_type === "descriptor_code" ? (
-          <Input
-            value={verificationCode}
-            onChange={setVerificationCode}
-            label="6-digit code"
-            invalid={errors.has("verificationCode")}
-            help={errors.get("verificationCode")}
-          />
-        ) : (
-          <div className="grid gap-4">
-            <div>
-              <Label htmlFor="amount-1">Amount 1</Label>
-              <NumberInput
-                id="amount-1"
-                value={firstAmount}
-                onChange={(value) => setFirstAmount(value)}
-                invalid={errors.has("firstAmount")}
-                prefix="$"
-                decimal
-                {...(errors.has("firstAmount") && { "aria-invalid": true })}
+          {microdepositVerificationDetails.microdeposit_type === "descriptor_code" ? (
+            <div className="grid gap-2">
+              <Label htmlFor="verification-code">6-digit code</Label>
+              <Input
+                id="verification-code"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                className={errors.has("verificationCode") ? "border-red-500" : ""}
               />
-              {errors.get("firstAmount") && (
-                <span className="text-destructive text-sm">{errors.get("firstAmount")}</span>
+              {errors.has("verificationCode") && (
+                <span className="text-destructive text-sm">{errors.get("verificationCode")}</span>
               )}
             </div>
+          ) : (
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="amount-1">Amount 1</Label>
+                <NumberInput
+                  id="amount-1"
+                  value={firstAmount}
+                  onChange={(value) => setFirstAmount(value)}
+                  invalid={errors.has("firstAmount")}
+                  prefix="$"
+                  decimal
+                  {...(errors.has("firstAmount") && { "aria-invalid": true })}
+                />
+                {errors.get("firstAmount") && (
+                  <span className="text-destructive text-sm">{errors.get("firstAmount")}</span>
+                )}
+              </div>
 
-            <div>
-              <Label htmlFor="amount-2">Amount 2</Label>
-              <NumberInput
-                id="amount-2"
-                value={secondAmount}
-                onChange={(value) => setSecondAmount(value)}
-                invalid={errors.has("secondAmount")}
-                prefix="$"
-                decimal
-                {...(errors.has("secondAmount") && { "aria-invalid": true })}
-              />
-              {errors.get("secondAmount") && (
-                <span className="text-destructive text-sm">{errors.get("secondAmount")}</span>
-              )}
+              <div>
+                <Label htmlFor="amount-2">Amount 2</Label>
+                <NumberInput
+                  id="amount-2"
+                  value={secondAmount}
+                  onChange={(value) => setSecondAmount(value)}
+                  invalid={errors.has("secondAmount")}
+                  prefix="$"
+                  decimal
+                  {...(errors.has("secondAmount") && { "aria-invalid": true })}
+                />
+                {errors.get("secondAmount") && (
+                  <span className="text-destructive text-sm">{errors.get("secondAmount")}</span>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="modal-footer">
-          <MutationButton loadingText="Submitting..." mutation={verifyMicrodeposit}>
-            Submit
-          </MutationButton>
-        </div>
-      </Modal>
+          <DialogFooter>
+            <MutationButton loadingText="Submitting..." mutation={verifyMicrodeposit}>
+              Submit
+            </MutationButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
