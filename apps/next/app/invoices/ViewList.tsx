@@ -9,8 +9,6 @@ import EquityPercentageLockModal from "@/app/invoices/EquityPercentageLockModal"
 import { StatusWithTooltip } from "@/app/invoices/Status";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import DurationInput from "@/components/DurationInput";
-import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
 import { linkClasses } from "@/components/Link";
 import NumberInput from "@/components/NumberInput";
@@ -18,6 +16,8 @@ import Placeholder from "@/components/Placeholder";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { trpc } from "@/trpc/client";
@@ -263,12 +263,12 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
             <FormItem>
               <FormLabel htmlFor="invoice-date">Invoice date</FormLabel>
               <FormControl>
-                <Input 
+                <Input
                   id="invoice-date"
-                  value={date} 
-                  onChange={(e) => setDate(e.target.value)} 
-                  type="date" 
-                  disabled={submit.isPending} 
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  type="date"
+                  disabled={submit.isPending}
                 />
               </FormControl>
             </FormItem>

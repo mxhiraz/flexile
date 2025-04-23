@@ -78,23 +78,13 @@ export default function NewTenderOffer() {
             <FormItem>
               <FormLabel htmlFor="start-date">Start date</FormLabel>
               <FormControl>
-                <Input 
-                  id="start-date"
-                  value={startDate} 
-                  onChange={(e) => setStartDate(e.target.value)} 
-                  type="date" 
-                />
+                <Input id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} type="date" />
               </FormControl>
             </FormItem>
             <FormItem>
               <FormLabel htmlFor="end-date">End date</FormLabel>
               <FormControl>
-                <Input 
-                  id="end-date"
-                  value={endDate} 
-                  onChange={(e) => setEndDate(e.target.value)} 
-                  type="date" 
-                />
+                <Input id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} type="date" />
               </FormControl>
             </FormItem>
             <div className="grid gap-2">

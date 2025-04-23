@@ -99,24 +99,19 @@ function Create() {
             <FormItem>
               <FormLabel htmlFor="email">Email</FormLabel>
               <FormControl>
-                <Input 
+                <Input
                   id="email"
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  type="email" 
-                  placeholder="Contractor's email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  placeholder="Contractor's email"
                 />
               </FormControl>
             </FormItem>
             <FormItem>
               <FormLabel htmlFor="start-date">Start date</FormLabel>
               <FormControl>
-                <Input 
-                  id="start-date"
-                  value={startDate} 
-                  onChange={(e) => setStartDate(e.target.value)} 
-                  type="date" 
-                />
+                <Input id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} type="date" />
               </FormControl>
             </FormItem>
             <RoleSelector value={roleId ?? null} onChange={setRoleId} />
