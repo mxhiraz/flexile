@@ -181,9 +181,10 @@ const LegalCertificationModal = ({
         </div>
 
         <FormItem>
-          <FormLabel>Your signature</FormLabel>
+          <FormLabel htmlFor="signature">Your signature</FormLabel>
           <FormControl>
             <Input
+              id="signature"
               value={signature}
               onChange={(e) => setSignature(e.target.value)}
               className="font-signature text-xl"
