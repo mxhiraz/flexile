@@ -1,5 +1,5 @@
 import { type Page } from "@playwright/test";
-import { differenceInMonths, format } from "date-fns";
+import { differenceInCalendarMonths, format } from "date-fns";
 
 /**
  * Selects a date from a DatePicker component triggered by an associated label.
@@ -11,8 +11,8 @@ import { differenceInMonths, format } from "date-fns";
  */
 export async function selectDateFromDatePicker(page: Page, label: string, targetDate: Date) {
   await page.getByLabel(label).click();
-  const diff = differenceInMonths(targetDate, new Date());
-  console.log(targetDate, new Date(), differenceInMonths(targetDate, new Date()));
+  const diff = differenceInCalendarMonths(targetDate, new Date());
+  console.log(targetDate, new Date(), diff);
   for (let i = 0; i < Math.abs(diff); i++) {
     await page.getByLabel(`Go to the ${diff > 0 ? "Next" : "Previous"} Month`).click();
   }

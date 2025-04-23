@@ -132,7 +132,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
           {absences.map((absence, index) => (
             <div key={absence.id || `absence-${index}`} className="flex flex-col gap-2 lg:flex-row">
               <div className="grid flex-1 gap-2">
-                <Label htmlFor={`startsOn-${index}`}>From</Label>
+                <Label htmlFor={`${uid}-startsOn-${index}`}>From</Label>
                 <DatePicker
                   id={`${uid}-startsOn-${index}`}
                   value={absence.startsOn}
@@ -141,7 +141,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
                 />
               </div>
               <div className="grid flex-1 gap-2">
-                <Label htmlFor={`endsOn-${index}`}>Until</Label>
+                <Label htmlFor={`${uid}-endsOn-${index}`}>Until</Label>
                 <DatePicker
                   id={`${uid}-endsOn-${index}`}
                   value={absence.endsOn}

@@ -109,7 +109,6 @@ test.describe("End contract", () => {
     await page.getByRole("link", { name: contractor.preferredName }).click();
     await page.getByRole("button", { name: "End contract" }).click();
 
-    await page.waitForTimeout(100000);
     await selectDateFromDatePicker(page, "End date", futureDate);
     await page.getByRole("button", { name: "Yes, end contract" }).click();
 
