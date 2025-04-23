@@ -1,7 +1,7 @@
 import { utc } from "@date-fns/utc";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
-import { parseISO, startOfWeek } from "date-fns";
+import { formatISO, parseISO, startOfWeek } from "date-fns";
 import { List, Map } from "immutable";
 import { useEffect, useId, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
@@ -70,10 +70,11 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
       validAbsences.forEach((absence, index) => {
         validAbsences.forEach((otherAbsence, otherIndex) => {
           if (index <= otherIndex) return;
+          const dateToString = (date: Date | null) => (date ? formatISO(date, { representation: "date" }) : null);
           if (
             areOverlapping(
-              { startsOn: absence.startsOn, endsOn: absence.endsOn },
-              { startsOn: otherAbsence.startsOn, endsOn: otherAbsence.endsOn },
+              { startsOn: dateToString(absence.startsOn), endsOn: dateToString(absence.endsOn) },
+              { startsOn: dateToString(otherAbsence.startsOn), endsOn: dateToString(otherAbsence.endsOn) },
             )
           ) {
             errors.set(absence, "Absence periods cannot overlap");

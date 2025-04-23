@@ -2,8 +2,8 @@ import { utc } from "@date-fns/utc";
 import { format } from "date-fns";
 
 export type Period = {
-  startsOn: Date | null;
-  endsOn: Date | null;
+  startsOn: string | null;
+  endsOn: string | null;
 };
 
 export const areOverlapping = <T extends Period>(period1: T, period2: T): boolean => {

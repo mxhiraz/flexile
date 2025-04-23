@@ -20,8 +20,8 @@ import { useCurrentCompany } from "@/global";
 import { DEFAULT_WORKING_HOURS_PER_WEEK } from "@/models";
 import { AVG_TRIAL_HOURS } from "@/models/constants";
 import { DocumentTemplateType, PayRateType, trpc } from "@/trpc/client";
+import { formatServerDate } from "@/utils/time";
 import { useOnChange } from "@/utils/useOnChange";
-
 function Create() {
   const company = useCurrentCompany();
   const router = useRouter();
@@ -158,7 +158,7 @@ function Create() {
               companyId: company.id,
               applicationId,
               email,
-              startedAt: startDate,
+              startedAt: formatServerDate(startDate),
               payRateInSubunits: rateUsd * 100,
               payRateType: role?.payRateType ?? PayRateType.Hourly,
               onTrial,
