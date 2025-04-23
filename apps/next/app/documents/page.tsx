@@ -12,14 +12,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import DocusealForm from "@/app/documents/DocusealForm";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import MainLayout from "@/components/layouts/Main";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import MutationButton from "@/components/MutationButton";
 import Placeholder from "@/components/Placeholder";
 import Status, { type Variant as StatusVariant } from "@/components/Status";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import type { RouterOutput } from "@/trpc";
@@ -412,9 +412,7 @@ export default function DocumentsPage() {
                   className={inviteLawyerMutation.isError ? "border-destructive" : ""}
                 />
               </FormControl>
-              {inviteLawyerMutation.isError && (
-                <FormMessage>{inviteLawyerMutation.error?.message}</FormMessage>
-              )}
+              {inviteLawyerMutation.isError ? <FormMessage>{inviteLawyerMutation.error.message}</FormMessage> : null}
             </FormItem>
             <MutationButton
               mutation={inviteLawyerMutation}
@@ -472,7 +470,7 @@ const SignDocumentModal = ({ document, onClose }: { document: SignableDocument; 
   });
 
   return (
-    <Dialog open={true} onOpenChange={() => onClose()}>
+    <Dialog open onOpenChange={() => onClose()}>
       <DialogContent>
         {user.activeRole === "lawyer" && document.type === DocumentType.BoardConsent && (
           <header className="flex justify-end gap-4">
@@ -492,24 +490,24 @@ const SignDocumentModal = ({ document, onClose }: { document: SignableDocument; 
           readonlyFields={readonlyFields}
           preview={user.activeRole === "lawyer" && document.type === DocumentType.BoardConsent}
           onComplete={() => {
-          const userIsSigner = document.signatories.some(
-            (signatory) => signatory.id === user.id && signatory.title === "Signer",
-          );
-          const role = userIsSigner
-            ? "Signer"
-            : document.type === DocumentType.BoardConsent
-              ? assertDefined(
-                  document.signatories.find((signatory) => signatory.id === user.id)?.title,
-                  "User is not a board member",
-                )
-              : "Company Representative";
-          signDocument.mutate({
-            companyId: company.id,
-            id: document.id,
-            role,
-          });
-        }}
-      />
+            const userIsSigner = document.signatories.some(
+              (signatory) => signatory.id === user.id && signatory.title === "Signer",
+            );
+            const role = userIsSigner
+              ? "Signer"
+              : document.type === DocumentType.BoardConsent
+                ? assertDefined(
+                    document.signatories.find((signatory) => signatory.id === user.id)?.title,
+                    "User is not a board member",
+                  )
+                : "Company Representative";
+            signDocument.mutate({
+              companyId: company.id,
+              id: document.id,
+              role,
+            });
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

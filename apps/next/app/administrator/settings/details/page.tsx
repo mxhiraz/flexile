@@ -66,16 +66,16 @@ export default function Details() {
           <FormItem>
             <FormLabel>Company's legal name</FormLabel>
             <FormControl>
-              <Input 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                className={errors.has("name") ? "border-red-500" : ""} 
-                autoFocus 
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={errors.has("name") ? "border-red-500" : ""}
+                autoFocus
               />
             </FormControl>
             {errors.has("name") && <FormMessage>{errors.get("name")}</FormMessage>}
           </FormItem>
-          
+
           <FormItem>
             <FormLabel>EIN</FormLabel>
             <FormControl>
@@ -88,7 +88,7 @@ export default function Details() {
             </FormControl>
             {errors.has("taxId") && <FormMessage>{errors.get("taxId")}</FormMessage>}
           </FormItem>
-          
+
           <FormItem>
             <FormLabel>Phone number</FormLabel>
             <FormControl>
@@ -101,7 +101,7 @@ export default function Details() {
             </FormControl>
             {errors.has("phoneNumber") && <FormMessage>{errors.get("phoneNumber")}</FormMessage>}
           </FormItem>
-          
+
           <FormItem>
             <FormLabel>Residential address (street name, number, apt)</FormLabel>
             <FormControl>
@@ -113,20 +113,20 @@ export default function Details() {
             </FormControl>
             {errors.has("streetAddress") && <FormMessage>{errors.get("streetAddress")}</FormMessage>}
           </FormItem>
-          
+
           <div className="grid gap-3 md:grid-cols-3">
             <FormItem>
               <FormLabel>City or town</FormLabel>
               <FormControl>
-                <Input 
-                  value={city} 
-                  onChange={(e) => setCity(e.target.value)} 
-                  className={errors.has("city") ? "border-red-500" : ""} 
+                <Input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className={errors.has("city") ? "border-red-500" : ""}
                 />
               </FormControl>
               {errors.has("city") && <FormMessage>{errors.get("city")}</FormMessage>}
             </FormItem>
-            
+
             <FormItem>
               <FormLabel>State</FormLabel>
               <FormControl>
@@ -140,32 +140,28 @@ export default function Details() {
               </FormControl>
               {errors.has("state") && <FormMessage>{errors.get("state")}</FormMessage>}
             </FormItem>
-            
+
             <FormItem>
               <FormLabel>Postal code</FormLabel>
               <FormControl>
-                <Input 
-                  value={zipCode} 
-                  onChange={(e) => setZipCode(e.target.value)} 
-                  className={errors.has("zipCode") ? "border-red-500" : ""} 
+                <Input
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                  className={errors.has("zipCode") ? "border-red-500" : ""}
                 />
               </FormControl>
               {errors.has("zipCode") && <FormMessage>{errors.get("zipCode")}</FormMessage>}
             </FormItem>
           </div>
-          
+
           <FormItem>
             <FormLabel>Country</FormLabel>
             <FormControl>
-              <Select
-                value=""
-                onChange={(value) => value}
-                placeholder="United States"
-                options={[]}
-                disabled
-              />
+              <Select value="" onChange={(value) => value} placeholder="United States" options={[]} disabled />
             </FormControl>
-            <FormMessage>Flexile is currently available only to companies incorporated in the United States.</FormMessage>
+            <FormMessage>
+              Flexile is currently available only to companies incorporated in the United States.
+            </FormMessage>
           </FormItem>
         </div>
       </CardContent>

@@ -9,7 +9,7 @@ import { z } from "zod";
 import MutationButton from "@/components/MutationButton";
 import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCurrentUser } from "@/global";
@@ -20,7 +20,7 @@ import { onboarding_path } from "@/utils/routes";
 
 const formSchema = z.object({
   legal_name: z.string().refine((val) => /\S+\s+\S+/u.test(val), {
-    message: "This doesn't look like a complete full name."
+    message: "This doesn't look like a complete full name.",
   }),
   preferred_name: z.string().min(1, "This field is required"),
   country_code: z.string().min(1, "This field is required"),
@@ -47,7 +47,7 @@ const PersonalDetails = <T extends string>({ nextLinkTo }: { nextLinkTo: Route<T
 
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmNoPayout, setConfirmNoPayout] = useState(false);
-  
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,7 +61,7 @@ const PersonalDetails = <T extends string>({ nextLinkTo }: { nextLinkTo: Route<T
   const submit = useMutation({
     mutationFn: async () => {
       const values = form.getValues();
-      
+
       if (!confirmNoPayout && sanctionedCountries.has(values.country_code)) {
         setModalOpen(true);
         throw new Error("Sanctioned country");
@@ -71,13 +71,13 @@ const PersonalDetails = <T extends string>({ nextLinkTo }: { nextLinkTo: Route<T
         method: "PATCH",
         url: onboarding_path(),
         accept: "json",
-        jsonData: { 
+        jsonData: {
           user: {
             legal_name: values.legal_name,
             preferred_name: values.preferred_name,
             country_code: values.country_code,
             citizenship_country_code: values.citizenship_country_code,
-          } 
+          },
         },
         assertOk: true,
       });
@@ -86,7 +86,7 @@ const PersonalDetails = <T extends string>({ nextLinkTo }: { nextLinkTo: Route<T
   });
 
   const countryOptions = [...countries].map(([code, name]) => ({ value: code, label: name }));
-  
+
   const onSubmit = form.handleSubmit(() => {
     submit.mutate();
   });

@@ -3,7 +3,7 @@ import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { linkClasses } from "@/components/Link";
 import MutationButton from "@/components/MutationButton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -62,8 +62,8 @@ const LegalCertificationModal = ({
         ) : (
           <>
             <div>
-              The information you provided will be included in the W-9 form required by the U.S. tax laws to confirm your
-              taxpayer status. If you're eligible for 1099 forms, you'll receive an email with a download link once
+              The information you provided will be included in the W-9 form required by the U.S. tax laws to confirm
+              your taxpayer status. If you're eligible for 1099 forms, you'll receive an email with a download link once
               available.
             </div>
             <div className="flex gap-1">
@@ -131,8 +131,8 @@ const LegalCertificationModal = ({
               <br />
               <ol>
                 <li>
-                  The number shown on this form is my correct taxpayer identification number (or I am waiting for a number
-                  to be issued to me); and
+                  The number shown on this form is my correct taxpayer identification number (or I am waiting for a
+                  number to be issued to me); and
                 </li>
                 <li>
                   I am not subject to backup withholding because: (a) I am exempt from backup withholding, or (b) I have
@@ -183,7 +183,7 @@ const LegalCertificationModal = ({
         <FormItem>
           <FormLabel>Your signature</FormLabel>
           <FormControl>
-            <Input 
+            <Input
               value={signature}
               onChange={(e) => setSignature(e.target.value)}
               className="font-signature text-xl"
@@ -191,7 +191,8 @@ const LegalCertificationModal = ({
             />
           </FormControl>
           <FormMessage>
-            I agree that the signature will be the electronic representation of my signature and for all purposes when I use them on documents just the same as a pen-and-paper signature.
+            I agree that the signature will be the electronic representation of my signature and for all purposes when I
+            use them on documents just the same as a pen-and-paper signature.
           </FormMessage>
         </FormItem>
 
