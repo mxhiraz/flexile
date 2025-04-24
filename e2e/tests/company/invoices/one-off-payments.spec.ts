@@ -8,7 +8,7 @@ import { invoicesFactory } from "@test/factories/invoices";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { findRequiredTableRow } from "@test/helpers/matchers";
-import { expect, test } from "@test/index";
+import { expect, test, withinModal } from "@test/index";
 import { format } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import { companies, equityGrants, invoices } from "@/db/schema";
@@ -45,15 +45,14 @@ test.describe("One-off payments", () => {
       await page.goto(`/people/${workerUser.externalId}?tab=invoices`);
       await page.getByRole("button", { name: "Issue payment" }).click();
 
-      const modal = page.getByRole("dialog");
-      await expect(modal).toBeVisible();
-
-      await modal.getByLabel("Amount").fill("2154.30");
-      await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
-      await modal.getByRole("button", { name: "Issue payment" }).click();
+      await withinModal(async (modal) => {
+        await modal.getByLabel("Amount").fill("2154.30");
+        await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
+        await modal.getByRole("button", { name: "Issue payment" }).click();
+      }, { page });
       await page.waitForLoadState("networkidle");
 
-      await expect(modal).not.toBeVisible();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
 
       const invoiceRow = await findRequiredTableRow(page, {
         "Invoice ID": "O-0001",
@@ -116,16 +115,14 @@ test.describe("One-off payments", () => {
         await page.goto(`/people/${workerUser.externalId}?tab=invoices`);
         await page.getByRole("button", { name: "Issue payment" }).click();
 
-        const modal = page.getByRole("dialog");
-        await expect(modal).toBeVisible();
-
-        await modal.getByLabel("Amount").fill("50000.00");
-        await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
-        await modal.getByPlaceholder("Enter percentage").fill("80");
-        await modal.getByRole("button", { name: "Issue payment" }).click();
-        await page.waitForLoadState("networkidle");
-
-        await expect(modal.getByText("Recipient has insufficient unvested equity")).toBeVisible();
+        await withinModal(async (modal) => {
+          await modal.getByLabel("Amount").fill("50000.00");
+          await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
+          await modal.getByPlaceholder("Enter percentage").fill("80");
+          await modal.getByRole("button", { name: "Issue payment" }).click();
+          await page.waitForLoadState("networkidle");
+          await expect(modal.getByText("Recipient has insufficient unvested equity")).toBeVisible();
+        }, { page });
       });
 
       test("with a fixed equity percentage", async ({ page, sentEmails }) => {
@@ -134,16 +131,15 @@ test.describe("One-off payments", () => {
         await page.goto(`/people/${workerUser.externalId}?tab=invoices`);
         await page.getByRole("button", { name: "Issue payment" }).click();
 
-        const modal = page.getByRole("dialog");
-        await expect(modal).toBeVisible();
-
-        await modal.getByLabel("Amount").fill("500.00");
-        await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
-        await modal.getByPlaceholder("Enter percentage").fill("10");
-        await modal.getByRole("button", { name: "Issue payment" }).click();
+        await withinModal(async (modal) => {
+          await modal.getByLabel("Amount").fill("500.00");
+          await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
+          await modal.getByPlaceholder("Enter percentage").fill("10");
+          await modal.getByRole("button", { name: "Issue payment" }).click();
+        }, { page });
         await page.waitForLoadState("networkidle");
 
-        await expect(modal).not.toBeVisible();
+        await expect(page.getByRole("dialog")).not.toBeVisible();
 
         const invoiceRow = await findRequiredTableRow(page, {
           "Invoice ID": "O-0001",
