@@ -6,7 +6,7 @@ import { userComplianceInfosFactory } from "@test/factories/userComplianceInfos"
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { mockDocuseal } from "@test/helpers/docuseal";
-import { expect, test } from "@test/index";
+import { expect, test, withinModal } from "@test/index";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { BusinessType, DocumentType, TaxClassification } from "@/db/enums";
 import { companies, documents, userComplianceInfos, users } from "@/db/schema";
@@ -122,12 +122,13 @@ test.describe("Tax settings", () => {
       await page.getByLabel("ZIP code").fill("10001");
       await page.getByRole("button", { name: "Save changes" }).click();
 
-      await expect(page.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
-      await expect(page.getByLabel("Signature")).toHaveValue("Janet Flexile");
+      await withinModal(async (modal) => {
+        await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
+        await expect(modal.getByLabel("Signature")).toHaveValue("Janet Flexile");
+        await modal.getByRole("button", { name: "Save", exact: true }).click();
+      }, { page, title: "W-9 Certification and Tax Forms Delivery" });
 
-      await page.getByRole("button", { name: "Save", exact: true }).click();
-
-      await expect(page.getByText("W-9 Certification and Tax Forms Delivery")).not.toBeVisible();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
 
       const updatedUser = await db.query.users
         .findFirst({
@@ -170,12 +171,13 @@ test.describe("Tax settings", () => {
       await page.getByLabel("Tax ID").fill("123456789");
       await page.getByRole("button", { name: "Save changes" }).click();
 
-      await expect(page.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
-      await expect(page.getByLabel("Signature")).toHaveValue("Caro Example");
+      await withinModal(async (modal) => {
+        await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
+        await expect(modal.getByLabel("Signature")).toHaveValue("Caro Example");
+        await modal.getByRole("button", { name: "Save", exact: true }).click();
+      }, { page, title: "W-9 Certification and Tax Forms Delivery" });
 
-      await page.getByRole("button", { name: "Save", exact: true }).click();
-
-      await expect(page.getByText("W-9 Certification and Tax Forms Delivery")).not.toBeVisible();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
 
       const updatedUser = await db.query.users
         .findFirst({
@@ -268,11 +270,13 @@ test.describe("Tax settings", () => {
 
         await page.getByLabel("Postal code").fill("1234");
         await page.getByRole("button", { name: "Save changes" }).click();
-        await expect(page.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
+        
+        await withinModal(async (modal) => {
+          await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
+          await modal.getByRole("button", { name: "Save", exact: true }).click();
+        }, { page, title: "W-9 Certification and Tax Forms Delivery" });
 
-        await page.getByRole("button", { name: "Save", exact: true }).click();
-
-        await expect(page.getByText("W-9 Certification and Tax Forms Delivery")).not.toBeVisible();
+        await expect(page.getByRole("dialog")).not.toBeVisible();
 
         const updatedUser = await db.query.users
           .findFirst({
@@ -340,10 +344,12 @@ test.describe("Tax settings", () => {
 
       await page.getByRole("button", { name: "Save changes" }).click();
 
-      await expect(page.getByText("W-8BEN Certification and Tax Forms Delivery")).toBeVisible();
-      await page.getByRole("button", { name: "Save", exact: true }).click();
+      await withinModal(async (modal) => {
+        await expect(modal.getByText("W-8BEN Certification and Tax Forms Delivery")).toBeVisible();
+        await modal.getByRole("button", { name: "Save", exact: true }).click();
+      }, { page, title: "W-8BEN Certification and Tax Forms Delivery" });
 
-      await expect(page.getByText("W-8BEN Certification and Tax Forms Delivery")).not.toBeVisible();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
 
       const updatedUser = await db.query.users
         .findFirst({
