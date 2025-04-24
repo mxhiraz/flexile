@@ -122,14 +122,11 @@ test.describe("Tax settings", () => {
       await page.getByLabel("ZIP code").fill("10001");
       await page.getByRole("button", { name: "Save changes" }).click();
 
-      await withinModal(
-        async (modal) => {
-          await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
-          await expect(modal.getByLabel("Signature")).toHaveValue("Janet Flexile");
-          await modal.getByRole("button", { name: "Save", exact: true }).click();
-        },
-        { page, title: "W-9 Certification and Tax Forms Delivery" },
-      );
+      await withinModal(async (modal) => {
+        await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
+        await expect(modal.getByLabel("Signature")).toHaveValue("Janet Flexile");
+        await modal.getByRole("button", { name: "Save", exact: true }).click();
+      }, { page, title: "W-9 Certification and Tax Forms Delivery" });
 
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
@@ -174,14 +171,11 @@ test.describe("Tax settings", () => {
       await page.getByLabel("Tax ID").fill("123456789");
       await page.getByRole("button", { name: "Save changes" }).click();
 
-      await withinModal(
-        async (modal) => {
-          await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
-          await expect(modal.getByLabel("Signature")).toHaveValue("Caro Example");
-          await modal.getByRole("button", { name: "Save", exact: true }).click();
-        },
-        { page, title: "W-9 Certification and Tax Forms Delivery" },
-      );
+      await withinModal(async (modal) => {
+        await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
+        await expect(modal.getByLabel("Signature")).toHaveValue("Caro Example");
+        await modal.getByRole("button", { name: "Save", exact: true }).click();
+      }, { page, title: "W-9 Certification and Tax Forms Delivery" });
 
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
@@ -277,13 +271,10 @@ test.describe("Tax settings", () => {
         await page.getByLabel("Postal code").fill("1234");
         await page.getByRole("button", { name: "Save changes" }).click();
 
-        await withinModal(
-          async (modal) => {
-            await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
-            await modal.getByRole("button", { name: "Save", exact: true }).click();
-          },
-          { page, title: "W-9 Certification and Tax Forms Delivery" },
-        );
+        await withinModal(async (modal) => {
+          await expect(modal.getByText("W-9 Certification and Tax Forms Delivery")).toBeVisible();
+          await modal.getByRole("button", { name: "Save", exact: true }).click();
+        }, { page, title: "W-9 Certification and Tax Forms Delivery" });
 
         await expect(page.getByRole("dialog")).not.toBeVisible();
 
@@ -353,13 +344,10 @@ test.describe("Tax settings", () => {
 
       await page.getByRole("button", { name: "Save changes" }).click();
 
-      await withinModal(
-        async (modal) => {
-          await expect(modal.getByText("W-8BEN Certification and Tax Forms Delivery")).toBeVisible();
-          await modal.getByRole("button", { name: "Save", exact: true }).click();
-        },
-        { page, title: "W-8BEN Certification and Tax Forms Delivery" },
-      );
+      await withinModal(async (modal) => {
+        await expect(modal.getByText("W-8BEN Certification and Tax Forms Delivery")).toBeVisible();
+        await modal.getByRole("button", { name: "Save", exact: true }).click();
+      }, { page, title: "W-8BEN Certification and Tax Forms Delivery" });
 
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
