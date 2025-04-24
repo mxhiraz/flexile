@@ -53,8 +53,11 @@ const inputFieldSchema = z.object({
     .nullable(),
   example: z.string(),
 });
-// Used for type checking in BankAccountField
 type InputField = z.infer<typeof inputFieldSchema>;
+
+const isTextInputField = (field: any): field is InputField => {
+  return field && (field.type === "text" || field.type === "date");
+};
 
 const fieldSchema = z
   .object({ key: z.string(), refreshRequirementsOnChange: z.boolean(), required: z.boolean(), name: z.string() })
@@ -488,7 +491,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
                 setTimeout(() => fieldUpdated(field), 0);
               }}
               field={field}
-              invalid={errors.has(field.key)}
+              invalid={errors.has(field.key) || false}
               help={errors.get(field.key)}
             />
           );
@@ -527,7 +530,7 @@ const BankAccountField = ({
   field: any; 
   onChange: (value: string) => void;
   invalid?: boolean;
-  help?: string;
+  help?: string | undefined;
   value: string;
 } & Omit<React.ComponentProps<typeof Input>, "onChange" | "value">) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -535,7 +538,7 @@ const BankAccountField = ({
 
   const applyDisplayFormat = (inputValue: string, cursorPosition = 0) => {
     // This masking is very simple and assumes formats are alphanumeric with single punctuation characters
-    if (!field.displayFormat || !inputValue) {
+    if (!isTextInputField(field) || !field.displayFormat || !inputValue) {
       return { value: inputValue, cursorPosition };
     }
 
@@ -571,9 +574,9 @@ const BankAccountField = ({
       <Input
         id={fieldId}
         ref={inputRef}
-        type={field.type === "text" || field.type === "date" ? field.type : "text"}
-        placeholder={field.example ? applyDisplayFormat(field.example).value : ""}
-        maxLength={field.maxLength ?? undefined}
+        type={isTextInputField(field) ? field.type : "text"}
+        placeholder={isTextInputField(field) && field.example ? applyDisplayFormat(field.example).value : ""}
+        maxLength={isTextInputField(field) ? field.maxLength ?? undefined : undefined}
         onChange={handleInput}
         value={value}
         className={invalid ? "border-red-500 focus-visible:ring-red-500" : ""}
