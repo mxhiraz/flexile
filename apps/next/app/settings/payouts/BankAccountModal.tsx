@@ -61,9 +61,8 @@ interface BaseField {
   name: string;
 }
 
-const isTextInputField = (field: BaseField | null | undefined): field is InputField => {
-  return Boolean(field && (field.type === "text" || field.type === "date"));
-};
+const isTextInputField = (field: BaseField | null | undefined): field is InputField =>
+  Boolean(field && (field.type === "text" || field.type === "date"));
 
 const fieldSchema = z
   .object({ key: z.string(), refreshRequirementsOnChange: z.boolean(), required: z.boolean(), name: z.string() })
@@ -532,8 +531,8 @@ const BankAccountField = ({
   help,
   value,
   ...inputProps
-}: { 
-  field: BaseField; 
+}: {
+  field: BaseField;
   onChange: (value: string) => void;
   invalid?: boolean;
   help?: string | undefined;
@@ -561,7 +560,10 @@ const BankAccountField = ({
       })
       .join("");
 
-    return { value: formatted.slice(0, isTextInputField(field) ? field.maxLength ?? undefined : undefined), cursorPosition };
+    return {
+      value: formatted.slice(0, isTextInputField(field) ? (field.maxLength ?? undefined) : undefined),
+      cursorPosition,
+    };
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -580,13 +582,13 @@ const BankAccountField = ({
         ref={inputRef}
         type={isTextInputField(field) ? field.type : "text"}
         placeholder={isTextInputField(field) && field.example ? applyDisplayFormat(field.example).value : ""}
-        maxLength={isTextInputField(field) ? field.maxLength ?? undefined : undefined}
+        maxLength={isTextInputField(field) ? (field.maxLength ?? undefined) : undefined}
         onChange={handleInput}
         value={value}
         className={invalid ? "border-red-500 focus-visible:ring-red-500" : ""}
         {...inputProps}
       />
-      {help && <div className="text-sm text-red-500">{help}</div>}
+      {help ? <div className="text-sm text-red-500">{help}</div> : null}
     </div>
   );
 };
