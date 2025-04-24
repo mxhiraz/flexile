@@ -132,17 +132,20 @@ test.describe("Invoice submission, approval and rejection", () => {
 
     await page.getByRole("button", { name: "Approve selected" }).click();
 
-    await withinModal(async (modal) => {
-      await expect(modal.getByText("You are paying $646 now.")).toBeVisible();
-      await expect(modal.getByText(workerUserA.legalName ?? "never")).toBeVisible();
-      await expect(modal.getByText("$623")).toBeVisible();
-      await expect(modal.getByText(workerUserB.legalName ?? "never")).toBeVisible();
-      await expect(modal.getByText("$23")).toBeVisible();
-      await expect(modal.getByRole("button", { name: "No, cancel" })).toBeVisible();
-      await expect(modal.getByRole("button", { name: "Yes, proceed" })).toBeVisible();
-      await modal.getByRole("button", { name: "No, cancel" }).click();
-    }, { page, title: "Approve these invoices?" });
-    
+    await withinModal(
+      async (modal) => {
+        await expect(modal.getByText("You are paying $646 now.")).toBeVisible();
+        await expect(modal.getByText(workerUserA.legalName ?? "never")).toBeVisible();
+        await expect(modal.getByText("$623")).toBeVisible();
+        await expect(modal.getByText(workerUserB.legalName ?? "never")).toBeVisible();
+        await expect(modal.getByText("$23")).toBeVisible();
+        await expect(modal.getByRole("button", { name: "No, cancel" })).toBeVisible();
+        await expect(modal.getByRole("button", { name: "Yes, proceed" })).toBeVisible();
+        await modal.getByRole("button", { name: "No, cancel" }).click();
+      },
+      { page, title: "Approve these invoices?" },
+    );
+
     await expect(page.getByRole("dialog")).not.toBeVisible();
 
     await page.getByRole("checkbox", { name: "Select all" }).uncheck();
