@@ -566,8 +566,6 @@ const BankAccountField = ({
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
-    if (!input) return;
-
     const { value, cursorPosition } = applyDisplayFormat(input.value, input.selectionEnd ?? 0);
     onChange(value);
 
