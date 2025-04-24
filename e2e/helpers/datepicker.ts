@@ -12,9 +12,9 @@ import { differenceInCalendarMonths, format } from "date-fns";
 export async function selectDateFromDatePicker(page: Page, label: string, targetDate: Date) {
   await page.getByLabel(label).click();
   const diff = differenceInCalendarMonths(targetDate, new Date());
-  console.log(targetDate, new Date(), diff);
   for (let i = 0; i < Math.abs(diff); i++) {
     await page.getByLabel(`Go to the ${diff > 0 ? "Next" : "Previous"} Month`).click();
   }
   await page.getByLabel(format(targetDate, "PPPP")).click();
+  await page.getByLabel(label).click();
 }
