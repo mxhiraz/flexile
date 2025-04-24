@@ -176,7 +176,7 @@ test.describe("New Contractor", () => {
     await page.getByLabel("Rate").fill("120000");
 
     await page.getByRole("button", { name: "Send invite" }).click();
-    
+
     await withinModal(
       async (modal) => {
         await modal.getByRole("button", { name: "Sign now" }).click();
