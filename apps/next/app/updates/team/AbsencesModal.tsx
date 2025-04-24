@@ -132,9 +132,10 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
             <div key={absence.id || `absence-${index}`} className="flex flex-col gap-2 lg:flex-row">
               <div className="flex-1">
                 <FormItem>
-                  <FormLabel>From</FormLabel>
+                  <FormLabel htmlFor={`absence-from-${index}`}>From</FormLabel>
                   <FormControl>
                     <Input
+                      id={`absence-from-${index}`}
                       value={absence.startsOn || ""}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         updateAbsence(index, { startsOn: e.target.value })
@@ -147,9 +148,10 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
               </div>
               <div className="flex-1">
                 <FormItem>
-                  <FormLabel>Until</FormLabel>
+                  <FormLabel htmlFor={`absence-until-${index}`}>Until</FormLabel>
                   <FormControl>
                     <Input
+                      id={`absence-until-${index}`}
                       value={absence.endsOn || ""}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         updateAbsence(index, { endsOn: e.target.value })
