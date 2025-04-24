@@ -102,9 +102,9 @@ export const CompanyDetails = () => {
           name="legal_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Your full legal name</FormLabel>
+              <FormLabel htmlFor="legal-name">Your full legal name</FormLabel>
               <FormControl>
-                <Input {...field} autoFocus />
+                <Input id="legal-name" {...field} autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,9 +116,9 @@ export const CompanyDetails = () => {
           name="company.name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Your company's legal name</FormLabel>
+              <FormLabel htmlFor="company-name">Your company's legal name</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input id="company-name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -130,9 +130,9 @@ export const CompanyDetails = () => {
           name="company.street_address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Street address, apt number</FormLabel>
+              <FormLabel htmlFor="street-address">Street address, apt number</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input id="street-address" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -145,9 +145,9 @@ export const CompanyDetails = () => {
             name="company.city"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>City</FormLabel>
+                <FormLabel htmlFor="city">City</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input id="city" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -159,9 +159,10 @@ export const CompanyDetails = () => {
             name="company.state"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>State</FormLabel>
+                <FormLabel htmlFor="state">State</FormLabel>
                 <FormControl>
                   <ComboBox
+                    id="state"
                     {...field}
                     placeholder="Choose State"
                     options={usStates.map(({ name, code }) => ({ value: code, label: name }))}
@@ -177,9 +178,9 @@ export const CompanyDetails = () => {
             name="company.zip_code"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>ZIP code</FormLabel>
+                <FormLabel htmlFor="zip-code">ZIP code</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input id="zip-code" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

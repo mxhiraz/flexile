@@ -402,9 +402,10 @@ export default function DocumentsPage() {
           </DialogHeader>
           <form>
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel htmlFor="lawyer-email">Email</FormLabel>
               <FormControl>
                 <Input
+                  id="lawyer-email"
                   value={lawyerEmail}
                   onChange={(e) => setLawyerEmail(e.target.value)}
                   placeholder="Lawyer's email"
