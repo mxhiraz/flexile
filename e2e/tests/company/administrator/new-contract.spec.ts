@@ -176,6 +176,16 @@ test.describe("New Contractor", () => {
     await page.getByLabel("Rate").fill("120000");
 
     await page.getByRole("button", { name: "Send invite" }).click();
+    
+    await withinModal(
+      async (modal) => {
+        await modal.getByRole("button", { name: "Sign now" }).click();
+        await modal.getByRole("link", { name: "Type" }).click();
+        await modal.getByPlaceholder("Type signature here...").fill("Admin Admin");
+        await modal.getByRole("button", { name: "Complete" }).click();
+      },
+      { page },
+    );
 
     const row = page.getByRole("row").filter({ hasText: email });
     await expect(row).toContainText(email);
