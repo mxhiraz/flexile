@@ -224,9 +224,7 @@ export default function TaxPage() {
               placeholder="Enter your full legal name"
               className={errors.has("legal_name") ? "border-red-500" : ""}
             />
-            {errors.has("legal_name") && (
-              <div className="text-destructive text-sm">{errors.get("legal_name")}</div>
-            )}
+            {errors.has("legal_name") && <div className="text-destructive text-sm">{errors.get("legal_name")}</div>}
           </div>
 
           <Select
@@ -309,7 +307,9 @@ export default function TaxPage() {
           <div className="grid items-start gap-3 md:grid-cols-2">
             <div className="grid gap-2">
               <div className="flex justify-between gap-2">
-                <Label htmlFor="tax-id">{useMemo(() => (isForeign ? "Foreign tax ID" : `Tax ID (${tinName})`), [isForeign, tinName])}</Label>
+                <Label htmlFor="tax-id">
+                  {useMemo(() => (isForeign ? "Foreign tax ID" : `Tax ID (${tinName})`), [isForeign, tinName])}
+                </Label>
                 {!isForeign && formData.tax_id && !taxIdChanged ? (
                   <>
                     {taxIdStatus === "verified" && <Status variant="success">VERIFIED</Status>}
@@ -346,9 +346,7 @@ export default function TaxPage() {
                   </Button>
                 </div>
               </div>
-              {errors.has("tax_id") && (
-                <div className="text-destructive text-sm">{errors.get("tax_id")}</div>
-              )}
+              {errors.has("tax_id") && <div className="text-destructive text-sm">{errors.get("tax_id")}</div>}
             </div>
 
             <div className="grid gap-2">
@@ -385,9 +383,7 @@ export default function TaxPage() {
               placeholder="Enter city"
               className={errors.has("city") ? "border-red-500" : ""}
             />
-            {errors.has("city") && (
-              <div className="text-destructive text-sm">{errors.get("city")}</div>
-            )}
+            {errors.has("city") && <div className="text-destructive text-sm">{errors.get("city")}</div>}
           </div>
 
           <div className="grid items-start gap-3 md:grid-cols-2">
@@ -413,9 +409,7 @@ export default function TaxPage() {
                 placeholder={`Enter ${zipCodeLabel.toLowerCase()}`}
                 className={errors.has("zip_code") ? "border-red-500" : ""}
               />
-              {errors.has("zip_code") && (
-                <div className="text-destructive text-sm">{errors.get("zip_code")}</div>
-              )}
+              {errors.has("zip_code") && <div className="text-destructive text-sm">{errors.get("zip_code")}</div>}
             </div>
           </div>
         </CardContent>

@@ -11,7 +11,7 @@ import NumberInput from "@/components/NumberInput";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -360,10 +360,10 @@ const WalletAddressModal = ({
         <DialogHeader>
           <DialogTitle>Get paid with ETH</DialogTitle>
         </DialogHeader>
-        
+
         <div className="text-gray-500">
-          Payments will be sent to the specified Ethereum address. The amount will be based on the current exchange rate,
-          and Flexile will cover network fees.
+          Payments will be sent to the specified Ethereum address. The amount will be based on the current exchange
+          rate, and Flexile will cover network fees.
         </div>
 
         <Alert variant="destructive">
