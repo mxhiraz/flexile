@@ -4,11 +4,11 @@ import { Fragment, useState } from "react";
 import { z } from "zod";
 import DocusealForm from "@/app/documents/DocusealForm";
 import Delta from "@/components/Delta";
-import Modal from "@/components/Modal";
 import RangeInput from "@/components/RangeInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import env from "@/env/client";
 import { useCurrentCompany, useCurrentUser } from "@/global";
@@ -93,37 +93,30 @@ const ExerciseModal = ({
   });
 
   return (
-    <Modal
-      open
-      title="Exercise your options"
-      sidebar
-      onClose={onClose}
-      footer={
-        signing ? null : (
-          <Button onClick={() => setSigning(true)} disabled={optionsToExercise === 0}>
-            Proceed
-          </Button>
-        )
-      }
-    >
-      {signing ? (
-        <DocusealForm
-          src={`https://docuseal.com/d/${env.NEXT_PUBLIC_EQUITY_EXERCISE_DOCUSEAL_ID}`}
-          externalId={new Date().toISOString()}
-          onComplete={(data) =>
-            submitMutation.mutate(z.object({ submission_id: z.number() }).parse(data).submission_id)
-          }
-          values={{
-            __companyName: company.name,
-            __name: user.legalName,
-            __email: user.email,
-            __address1: user.address.street_address,
-            __address2: `${user.address.city}, ${user.address.state} ${user.address.zip_code}`,
-            __address3: user.address.country,
-          }}
-        />
-      ) : (
-        <>
+    <Dialog open={true} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-[800px]">
+        <DialogHeader>
+          <DialogTitle>Exercise your options</DialogTitle>
+        </DialogHeader>
+        
+        {signing ? (
+          <DocusealForm
+            src={`https://docuseal.com/d/${env.NEXT_PUBLIC_EQUITY_EXERCISE_DOCUSEAL_ID}`}
+            externalId={new Date().toISOString()}
+            onComplete={(data) =>
+              submitMutation.mutate(z.object({ submission_id: z.number() }).parse(data).submission_id)
+            }
+            values={{
+              __companyName: company.name,
+              __name: user.legalName,
+              __email: user.email,
+              __address1: user.address.street_address,
+              __address2: `${user.address.city}, ${user.address.state} ${user.address.zip_code}`,
+              __address3: user.address.country,
+            }}
+          />
+        ) : (
+          <>
           <RangeInput
             value={optionsToExercise}
             onChange={setOptionsToExercise}
@@ -215,8 +208,17 @@ const ExerciseModal = ({
             </Card>
           </div>
         </>
-      )}
-    </Modal>
+        )}
+        
+        {!signing && (
+          <DialogFooter>
+            <Button onClick={() => setSigning(true)} disabled={optionsToExercise === 0}>
+              Proceed
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };
 
