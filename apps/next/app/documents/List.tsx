@@ -215,7 +215,7 @@ const SignDocumentModal = ({ document, onClose }: { document: SignableDocument; 
   });
 
   return (
-    <Dialog open={true} onOpenChange={() => onClose()}>
+    <Dialog open onOpenChange={() => onClose()}>
       <DialogContent>
         {user.activeRole === "lawyer" && document.type === DocumentType.BoardConsent && (
           <header className="flex justify-end gap-4">

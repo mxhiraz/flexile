@@ -125,7 +125,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
         <DialogHeader>
           <DialogTitle>Time off</DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid gap-4">
           {absences.size === 0 ? "no time off" : null}
           {absences.map((absence, index) => (
@@ -136,7 +136,9 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
                   <FormControl>
                     <Input
                       value={absence.startsOn || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateAbsence(index, { startsOn: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        updateAbsence(index, { startsOn: e.target.value })
+                      }
                       type="date"
                       className={absenceErrors.has(absence) ? "border-red-500" : ""}
                     />
@@ -149,14 +151,14 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
                   <FormControl>
                     <Input
                       value={absence.endsOn || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateAbsence(index, { endsOn: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        updateAbsence(index, { endsOn: e.target.value })
+                      }
                       type="date"
                       className={absenceErrors.has(absence) ? "border-red-500" : ""}
                     />
                   </FormControl>
-                  {absenceErrors.has(absence) && (
-                    <FormMessage>{absenceErrors.get(absence)}</FormMessage>
-                  )}
+                  {absenceErrors.has(absence) && <FormMessage>{absenceErrors.get(absence)}</FormMessage>}
                 </FormItem>
               </div>
               <div className="flex items-end">
@@ -196,7 +198,7 @@ const AbsencesModal = ({ open, onClose }: { open: boolean; onClose: () => void }
             <span>Add more</span>
           </Button>
         </div>
-        
+
         <DialogFooter>
           <MutationButton mutation={submit} loadingText="Saving..." successText="Saved!" idleVariant="primary">
             Save time off

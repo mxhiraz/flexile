@@ -93,12 +93,12 @@ const ExerciseModal = ({
   });
 
   return (
-    <Dialog open={true} onOpenChange={() => onClose()}>
+    <Dialog open onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Exercise your options</DialogTitle>
         </DialogHeader>
-        
+
         {signing ? (
           <DocusealForm
             src={`https://docuseal.com/d/${env.NEXT_PUBLIC_EQUITY_EXERCISE_DOCUSEAL_ID}`}
@@ -117,99 +117,99 @@ const ExerciseModal = ({
           />
         ) : (
           <>
-          <RangeInput
-            value={optionsToExercise}
-            onChange={setOptionsToExercise}
-            invalid={submitMutation.isError}
-            min={selectedGrantIds.length > 0 ? 1 : 0}
-            max={maxExercisableOptions}
-            label="Options to exercise"
-          />
+            <RangeInput
+              value={optionsToExercise}
+              onChange={setOptionsToExercise}
+              invalid={submitMutation.isError}
+              min={selectedGrantIds.length > 0 ? 1 : 0}
+              max={maxExercisableOptions}
+              label="Options to exercise"
+            />
 
-          <Card className="mt-4">
-            <CardContent>
-              {sortedGrants.map((grant, index) => (
-                <Fragment key={grant.id}>
-                  <div className="flex flex-col">
-                    <div className="mb-2 flex items-center justify-between gap-4">
-                      {sortedGrants.length > 1 ? (
-                        <Checkbox
-                          checked={selectedGrants.has(grant)}
-                          label={`${grant.periodStartedAt.getFullYear()} Grant at ${formatMoney(
-                            grant.exercisePriceUsd,
-                          )} / share`}
-                          disabled={selectedGrantIds.length === 1 && selectedGrants.has(grant)}
-                          onCheckedChange={() => {
-                            setSelectedGrantIds(
-                              selectedGrants.has(grant)
-                                ? selectedGrantIds.filter((id) => id !== grant.id)
-                                : [...selectedGrantIds, grant.id],
-                            );
+            <Card className="mt-4">
+              <CardContent>
+                {sortedGrants.map((grant, index) => (
+                  <Fragment key={grant.id}>
+                    <div className="flex flex-col">
+                      <div className="mb-2 flex items-center justify-between gap-4">
+                        {sortedGrants.length > 1 ? (
+                          <Checkbox
+                            checked={selectedGrants.has(grant)}
+                            label={`${grant.periodStartedAt.getFullYear()} Grant at ${formatMoney(
+                              grant.exercisePriceUsd,
+                            )} / share`}
+                            disabled={selectedGrantIds.length === 1 && selectedGrants.has(grant)}
+                            onCheckedChange={() => {
+                              setSelectedGrantIds(
+                                selectedGrants.has(grant)
+                                  ? selectedGrantIds.filter((id) => id !== grant.id)
+                                  : [...selectedGrantIds, grant.id],
+                              );
+                            }}
+                          />
+                        ) : (
+                          <span>
+                            {grant.periodStartedAt.getFullYear()} Grant at {formatMoney(grant.exercisePriceUsd)} / share
+                          </span>
+                        )}
+                        <span className="min-w-[17ch] text-right tabular-nums">
+                          <span className={selectedGrants.get(grant) ? "font-bold" : ""}>
+                            {(selectedGrants.get(grant) ?? 0).toLocaleString()}
+                          </span>{" "}
+                          of {grant.vestedShares.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="h-1 w-full rounded-full bg-gray-200">
+                        <div
+                          className="h-1 rounded-full bg-black"
+                          style={{
+                            width: `${((selectedGrants.get(grant) ?? 0) / grant.vestedShares) * 100}%`,
                           }}
                         />
-                      ) : (
-                        <span>
-                          {grant.periodStartedAt.getFullYear()} Grant at {formatMoney(grant.exercisePriceUsd)} / share
-                        </span>
-                      )}
-                      <span className="min-w-[17ch] text-right tabular-nums">
-                        <span className={selectedGrants.get(grant) ? "font-bold" : ""}>
-                          {(selectedGrants.get(grant) ?? 0).toLocaleString()}
-                        </span>{" "}
-                        of {grant.vestedShares.toLocaleString()}
-                      </span>
+                      </div>
                     </div>
-                    <div className="h-1 w-full rounded-full bg-gray-200">
-                      <div
-                        className="h-1 rounded-full bg-black"
-                        style={{
-                          width: `${((selectedGrants.get(grant) ?? 0) / grant.vestedShares) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                  {index !== sortedGrants.length - 1 && <Separator />}
-                </Fragment>
-              ))}
-            </CardContent>
-          </Card>
-
-          <div className="mt-4 grid">
-            <h3 className="mb-2">Summary</h3>
-            <Card>
-              <CardContent>
-                <div className="flex justify-between gap-2 font-bold">
-                  <div>Exercise cost</div>
-                  <div>{formatMoney(totalExerciseCost)}</div>
-                </div>
-                <Separator />
-                <div className="flex justify-between gap-2">
-                  <div>Payment method</div>
-                  <div>Bank transfer</div>
-                </div>
-                <Separator />
-                <div className="flex justify-between gap-2">
-                  <div>
-                    Options value
-                    <br />
-                    <span className="text-sm text-gray-600">
-                      Based on {companyValuation.toLocaleString([], { notation: "compact" })} valuation
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    {formatMoney(new Decimal(optionsToExercise).mul(companySharePrice))}
-                    <br />
-                    <span className="flex justify-end text-sm">
-                      <Delta diff={equityValueDeltaPercent} />
-                    </span>
-                  </div>
-                </div>
+                    {index !== sortedGrants.length - 1 && <Separator />}
+                  </Fragment>
+                ))}
               </CardContent>
             </Card>
-          </div>
-        </>
+
+            <div className="mt-4 grid">
+              <h3 className="mb-2">Summary</h3>
+              <Card>
+                <CardContent>
+                  <div className="flex justify-between gap-2 font-bold">
+                    <div>Exercise cost</div>
+                    <div>{formatMoney(totalExerciseCost)}</div>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between gap-2">
+                    <div>Payment method</div>
+                    <div>Bank transfer</div>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between gap-2">
+                    <div>
+                      Options value
+                      <br />
+                      <span className="text-sm text-gray-600">
+                        Based on {companyValuation.toLocaleString([], { notation: "compact" })} valuation
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      {formatMoney(new Decimal(optionsToExercise).mul(companySharePrice))}
+                      <br />
+                      <span className="flex justify-end text-sm">
+                        <Delta diff={equityValueDeltaPercent} />
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
-        
+
         {!signing && (
           <DialogFooter>
             <Button onClick={() => setSigning(true)} disabled={optionsToExercise === 0}>

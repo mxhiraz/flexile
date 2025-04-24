@@ -24,7 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
@@ -196,7 +196,7 @@ export default function AdminList() {
           <DialogHeader>
             <DialogTitle>Approve these invoices?</DialogTitle>
           </DialogHeader>
-          
+
           {selectedPayableInvoices.length > 0 && (
             <div>
               You are paying{" "}
@@ -220,7 +220,7 @@ export default function AdminList() {
             </CardContent>
           </Card>
           {selectedInvoices.length > 6 && <div>and {data.length - 6} more</div>}
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpenModal(null)}>
               No, cancel
@@ -282,7 +282,7 @@ const TasksModal = ({
         <DialogHeader>
           <DialogTitle>{invoice.billFrom}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="mt-4 grid gap-8">
           {invoice.status === "approved" && invoice.approvals.length > 0 ? (
             <Alert variant="default">
@@ -355,7 +355,7 @@ const TasksModal = ({
             </section>
           ) : null}
         </div>
-        
+
         {isActionable(invoice) && (
           <DialogFooter className="grid grid-cols-2 gap-4">
             <Button variant="outline" onClick={onReject}>

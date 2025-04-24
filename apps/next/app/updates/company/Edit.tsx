@@ -208,9 +208,9 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
           <FormItem>
             <FormLabel>Video URL (optional)</FormLabel>
             <FormControl>
-              <Input 
-                value={videoUrl ?? ""} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)} 
+              <Input
+                value={videoUrl ?? ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)}
               />
             </FormControl>
           </FormItem>
