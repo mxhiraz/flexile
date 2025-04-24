@@ -55,8 +55,14 @@ const inputFieldSchema = z.object({
 });
 type InputField = z.infer<typeof inputFieldSchema>;
 
-const isTextInputField = (field: any): field is InputField => {
-  return field && (field.type === "text" || field.type === "date");
+interface BaseField {
+  type: string;
+  key: string;
+  name: string;
+}
+
+const isTextInputField = (field: BaseField | null | undefined): field is InputField => {
+  return Boolean(field && (field.type === "text" || field.type === "date"));
 };
 
 const fieldSchema = z
@@ -527,7 +533,7 @@ const BankAccountField = ({
   value,
   ...inputProps
 }: { 
-  field: any; 
+  field: BaseField; 
   onChange: (value: string) => void;
   invalid?: boolean;
   help?: string | undefined;
@@ -555,7 +561,7 @@ const BankAccountField = ({
       })
       .join("");
 
-    return { value: formatted.slice(0, field.maxLength ?? undefined), cursorPosition };
+    return { value: formatted.slice(0, isTextInputField(field) ? field.maxLength ?? undefined : undefined), cursorPosition };
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
