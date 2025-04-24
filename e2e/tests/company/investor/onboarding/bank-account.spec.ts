@@ -6,7 +6,7 @@ import { usersFactory } from "@test/factories/users";
 import { selectComboboxOption } from "@test/helpers";
 import { login } from "@test/helpers/auth";
 import { fillOutUsdBankAccountForm } from "@test/helpers/bankAccountOnboarding";
-import { expect, test } from "@test/index";
+import { expect, test, withinModal } from "@test/index";
 import { eq } from "drizzle-orm";
 import { companies, userComplianceInfos, users, wiseRecipients } from "@/db/schema";
 
@@ -50,7 +50,12 @@ test.describe("Investor onboarding - bank account", () => {
       zipCode: ` ${onboardingUser.zipCode} `,
     });
 
-    await page.getByRole("button", { name: "Save bank account" }).click();
+    await withinModal(
+      async (modal) => {
+        await modal.getByRole("button", { name: "Save bank account" }).click();
+      },
+      { page, title: "Bank account" }
+    );
 
     await expect(page.getByText("Account ending in 5678")).toBeVisible();
     await expect(page.getByRole("button", { name: "Set up" })).not.toBeVisible();
@@ -72,27 +77,42 @@ test.describe("Investor onboarding - bank account", () => {
 
   test("hides optional fields for USD", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
-
-    await expect(page.getByText("Full name of the account holder")).toBeVisible();
-    await expect(page.getByLabel("Email")).not.toBeVisible();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "USD (United States Dollar)", modal);
+        await expect(modal.getByText("Full name of the account holder")).toBeVisible();
+        await expect(modal.getByLabel("Email")).not.toBeVisible();
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test("hides optional fields for AED", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)");
-
-    await expect(page.getByText("Full name of the account holder")).toBeVisible();
-    await expect(page.getByText("Date of birth (Optional)")).not.toBeVisible();
-    await expect(page.getByText("Recipient's Nationality (Optional)")).not.toBeVisible();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)", modal);
+        await expect(modal.getByText("Full name of the account holder")).toBeVisible();
+        await expect(modal.getByText("Date of birth (Optional)")).not.toBeVisible();
+        await expect(modal.getByText("Recipient's Nationality (Optional)")).not.toBeVisible();
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test("formats IBAN field for AED", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)");
-    await page.getByLabel("IBAN").fill("AE070331234567890123456");
-
-    await expect(page.getByLabel("IBAN")).toHaveValue("AE07 0331 2345 6789 0123 456");
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)", modal);
+        await modal.getByLabel("IBAN").fill("AE070331234567890123456");
+        await expect(modal.getByLabel("IBAN")).toHaveValue("AE07 0331 2345 6789 0123 456");
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test("replaces select field with radio field for fields with 5 or fewer choices", async ({ page }) => {

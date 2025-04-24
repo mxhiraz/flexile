@@ -5,7 +5,7 @@ import { usersFactory } from "@test/factories/users";
 import { selectComboboxOption } from "@test/helpers";
 import { login } from "@test/helpers/auth";
 import { fillOutUsdBankAccountForm } from "@test/helpers/bankAccountOnboarding";
-import { expect, test } from "@test/index";
+import { expect, test, withinModal } from "@test/index";
 import { eq } from "drizzle-orm";
 import { companies, userComplianceInfos, users, wiseRecipients } from "@/db/schema";
 
@@ -39,7 +39,12 @@ test.describe("Contractor onboarding - bank account", () => {
       zipCode: ` ${onboardingUser.zipCode} `,
     });
 
-    await page.getByRole("button", { name: "Save bank account" }).click();
+    await withinModal(
+      async (modal) => {
+        await modal.getByRole("button", { name: "Save bank account" }).click();
+      },
+      { page, title: "Bank account" }
+    );
 
     await expect(page.getByText("Account ending in 5678")).toBeVisible();
     await expect(page.getByRole("button", { name: "Set up" })).not.toBeVisible();
@@ -56,19 +61,22 @@ test.describe("Contractor onboarding - bank account", () => {
 
   test("allows setting a bank account from Mexico", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "MXN (Mexican Peso)");
-    await page.getByLabel("Full name of the account holder").fill(onboardingUser.legalName ?? "");
-    await page.getByLabel("CLABE").fill("032180000118359719");
-
-    await page.getByRole("button", { name: "Continue" }).click();
-
-    await page.getByLabel("Country").click();
-    await page.getByRole("option", { name: "Mexico" }).click();
-    await page.getByLabel("City").fill(" San Andres Cholula ");
-    await page.getByLabel("Street address, apt number").fill(" 4 Oriente 820 ");
-    await page.getByLabel("Post code").fill(" 72810 ");
-
-    await page.getByRole("button", { name: "Save bank account" }).click();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "MXN (Mexican Peso)", modal);
+        await modal.getByLabel("Full name of the account holder").fill(onboardingUser.legalName ?? "");
+        await modal.getByLabel("CLABE").fill("032180000118359719");
+        await modal.getByRole("button", { name: "Continue" }).click();
+        await modal.getByLabel("Country").click();
+        await page.getByRole("option", { name: "Mexico" }).click();
+        await modal.getByLabel("City").fill(" San Andres Cholula ");
+        await modal.getByLabel("Street address, apt number").fill(" 4 Oriente 820 ");
+        await modal.getByLabel("Post code").fill(" 72810 ");
+        await modal.getByRole("button", { name: "Save bank account" }).click();
+      },
+      { page, title: "Bank account" }
+    );
 
     await expect(page.getByText("Account ending in 9719")).toBeVisible();
 
@@ -85,113 +93,148 @@ test.describe("Contractor onboarding - bank account", () => {
 
   test("hides optional fields for USD", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
-
-    await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-    await expect(page.getByLabel("Email")).not.toBeVisible();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "USD (United States Dollar)", modal);
+        await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+        await expect(modal.getByLabel("Email")).not.toBeVisible();
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test("hides optional fields for AED", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)");
-
-    await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-    await expect(page.getByLabel("Date of birth")).not.toBeVisible();
-    await expect(page.getByText("Recipient's Nationality")).not.toBeVisible();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)", modal);
+        await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+        await expect(modal.getByLabel("Date of birth")).not.toBeVisible();
+        await expect(modal.getByText("Recipient's Nationality")).not.toBeVisible();
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test("prefills the user's information", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
 
-    await expect(page.getByLabel("Full name of the account holder")).toHaveValue(onboardingUser.legalName ?? "");
-
-    await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByLabel("State")).toHaveText("Hawaii"); // unabbreviated version
-    await expect(page.getByLabel("City")).toHaveValue(onboardingUser.city ?? "");
-    await expect(page.getByLabel("Street address, apt number")).toHaveValue(onboardingUser.streetAddress ?? "");
-    await expect(page.getByLabel("ZIP code")).toHaveValue(onboardingUser.zipCode ?? "");
+    await withinModal(
+      async (modal) => {
+        await expect(modal.getByLabel("Full name of the account holder")).toHaveValue(onboardingUser.legalName ?? "");
+        await modal.getByRole("button", { name: "Continue" }).click();
+        await expect(modal.getByLabel("State")).toHaveText("Hawaii"); // unabbreviated version
+        await expect(modal.getByLabel("City")).toHaveValue(onboardingUser.city ?? "");
+        await expect(modal.getByLabel("Street address, apt number")).toHaveValue(onboardingUser.streetAddress ?? "");
+        await expect(modal.getByLabel("ZIP code")).toHaveValue(onboardingUser.zipCode ?? "");
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test("validates name and bank account information", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
 
-    await page.getByLabel("Full name of the account holder").fill("Da R");
-    await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("button", { name: "Save bank account" }).click();
-    await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
-    await expect(page.getByLabel("Full name of the account holder")).not.toBeValid();
-    await expect(page.getByLabel("Account number")).not.toBeValid();
-    await expect(page.getByLabel("Routing number")).not.toBeValid();
-    await expect(page.getByText("Please enter an account number.")).toBeVisible();
-    await expect(page.getByText("This doesn't look like a full legal name.")).toBeVisible();
+    await withinModal(
+      async (modal) => {
+        await modal.getByLabel("Full name of the account holder").fill("Da R");
+        await modal.getByRole("button", { name: "Continue" }).click();
+        await modal.getByRole("button", { name: "Save bank account" }).click();
+        await expect(modal.getByRole("button", { name: "Continue" })).toBeDisabled();
+        await expect(modal.getByLabel("Full name of the account holder")).not.toBeValid();
+        await expect(modal.getByLabel("Account number")).not.toBeValid();
+        await expect(modal.getByLabel("Routing number")).not.toBeValid();
+        await expect(modal.getByText("Please enter an account number.")).toBeVisible();
+        await expect(modal.getByText("This doesn't look like a full legal name.")).toBeVisible();
 
-    await page.getByLabel("Full name of the account holder").fill("Jane Doe");
-    await expect(page.getByLabel("Full name of the account holder")).toBeValid();
-    await page.getByLabel("Routing number").fill("123456789");
-    await page.getByLabel("Account number").fill("1");
-    await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("button", { name: "Save bank account" }).click();
+        await modal.getByLabel("Full name of the account holder").fill("Jane Doe");
+        await expect(modal.getByLabel("Full name of the account holder")).toBeValid();
+        await modal.getByLabel("Routing number").fill("123456789");
+        await modal.getByLabel("Account number").fill("1");
+        await modal.getByRole("button", { name: "Continue" }).click();
+        await modal.getByRole("button", { name: "Save bank account" }).click();
 
-    await expect(page.getByLabel("Account number")).not.toBeValid();
-    await expect(page.getByLabel("Routing number")).not.toBeValid();
-    await expect(page.getByText("Please enter a valid account number of between 4 and 17 digits.")).toBeVisible();
-    await expect(page.getByText("This doesn't look like a valid ACH routing number.")).toBeVisible();
+        await expect(modal.getByLabel("Account number")).not.toBeValid();
+        await expect(modal.getByLabel("Routing number")).not.toBeValid();
+        await expect(modal.getByText("Please enter a valid account number of between 4 and 17 digits.")).toBeVisible();
+        await expect(modal.getByText("This doesn't look like a valid ACH routing number.")).toBeVisible();
 
-    await page.getByLabel("Account number").fill("abcd");
-    await page.getByLabel("Account number").fill("12345678");
-    await page.getByLabel("Routing number").fill("071004200");
-    await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("button", { name: "Save bank account" }).click();
+        await modal.getByLabel("Account number").fill("abcd");
+        await modal.getByLabel("Account number").fill("12345678");
+        await modal.getByLabel("Routing number").fill("071004200");
+        await modal.getByRole("button", { name: "Continue" }).click();
+        await modal.getByRole("button", { name: "Save bank account" }).click();
 
-    await expect(page.getByText("Saving bank account...")).toBeVisible();
+        await expect(modal.getByText("Saving bank account...")).toBeVisible();
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test("allows an EUR Recipient to submit bank account info", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "EUR (Euro)");
-    await expect(page.getByLabel("Full name of the account holder")).toHaveValue(onboardingUser.legalName ?? "");
-    await page.getByLabel("IBAN").fill("HR7624020064583467589");
-    await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByLabel("Country")).toHaveText("United States");
-    await page.getByLabel("Country").click();
-    await page.getByRole("option", { name: "Croatia" }).click();
-    await page.getByLabel("City").fill("Zagreb");
-    await page.getByLabel("Street address, apt number").fill("Ulica Suha Punta 3");
-    await page.getByLabel("Post code").fill("23000");
-
-    await page.getByRole("button", { name: "Save bank account" }).click();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "EUR (Euro)", modal);
+        await expect(modal.getByLabel("Full name of the account holder")).toHaveValue(onboardingUser.legalName ?? "");
+        await modal.getByLabel("IBAN").fill("HR7624020064583467589");
+        await modal.getByRole("button", { name: "Continue" }).click();
+        await expect(modal.getByLabel("Country")).toHaveText("United States");
+        await modal.getByLabel("Country").click();
+        await page.getByRole("option", { name: "Croatia" }).click();
+        await modal.getByLabel("City").fill("Zagreb");
+        await modal.getByLabel("Street address, apt number").fill("Ulica Suha Punta 3");
+        await modal.getByLabel("Post code").fill("23000");
+        await modal.getByRole("button", { name: "Save bank account" }).click();
+      },
+      { page, title: "Bank account" }
+    );
 
     await expect(page.getByText("Account ending in 7589")).toBeVisible();
   });
 
   test("allows a CAD Recipient to submit bank account info", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "CAD (Canadian Dollar)");
-    await expect(page.getByLabel("Full name of the account holder")).toHaveValue(onboardingUser.legalName ?? "");
-    await page.getByLabel("Institution number").fill("006");
-    await page.getByLabel("Transit number").fill("04841");
-    await page.getByLabel("Account number").fill("3456712");
-    await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByLabel("Country")).toHaveText("United States");
-    await page.getByLabel("Country").click();
-    await page.getByRole("option", { name: "Canada" }).click();
-    await page.getByLabel("City").fill(onboardingUser.city ?? "");
-    await page.getByLabel("Street address, apt number").fill("59-720 Kamehameha Hwy");
-    await page.getByLabel("Province").click();
-    await page.getByRole("option", { name: "Alberta" }).click();
-    await page.getByLabel("Post code").fill("A2A 2A2");
-
-    await page.getByRole("button", { name: "Save bank account" }).click();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "CAD (Canadian Dollar)", modal);
+        await expect(modal.getByLabel("Full name of the account holder")).toHaveValue(onboardingUser.legalName ?? "");
+        await modal.getByLabel("Institution number").fill("006");
+        await modal.getByLabel("Transit number").fill("04841");
+        await modal.getByLabel("Account number").fill("3456712");
+        await modal.getByRole("button", { name: "Continue" }).click();
+        await expect(modal.getByLabel("Country")).toHaveText("United States");
+        await modal.getByLabel("Country").click();
+        await page.getByRole("option", { name: "Canada" }).click();
+        await modal.getByLabel("City").fill(onboardingUser.city ?? "");
+        await modal.getByLabel("Street address, apt number").fill("59-720 Kamehameha Hwy");
+        await modal.getByLabel("Province").click();
+        await page.getByRole("option", { name: "Alberta" }).click();
+        await modal.getByLabel("Post code").fill("A2A 2A2");
+        await modal.getByRole("button", { name: "Save bank account" }).click();
+      },
+      { page, title: "Bank account" }
+    );
 
     await expect(page.getByText("Account ending in 6712")).toBeVisible();
   });
 
   test("shows relevant account types for individual entity", async ({ page }) => {
     await page.getByRole("button", { name: "Set up" }).click();
-    await selectComboboxOption(page, "Currency", "KRW (South Korean Won)");
-    await expect(page.getByLabel("Date of birth")).toBeVisible();
-    await expect(page.getByLabel("Bank name")).toBeVisible();
-    await expect(page.getByLabel("Account number (KRW accounts only)")).toBeVisible();
+    
+    await withinModal(
+      async (modal) => {
+        await selectComboboxOption(page, "Currency", "KRW (South Korean Won)", modal);
+        await expect(modal.getByLabel("Date of birth")).toBeVisible();
+        await expect(modal.getByLabel("Bank name")).toBeVisible();
+        await expect(modal.getByLabel("Account number (KRW accounts only)")).toBeVisible();
+      },
+      { page, title: "Bank account" }
+    );
   });
 
   test.describe("when the user is a business entity", () => {
@@ -207,76 +250,124 @@ test.describe("Contractor onboarding - bank account", () => {
 
     test("shows relevant account types", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await selectComboboxOption(page, "Currency", "KRW (South Korean Won)");
-      await expect(page.getByLabel("Name of the business / organisation")).toBeVisible();
-      await expect(page.getByLabel("Bank name")).toBeVisible();
-      await expect(page.getByLabel("Account number (KRW accounts only)")).toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await selectComboboxOption(page, "Currency", "KRW (South Korean Won)", modal);
+          await expect(modal.getByLabel("Name of the business / organisation")).toBeVisible();
+          await expect(modal.getByLabel("Bank name")).toBeVisible();
+          await expect(modal.getByLabel("Account number (KRW accounts only)")).toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
 
     test("prefills the account holder field with the business name", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
-      await expect(page.getByLabel("Name of the business / organisation")).toHaveValue("Business Inc.");
+      
+      await withinModal(
+        async (modal) => {
+          await selectComboboxOption(page, "Currency", "USD (United States Dollar)", modal);
+          await expect(modal.getByLabel("Name of the business / organisation")).toHaveValue("Business Inc.");
+        },
+        { page, title: "Bank account" }
+      );
     });
   });
 
   test.describe("address fields", () => {
     test("shows state field", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByLabel("Country").click();
-      await page.getByRole("option", { name: "United States", exact: true }).click();
-      await expect(page.getByLabel("State")).toBeVisible();
-      await expect(page.getByLabel("ZIP code")).toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await selectComboboxOption(page, "Currency", "USD (United States Dollar)", modal);
+          await modal.getByRole("button", { name: "Continue" }).click();
+          await modal.getByLabel("Country").click();
+          await page.getByRole("option", { name: "United States", exact: true }).click();
+          await expect(modal.getByLabel("State")).toBeVisible();
+          await expect(modal.getByLabel("ZIP code")).toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
 
     test("shows province field", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByLabel("Country").click();
-      await page.getByRole("option", { name: "Canada" }).click();
-      await expect(page.getByLabel("Province")).toBeVisible();
-      await expect(page.getByLabel("Post code")).toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await selectComboboxOption(page, "Currency", "USD (United States Dollar)", modal);
+          await modal.getByRole("button", { name: "Continue" }).click();
+          await modal.getByLabel("Country").click();
+          await page.getByRole("option", { name: "Canada" }).click();
+          await expect(modal.getByLabel("Province")).toBeVisible();
+          await expect(modal.getByLabel("Post code")).toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
 
     test("only shows post code field for United Kingdom", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByLabel("Country").click();
-      await page.getByRole("option", { name: "United Kingdom" }).click();
-      await expect(page.getByLabel("Post code")).toBeVisible();
-      await expect(page.getByLabel("Province")).not.toBeVisible();
-      await expect(page.getByLabel("State")).not.toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await selectComboboxOption(page, "Currency", "USD (United States Dollar)", modal);
+          await modal.getByRole("button", { name: "Continue" }).click();
+          await modal.getByLabel("Country").click();
+          await page.getByRole("option", { name: "United Kingdom" }).click();
+          await expect(modal.getByLabel("Post code")).toBeVisible();
+          await expect(modal.getByLabel("Province")).not.toBeVisible();
+          await expect(modal.getByLabel("State")).not.toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
 
     test("does not show state or post code fields for Bahamas", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByLabel("Country").click();
-      await page.getByRole("option", { name: "Bahamas" }).click();
-      await expect(page.getByLabel("Post code")).not.toBeVisible();
-      await expect(page.getByLabel("Province")).not.toBeVisible();
-      await expect(page.getByLabel("State")).not.toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await selectComboboxOption(page, "Currency", "USD (United States Dollar)", modal);
+          await modal.getByRole("button", { name: "Continue" }).click();
+          await modal.getByLabel("Country").click();
+          await page.getByRole("option", { name: "Bahamas" }).click();
+          await expect(modal.getByLabel("Post code")).not.toBeVisible();
+          await expect(modal.getByLabel("Province")).not.toBeVisible();
+          await expect(modal.getByLabel("State")).not.toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
 
     test("shows optional Prefecture field for Japan", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByLabel("Country").click();
-      await page.getByRole("option", { name: "Japan" }).click();
-      await expect(page.getByLabel("Prefecture (optional)")).toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await modal.getByRole("button", { name: "Continue" }).click();
+          await modal.getByLabel("Country").click();
+          await page.getByRole("option", { name: "Japan" }).click();
+          await expect(modal.getByLabel("Prefecture (optional)")).toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
 
     test("shows optional Region field for New Zealand", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByLabel("Country").click();
-      await page.getByRole("option", { name: "New Zealand" }).click();
-      await expect(page.getByLabel("Region (optional)")).toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await modal.getByRole("button", { name: "Continue" }).click();
+          await modal.getByLabel("Country").click();
+          await page.getByRole("option", { name: "New Zealand" }).click();
+          await expect(modal.getByLabel("Region (optional)")).toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
   });
 
@@ -285,7 +376,12 @@ test.describe("Contractor onboarding - bank account", () => {
       test("should pre-fill currency with USD", async ({ page }) => {
         await page.getByRole("button", { name: "Set up" }).click();
 
-        await expect(page.getByLabel("Currency")).toContainText("USD (United States Dollar)");
+        await withinModal(
+          async (modal) => {
+            await expect(modal.getByLabel("Currency")).toContainText("USD (United States Dollar)");
+          },
+          { page, title: "Bank account" }
+        );
       });
     });
 
@@ -294,7 +390,12 @@ test.describe("Contractor onboarding - bank account", () => {
         await db.update(users).set({ countryCode: "FR" }).where(eq(users.id, onboardingUser.id));
         await page.getByRole("button", { name: "Set up" }).click();
 
-        await expect(page.getByLabel("Currency")).toContainText("EUR (Euro)");
+        await withinModal(
+          async (modal) => {
+            await expect(modal.getByLabel("Currency")).toContainText("EUR (Euro)");
+          },
+          { page, title: "Bank account" }
+        );
       });
     });
 
@@ -303,7 +404,12 @@ test.describe("Contractor onboarding - bank account", () => {
         await db.update(users).set({ countryCode: "DE" }).where(eq(users.id, onboardingUser.id));
         await page.getByRole("button", { name: "Set up" }).click();
 
-        await expect(page.getByLabel("Currency")).toContainText("EUR (Euro)");
+        await withinModal(
+          async (modal) => {
+            await expect(modal.getByLabel("Currency")).toContainText("EUR (Euro)");
+          },
+          { page, title: "Bank account" }
+        );
       });
     });
 
@@ -312,7 +418,12 @@ test.describe("Contractor onboarding - bank account", () => {
         await db.update(users).set({ countryCode: "CA" }).where(eq(users.id, onboardingUser.id));
         await page.getByRole("button", { name: "Set up" }).click();
 
-        await expect(page.getByLabel("Currency")).toContainText("CAD (Canadian Dollar)");
+        await withinModal(
+          async (modal) => {
+            await expect(modal.getByLabel("Currency")).toContainText("CAD (Canadian Dollar)");
+          },
+          { page, title: "Bank account" }
+        );
       });
     });
 
@@ -321,7 +432,12 @@ test.describe("Contractor onboarding - bank account", () => {
         await db.update(users).set({ countryCode: "HR" }).where(eq(users.id, onboardingUser.id));
         await page.getByRole("button", { name: "Set up" }).click();
 
-        await expect(page.getByLabel("Currency")).toContainText("EUR (Euro)");
+        await withinModal(
+          async (modal) => {
+            await expect(modal.getByLabel("Currency")).toContainText("EUR (Euro)");
+          },
+          { page, title: "Bank account" }
+        );
       });
     });
   });
@@ -329,10 +445,16 @@ test.describe("Contractor onboarding - bank account", () => {
   test.describe("account type selection", () => {
     test("hides account type and selects the only account type option for AED currency", async ({ page }) => {
       await page.getByRole("button", { name: "Set up" }).click();
-      await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)");
-      await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-      await expect(page.getByLabel("IBAN")).toBeVisible();
-      await expect(page.getByLabel("Account Type")).not.toBeVisible();
+      
+      await withinModal(
+        async (modal) => {
+          await selectComboboxOption(page, "Currency", "AED (United Arab Emirates Dirham)", modal);
+          await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+          await expect(modal.getByLabel("IBAN")).toBeVisible();
+          await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+        },
+        { page, title: "Bank account" }
+      );
     });
 
     test.describe("when the user is from the United States", () => {
@@ -341,70 +463,110 @@ test.describe("Contractor onboarding - bank account", () => {
       });
 
       test("shows local bank account when the currency is GBP", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "GBP (British Pound)");
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("UK sort code")).toBeVisible();
-        await expect(page.getByLabel("Account number")).toBeVisible();
-        await expect(page.getByLabel("I'd prefer to use IBAN")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "GBP (British Pound)", modal);
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("UK sort code")).toBeVisible();
+            await expect(modal.getByLabel("Account number")).toBeVisible();
+            await expect(modal.getByLabel("I'd prefer to use IBAN")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows local bank account when the currency is HKD", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "HKD (Hong Kong Dollar)");
-        await page.getByLabel("I'd prefer to use FPS ID").click();
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("Bank name")).toBeVisible();
-        await expect(page.getByLabel("Account number")).toBeVisible();
-        await expect(page.getByLabel("I'd prefer to use FPS ID")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "HKD (Hong Kong Dollar)", modal);
+            await modal.getByLabel("I'd prefer to use FPS ID").click();
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("Bank name")).toBeVisible();
+            await expect(modal.getByLabel("Account number")).toBeVisible();
+            await expect(modal.getByLabel("I'd prefer to use FPS ID")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows local bank account when the currency is HUF", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "HUF (Hungarian Forint)");
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("Account number")).toBeVisible();
-        await expect(page.getByLabel("I'd prefer to use IBAN")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "HUF (Hungarian Forint)", modal);
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("Account number")).toBeVisible();
+            await expect(modal.getByLabel("I'd prefer to use IBAN")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows local bank account when the currency is IDR", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "IDR (Indonesian Rupiah)");
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("Bank name")).toBeVisible();
-        await expect(page.getByLabel("Account number (IDR accounts only)")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "IDR (Indonesian Rupiah)", modal);
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("Bank name")).toBeVisible();
+            await expect(modal.getByLabel("Account number (IDR accounts only)")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows local bank account when the currency is KES", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "KES (Kenyan Shilling)");
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("Bank name")).toBeVisible();
-        await expect(page.getByLabel("Account number")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "KES (Kenyan Shilling)", modal);
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("Bank name")).toBeVisible();
+            await expect(modal.getByLabel("Account number")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows local bank account when the currency is PHP", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "PHP (Philippine Peso)");
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("Bank name")).toBeVisible();
-        await expect(page.getByLabel("Account number (PHP accounts only)")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "PHP (Philippine Peso)", modal);
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("Bank name")).toBeVisible();
+            await expect(modal.getByLabel("Account number (PHP accounts only)")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows local bank account when the currency is PLN", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "PLN (Polish Złoty)");
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("Account number")).toBeVisible();
-        await expect(page.getByLabel("I'd prefer to use IBAN")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "PLN (Polish Złoty)", modal);
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("Account number")).toBeVisible();
+            await expect(modal.getByLabel("I'd prefer to use IBAN")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows IBAN when the currency is UAH", async ({ page }) => {
-        await selectComboboxOption(page, "Currency", "UAH (Ukrainian Hryvnia)");
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("IBAN")).toBeVisible();
-        await expect(page.getByLabel("I'd prefer to use PrivatBank card")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await selectComboboxOption(page, "Currency", "UAH (Ukrainian Hryvnia)", modal);
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("IBAN")).toBeVisible();
+            await expect(modal.getByLabel("I'd prefer to use PrivatBank card")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
     });
 
@@ -419,16 +581,26 @@ test.describe("Contractor onboarding - bank account", () => {
       });
 
       test("shows local bank account form by default", async ({ page }) => {
-        await expect(page.getByLabel("Full name of the account holder")).toBeVisible();
-        await expect(page.getByLabel("IBAN")).toBeVisible();
-        await expect(page.getByLabel("I'd prefer to use SWIFT")).toBeVisible();
-        await expect(page.getByLabel("Account Type")).not.toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await expect(modal.getByLabel("Full name of the account holder")).toBeVisible();
+            await expect(modal.getByLabel("IBAN")).toBeVisible();
+            await expect(modal.getByLabel("I'd prefer to use SWIFT")).toBeVisible();
+            await expect(modal.getByLabel("Account Type")).not.toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
 
       test("shows SWIFT account if prefer to use SWIFT checkbox is checked", async ({ page }) => {
-        await page.getByLabel("I'd prefer to use SWIFT").check();
-        await expect(page.getByLabel("SWIFT / BIC code")).toBeVisible();
-        await expect(page.getByLabel("Account number")).toBeVisible();
+        await withinModal(
+          async (modal) => {
+            await modal.getByLabel("I'd prefer to use SWIFT").check();
+            await expect(modal.getByLabel("SWIFT / BIC code")).toBeVisible();
+            await expect(modal.getByLabel("Account number")).toBeVisible();
+          },
+          { page, title: "Bank account" }
+        );
       });
     });
   });
