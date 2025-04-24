@@ -29,10 +29,11 @@ test.describe("End contract", () => {
     await page.getByRole("link", { name: contractor.preferredName }).click();
     await page.getByRole("button", { name: "End contract" }).click();
 
-    const today = formatISO(new Date(), { representation: "date" });
-    await expect(page.getByLabel("End date")).toHaveValue(today);
-
-    await page.getByRole("button", { name: "Yes, end contract" }).click();
+    await withinModal(async (modal) => {
+      const today = formatISO(new Date(), { representation: "date" });
+      await expect(modal.getByLabel("End date")).toHaveValue(today);
+      await modal.getByRole("button", { name: "Yes, end contract" }).click();
+    }, { page, title: "End contract" });
 
     await expect(page.getByText("Contractors will show up here.")).toBeVisible();
     await page.getByRole("tab", { name: "Alumni" }).click();
@@ -108,8 +109,10 @@ test.describe("End contract", () => {
     await page.getByRole("link", { name: contractor.preferredName }).click();
     await page.getByRole("button", { name: "End contract" }).click();
 
-    await page.getByLabel("End date").fill(futureDateString);
-    await page.getByRole("button", { name: "Yes, end contract" }).click();
+    await withinModal(async (modal) => {
+      await modal.getByLabel("End date").fill(futureDateString);
+      await modal.getByRole("button", { name: "Yes, end contract" }).click();
+    }, { page, title: "End contract" });
 
     await page.getByRole("link", { name: contractor.preferredName }).click();
     await expect(page.getByText(`Contract ends on ${format(futureDate, "MMM d, yyyy")}`)).toBeVisible();
@@ -117,7 +120,9 @@ test.describe("End contract", () => {
     await expect(page.getByRole("button", { name: "Save changes" })).not.toBeVisible();
 
     await page.getByRole("button", { name: "Cancel contract end" }).click();
-    await page.getByRole("button", { name: "Yes, cancel contract end" }).click();
+    await withinModal(async (modal) => {
+      await modal.getByRole("button", { name: "Yes, cancel contract end" }).click();
+    }, { page, title: "Cancel contract end" });
 
     await expect(page.getByText(`Contract ends on`)).not.toBeVisible();
     await expect(page.getByRole("button", { name: "End contract" })).toBeVisible();
