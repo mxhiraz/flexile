@@ -60,10 +60,15 @@ test.describe("Contractor for multiple companies", () => {
     await expect(page.getByText("You have an unsigned contract")).toBeVisible();
     await page.getByRole("link", { name: "Review & sign" }).click();
 
-    await page.getByRole("button", { name: "Sign now" }).click();
-    await page.getByRole("link", { name: "Type" }).click();
-    await page.getByPlaceholder("Type signature here...").fill("Flexy Bob");
-    await page.getByRole("button", { name: "Complete" }).click();
+    await withinModal(
+      async (modal) => {
+        await modal.getByRole("button", { name: "Sign now" }).click();
+        await modal.getByRole("link", { name: "Type" }).click();
+        await modal.getByPlaceholder("Type signature here...").fill("Flexy Bob");
+        await modal.getByRole("button", { name: "Complete" }).click();
+      },
+      { page },
+    );
 
     await expect(page.getByRole("heading", { name: "Invoicing" })).toBeVisible();
     await expect(page.getByText("You have an unsigned contract")).not.toBeVisible();
@@ -130,10 +135,15 @@ test.describe("Contractor for multiple companies", () => {
     await bankFrame.getByRole("button", { name: "Back to Flexile" }).click();
 
     await page.getByRole("button", { name: "Start using Flexile" }).click();
-    await page.getByRole("button", { name: "Sign now" }).click();
-    await page.getByRole("link", { name: "Type" }).click();
-    await page.getByPlaceholder("Type signature here...").fill("Admin Admin");
-    await page.getByRole("button", { name: "Complete" }).click();
+    await withinModal(
+      async (modal) => {
+        await modal.getByRole("button", { name: "Sign now" }).click();
+        await modal.getByRole("link", { name: "Type" }).click();
+        await modal.getByPlaceholder("Type signature here...").fill("Admin Admin");
+        await modal.getByRole("button", { name: "Complete" }).click();
+      },
+      { page },
+    );
 
     await expect(page.getByRole("cell", { name: "Signed" })).toBeVisible();
   });
