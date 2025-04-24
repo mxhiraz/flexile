@@ -189,47 +189,46 @@ test.describe("One-off payments", () => {
         await page.goto(`/people/${workerUser.externalId}?tab=invoices`);
         await page.getByRole("button", { name: "Issue payment" }).click();
 
-        const modal = page.getByRole("dialog");
-        await expect(modal).toBeVisible();
+        await withinModal(async (modal) => {
+          await modal.getByLabel("Amount").fill("500.00");
+          await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
+          await modal.getByLabel("Equity percentage range").click();
 
-        await modal.getByLabel("Amount").fill("500.00");
-        await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
-        await modal.getByLabel("Equity percentage range").click();
+          const sliderContainer = modal.locator('[data-orientation="horizontal"]').first();
+          const containerBounds = await sliderContainer.boundingBox();
+          if (!containerBounds) throw new Error("Could not get slider container bounds");
 
-        const sliderContainer = modal.locator('[data-orientation="horizontal"]').first();
-        const containerBounds = await sliderContainer.boundingBox();
-        if (!containerBounds) throw new Error("Could not get slider container bounds");
+          // Move minimum thumb to 25%
+          const minThumb = modal.getByRole("slider", { name: "Minimum" });
+          const minThumbBounds = await minThumb.boundingBox();
+          if (!minThumbBounds) throw new Error("Could not get min thumb bounds");
 
-        // Move minimum thumb to 25%
-        const minThumb = modal.getByRole("slider", { name: "Minimum" });
-        const minThumbBounds = await minThumb.boundingBox();
-        if (!minThumbBounds) throw new Error("Could not get min thumb bounds");
+          await minThumb.hover();
+          await page.mouse.down();
+          await page.mouse.move(
+            containerBounds.x + containerBounds.width * 0.25,
+            containerBounds.y + containerBounds.height / 2,
+          );
+          await page.mouse.up();
 
-        await minThumb.hover();
-        await page.mouse.down();
-        await page.mouse.move(
-          containerBounds.x + containerBounds.width * 0.25,
-          containerBounds.y + containerBounds.height / 2,
-        );
-        await page.mouse.up();
+          // Move maximum thumb to 75%
+          const maxThumb = modal.getByRole("slider", { name: "Maximum" });
+          const maxThumbBounds = await maxThumb.boundingBox();
+          if (!maxThumbBounds) throw new Error("Could not get max thumb bounds");
 
-        // Move maximum thumb to 75%
-        const maxThumb = modal.getByRole("slider", { name: "Maximum" });
-        const maxThumbBounds = await maxThumb.boundingBox();
-        if (!maxThumbBounds) throw new Error("Could not get max thumb bounds");
+          await maxThumb.hover();
+          await page.mouse.down();
+          await page.mouse.move(
+            containerBounds.x + containerBounds.width * 0.75,
+            containerBounds.y + containerBounds.height / 2,
+          );
+          await page.mouse.up();
 
-        await maxThumb.hover();
-        await page.mouse.down();
-        await page.mouse.move(
-          containerBounds.x + containerBounds.width * 0.75,
-          containerBounds.y + containerBounds.height / 2,
-        );
-        await page.mouse.up();
-
-        await modal.getByRole("button", { name: "Issue payment" }).click();
+          await modal.getByRole("button", { name: "Issue payment" }).click();
+        }, { page });
         await page.waitForLoadState("networkidle");
 
-        await expect(modal).not.toBeVisible();
+        await expect(page.getByRole("dialog")).not.toBeVisible();
 
         const invoiceRow = await findRequiredTableRow(page, {
           "Invoice ID": "O-0001",
@@ -284,11 +283,10 @@ test.describe("One-off payments", () => {
         await page.getByRole("button", { name: "Accept payment" }).click();
         await page.waitForLoadState("networkidle");
 
-        const modal = page.getByRole("dialog");
-        await expect(modal).toBeVisible();
-
-        await modal.getByRole("button", { name: "Accept payment" }).click();
-        await expect(modal).not.toBeVisible();
+        await withinModal(async (modal) => {
+          await modal.getByRole("button", { name: "Accept payment" }).click();
+        }, { page });
+        await expect(page.getByRole("dialog")).not.toBeVisible();
         await expect(page.getByRole("button", { name: "Accept payment" })).not.toBeVisible();
       });
 
@@ -314,28 +312,27 @@ test.describe("One-off payments", () => {
         await page.getByRole("button", { name: "Accept payment" }).click();
         await page.waitForLoadState("networkidle");
 
-        const modal = page.getByRole("dialog");
-        await expect(modal).toBeVisible();
+        await withinModal(async (modal) => {
+          const sliderContainer = modal.locator('[data-orientation="horizontal"]').first();
+          const containerBounds = await sliderContainer.boundingBox();
+          if (!containerBounds) throw new Error("Could not get slider container bounds");
 
-        const sliderContainer = modal.locator('[data-orientation="horizontal"]').first();
-        const containerBounds = await sliderContainer.boundingBox();
-        if (!containerBounds) throw new Error("Could not get slider container bounds");
+          // Move equity thumb to 25%
+          const equityPercentageThumb = modal.getByRole("slider");
+          const thumbBounds = await equityPercentageThumb.boundingBox();
+          if (!thumbBounds) throw new Error("Could not get equity thumb bounds");
 
-        // Move equity thumb to 25%
-        const equityPercentageThumb = modal.getByRole("slider");
-        const thumbBounds = await equityPercentageThumb.boundingBox();
-        if (!thumbBounds) throw new Error("Could not get equity thumb bounds");
+          await equityPercentageThumb.hover();
+          await page.mouse.down();
+          await page.mouse.move(
+            containerBounds.x + containerBounds.width * 0.25,
+            containerBounds.y + containerBounds.height / 2,
+          );
+          await page.mouse.up();
 
-        await equityPercentageThumb.hover();
-        await page.mouse.down();
-        await page.mouse.move(
-          containerBounds.x + containerBounds.width * 0.25,
-          containerBounds.y + containerBounds.height / 2,
-        );
-        await page.mouse.up();
-
-        await modal.getByRole("button", { name: "Confirm 25% split" }).click();
-        await expect(modal).not.toBeVisible();
+          await modal.getByRole("button", { name: "Confirm 25% split" }).click();
+        }, { page });
+        await expect(page.getByRole("dialog")).not.toBeVisible();
         await expect(page.getByRole("button", { name: "Confirm 25% split" })).not.toBeVisible();
 
         await page.waitForLoadState("networkidle");
@@ -364,13 +361,13 @@ test.describe("One-off payments", () => {
       await page.goto(`/people/${workerUser.externalId}?tab=invoices`);
       await page.getByRole("button", { name: "Issue payment" }).click();
 
-      const modal = page.getByRole("dialog");
+      await withinModal(async (modal) => {
+        await modal.getByLabel("Amount").fill("123.45");
+        await modal.getByLabel("What is this for?").fill("Bonus!");
+        await modal.getByRole("button", { name: "Issue payment" }).click();
+      }, { page });
 
-      await modal.getByLabel("Amount").fill("123.45");
-      await modal.getByLabel("What is this for?").fill("Bonus!");
-      await modal.getByRole("button", { name: "Issue payment" }).click();
-
-      await expect(modal).not.toBeVisible();
+      await expect(page.getByRole("dialog")).not.toBeVisible();
 
       await page.getByRole("link", { name: "Invoices" }).click();
       await expect(page.getByText("No invoices to display.")).toBeVisible();
@@ -393,10 +390,11 @@ test.describe("One-off payments", () => {
       // await page.waitForTimeout(100000);
 
       await page.getByRole("button", { name: "Accept payment" }).click();
-      const acceptPaymentModal = page.getByRole("dialog");
-      await expect(acceptPaymentModal).toContainText("Total value $123.45", { useInnerText: true });
-      await acceptPaymentModal.getByRole("button", { name: "Accept payment" }).click();
-      await expect(acceptPaymentModal).not.toBeVisible();
+      await withinModal(async (modal) => {
+        await expect(modal).toContainText("Total value $123.45", { useInnerText: true });
+        await modal.getByRole("button", { name: "Accept payment" }).click();
+      }, { page });
+      await expect(page.getByRole("dialog")).not.toBeVisible();
 
       await clerk.signOut({ page });
       await login(page, adminUser);
