@@ -172,7 +172,7 @@ export const RejectModal = ({
         <DialogHeader>
           <DialogTitle>Reject invoice?</DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid gap-2">
           <Label htmlFor="reject-reason">Explain why the invoice was rejected and how to fix it (optional)</Label>
           <Textarea
@@ -181,7 +181,7 @@ export const RejectModal = ({
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value)}
           />
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             No, cancel
