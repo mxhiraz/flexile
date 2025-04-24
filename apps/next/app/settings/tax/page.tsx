@@ -11,13 +11,14 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import LegalCertificationModal from "@/app/onboarding/LegalCertificationModal";
 import FormSection from "@/components/FormSection";
-import Input from "@/components/Input";
 import RadioButtons from "@/components/RadioButtons";
 import Select from "@/components/Select";
 import Status from "@/components/Status";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { BusinessType, TaxClassification } from "@/db/enums";
 import { useCurrentUser } from "@/global";
 import { countries } from "@/models/constants";
@@ -214,14 +215,19 @@ export default function TaxPage() {
             </Alert>
           )}
 
-          <Input
-            value={formData.legal_name}
-            onChange={(value) => setFormData({ ...formData, legal_name: value })}
-            label="Full legal name (must match your ID)"
-            placeholder="Enter your full legal name"
-            invalid={errors.has("legal_name")}
-            help={errors.get("legal_name")}
-          />
+          <div className="grid gap-2">
+            <Label htmlFor="legal-name">Full legal name (must match your ID)</Label>
+            <Input
+              id="legal-name"
+              value={formData.legal_name}
+              onChange={(e) => setFormData({ ...formData, legal_name: e.target.value })}
+              placeholder="Enter your full legal name"
+              className={errors.has("legal_name") ? "border-red-500" : ""}
+            />
+            {errors.has("legal_name") && (
+              <div className="text-destructive text-sm">{errors.get("legal_name")}</div>
+            )}
+          </div>
 
           <Select
             value={formData.citizenship_country_code}
@@ -242,14 +248,19 @@ export default function TaxPage() {
 
           {formData.business_entity ? (
             <div className="grid auto-cols-fr grid-flow-col items-start gap-3">
-              <Input
-                value={formData.business_name ?? ""}
-                onChange={(value) => setFormData({ ...formData, business_name: value })}
-                label="Business legal name"
-                placeholder="Enter business legal name"
-                invalid={errors.has("business_name")}
-                help={errors.get("business_name")}
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="business-name">Business legal name</Label>
+                <Input
+                  id="business-name"
+                  value={formData.business_name ?? ""}
+                  onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
+                  placeholder="Enter business legal name"
+                  className={errors.has("business_name") ? "border-red-500" : ""}
+                />
+                {errors.has("business_name") && (
+                  <div className="text-destructive text-sm">{errors.get("business_name")}</div>
+                )}
+              </div>
 
               {!isForeign ? (
                 <>
@@ -296,69 +307,88 @@ export default function TaxPage() {
           />
 
           <div className="grid items-start gap-3 md:grid-cols-2">
-            <Input
-              value={formatUSTaxId(formData.tax_id ?? "")}
-              type={maskTaxId ? "password" : "text"}
-              onChange={(value) => {
-                setFormData({ ...formData, tax_id: normalizedTaxId(value) });
-                setTaxIdChanged(true);
-              }}
-              suffix={
-                <Button
-                  variant="link"
-                  onPointerDown={() => setMaskTaxId(false)}
-                  onPointerUp={() => setMaskTaxId(true)}
-                  onPointerLeave={() => setMaskTaxId(true)}
-                  onTouchStart={() => setMaskTaxId(false)}
-                  onTouchEnd={() => setMaskTaxId(true)}
-                  onTouchCancel={() => setMaskTaxId(true)}
-                >
-                  {maskTaxId ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </Button>
-              }
-              label={
-                <div className="flex justify-between gap-2">
-                  {useMemo(() => (isForeign ? "Foreign tax ID" : `Tax ID (${tinName})`), [isForeign, tinName])}
-                  {!isForeign && formData.tax_id && !taxIdChanged ? (
-                    <>
-                      {taxIdStatus === "verified" && <Status variant="success">VERIFIED</Status>}
-                      {taxIdStatus === "invalid" && <Status variant="critical">INVALID</Status>}
-                      {!taxIdStatus && <Status variant="primary">VERIFYING</Status>}
-                    </>
-                  ) : null}
+            <div className="grid gap-2">
+              <div className="flex justify-between gap-2">
+                <Label htmlFor="tax-id">{useMemo(() => (isForeign ? "Foreign tax ID" : `Tax ID (${tinName})`), [isForeign, tinName])}</Label>
+                {!isForeign && formData.tax_id && !taxIdChanged ? (
+                  <>
+                    {taxIdStatus === "verified" && <Status variant="success">VERIFIED</Status>}
+                    {taxIdStatus === "invalid" && <Status variant="critical">INVALID</Status>}
+                    {!taxIdStatus && <Status variant="primary">VERIFYING</Status>}
+                  </>
+                ) : null}
+              </div>
+              <div className="relative">
+                <Input
+                  id="tax-id"
+                  value={formatUSTaxId(formData.tax_id ?? "")}
+                  type={maskTaxId ? "password" : "text"}
+                  onChange={(e) => {
+                    setFormData({ ...formData, tax_id: normalizedTaxId(e.target.value) });
+                    setTaxIdChanged(true);
+                  }}
+                  placeholder={taxIdPlaceholder}
+                  className={errors.has("tax_id") ? "border-red-500 pr-10" : "pr-10"}
+                  autoComplete="flexile-tax-id"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <Button
+                    variant="link"
+                    className="h-full p-0"
+                    onPointerDown={() => setMaskTaxId(false)}
+                    onPointerUp={() => setMaskTaxId(true)}
+                    onPointerLeave={() => setMaskTaxId(true)}
+                    onTouchStart={() => setMaskTaxId(false)}
+                    onTouchEnd={() => setMaskTaxId(true)}
+                    onTouchCancel={() => setMaskTaxId(true)}
+                  >
+                    {maskTaxId ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </Button>
                 </div>
-              }
-              placeholder={taxIdPlaceholder}
-              invalid={errors.has("tax_id")}
-              help={errors.get("tax_id")}
-              autoComplete="flexile-tax-id"
-            />
+              </div>
+              {errors.has("tax_id") && (
+                <div className="text-destructive text-sm">{errors.get("tax_id")}</div>
+              )}
+            </div>
 
-            <Input
-              value={formData.birth_date ?? ""}
-              onChange={(value) => setFormData({ ...formData, birth_date: value })}
-              label={`Date of ${formData.business_entity ? "incorporation" : "birth"} (optional)`}
-              type="date"
-            />
+            <div className="grid gap-2">
+              <Label htmlFor="birth-date">{`Date of ${formData.business_entity ? "incorporation" : "birth"} (optional)`}</Label>
+              <Input
+                id="birth-date"
+                value={formData.birth_date ?? ""}
+                onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+                type="date"
+              />
+            </div>
           </div>
 
-          <Input
-            value={formData.street_address}
-            onChange={(value) => setFormData({ ...formData, street_address: value })}
-            label="Residential address (street name, number, apartment)"
-            placeholder="Enter address"
-            invalid={errors.has("street_address")}
-            help={errors.get("street_address")}
-          />
+          <div className="grid gap-2">
+            <Label htmlFor="street-address">Residential address (street name, number, apartment)</Label>
+            <Input
+              id="street-address"
+              value={formData.street_address}
+              onChange={(e) => setFormData({ ...formData, street_address: e.target.value })}
+              placeholder="Enter address"
+              className={errors.has("street_address") ? "border-red-500" : ""}
+            />
+            {errors.has("street_address") && (
+              <div className="text-destructive text-sm">{errors.get("street_address")}</div>
+            )}
+          </div>
 
-          <Input
-            value={formData.city}
-            onChange={(value) => setFormData({ ...formData, city: value })}
-            label="City"
-            placeholder="Enter city"
-            invalid={errors.has("city")}
-            help={errors.get("city")}
-          />
+          <div className="grid gap-2">
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              placeholder="Enter city"
+              className={errors.has("city") ? "border-red-500" : ""}
+            />
+            {errors.has("city") && (
+              <div className="text-destructive text-sm">{errors.get("city")}</div>
+            )}
+          </div>
 
           <div className="grid items-start gap-3 md:grid-cols-2">
             <Select
@@ -374,14 +404,19 @@ export default function TaxPage() {
               help={errors.get("state")}
             />
 
-            <Input
-              value={formData.zip_code}
-              onChange={(value) => setFormData({ ...formData, zip_code: value })}
-              label={zipCodeLabel}
-              placeholder={`Enter ${zipCodeLabel.toLowerCase()}`}
-              invalid={errors.has("zip_code")}
-              help={errors.get("zip_code")}
-            />
+            <div className="grid gap-2">
+              <Label htmlFor="zip-code">{zipCodeLabel}</Label>
+              <Input
+                id="zip-code"
+                value={formData.zip_code}
+                onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                placeholder={`Enter ${zipCodeLabel.toLowerCase()}`}
+                className={errors.has("zip_code") ? "border-red-500" : ""}
+              />
+              {errors.has("zip_code") && (
+                <div className="text-destructive text-sm">{errors.get("zip_code")}</div>
+              )}
+            </div>
           </div>
         </CardContent>
 
