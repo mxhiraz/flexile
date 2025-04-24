@@ -17,7 +17,6 @@ import { StatusWithTooltip } from "@/app/invoices/Status";
 import { Task } from "@/app/updates/team/Task";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import MainLayout from "@/components/layouts/Main";
-import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import Placeholder from "@/components/Placeholder";
 import Tabs from "@/components/Tabs";
@@ -25,6 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
@@ -191,12 +191,37 @@ export default function AdminList() {
 
       {data.length === 0 && <Placeholder icon={CheckCircleIcon}>No invoices to display.</Placeholder>}
 
-      <Modal
-        open={openModal === "approve"}
-        title="Approve these invoices?"
-        onClose={() => setOpenModal(null)}
-        footer={
-          <>
+      <Dialog open={openModal === "approve"} onOpenChange={(open) => !open && setOpenModal(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve these invoices?</DialogTitle>
+          </DialogHeader>
+          
+          {selectedPayableInvoices.length > 0 && (
+            <div>
+              You are paying{" "}
+              {formatMoneyFromCents(
+                selectedPayableInvoices.reduce((sum, invoice) => sum + invoice.totalAmountInUsdCents, 0n),
+              )}{" "}
+              now.
+            </div>
+          )}
+          <Card>
+            <CardContent>
+              {selectedInvoices.slice(0, 5).map((invoice, index, array) => (
+                <Fragment key={invoice.id}>
+                  <div className="flex justify-between gap-2">
+                    <b>{invoice.billFrom}</b>
+                    <div>{formatMoneyFromCents(invoice.totalAmountInUsdCents)}</div>
+                  </div>
+                  {index !== array.length - 1 && <Separator />}
+                </Fragment>
+              ))}
+            </CardContent>
+          </Card>
+          {selectedInvoices.length > 6 && <div>and {data.length - 6} more</div>}
+          
+          <DialogFooter>
             <Button variant="outline" onClick={() => setOpenModal(null)}>
               No, cancel
             </Button>
@@ -209,33 +234,9 @@ export default function AdminList() {
             >
               Yes, proceed
             </MutationButton>
-          </>
-        }
-      >
-        {selectedPayableInvoices.length > 0 && (
-          <div>
-            You are paying{" "}
-            {formatMoneyFromCents(
-              selectedPayableInvoices.reduce((sum, invoice) => sum + invoice.totalAmountInUsdCents, 0n),
-            )}{" "}
-            now.
-          </div>
-        )}
-        <Card>
-          <CardContent>
-            {selectedInvoices.slice(0, 5).map((invoice, index, array) => (
-              <Fragment key={invoice.id}>
-                <div className="flex justify-between gap-2">
-                  <b>{invoice.billFrom}</b>
-                  <div>{formatMoneyFromCents(invoice.totalAmountInUsdCents)}</div>
-                </div>
-                {index !== array.length - 1 && <Separator />}
-              </Fragment>
-            ))}
-          </CardContent>
-        </Card>
-        {selectedInvoices.length > 6 && <div>and {data.length - 6} more</div>}
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {detailInvoice && detailInvoice.invoiceType !== "other" ? (
         <TasksModal
@@ -276,15 +277,87 @@ const TasksModal = ({
   });
 
   return (
-    <Modal
-      open={!!tasks}
-      onClose={onClose}
-      sidebar
-      className="w-110 p-3"
-      title={invoice.billFrom}
-      footer={
-        isActionable(invoice) ? (
-          <div className="grid grid-cols-2 gap-4">
+    <Dialog open={!!tasks} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-110 p-3 sm:max-w-[90vw]">
+        <DialogHeader>
+          <DialogTitle>{invoice.billFrom}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="mt-4 grid gap-8">
+          {invoice.status === "approved" && invoice.approvals.length > 0 ? (
+            <Alert variant="default">
+              <InformationCircleIcon />
+              <AlertDescription>
+                Approved by{" "}
+                {invoice.approvals
+                  .map((approval) => `${approval.approver.name} on ${formatDate(approval.approvedAt, { time: true })}`)
+                  .join(", ")}
+              </AlertDescription>
+            </Alert>
+          ) : invoice.status === "rejected" ? (
+            <Alert variant="destructive">
+              <ExclamationTriangleIcon />
+              <AlertDescription>
+                Rejected {invoice.rejector ? `by ${invoice.rejector.name}` : ""}{" "}
+                {invoice.rejectedAt ? `on ${formatDate(invoice.rejectedAt)}` : ""} {invoice.rejectionReason}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+          <section>
+            <header className="flex items-center justify-between gap-4 text-gray-600">
+              <h3 className="text-md uppercase">Invoice details</h3>
+              <Button variant="link" asChild>
+                <Link href={`/invoices/${invoice.id}`}>View invoice</Link>
+              </Button>
+            </header>
+            <Card className="mt-3">
+              <CardContent>
+                <div className="flex justify-between gap-2">
+                  <div>Net amount in cash</div>
+                  <div>{formatMoneyFromCents(invoice.cashAmountInCents)}</div>
+                </div>
+                <Separator />
+                {invoice.equityAmountInCents ? (
+                  <>
+                    <div className="flex justify-between gap-2">
+                      <div>Swapped for equity ({invoice.equityPercentage}%)</div>
+                      <div>{formatMoneyFromCents(invoice.equityAmountInCents)}</div>
+                    </div>
+                    <Separator />
+                  </>
+                ) : null}
+                <div className="flex justify-between gap-2 font-bold">
+                  <div>Payout total</div>
+                  <div>{formatMoneyFromCents(invoice.totalAmountInUsdCents)}</div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+          {company.flags.includes("team_updates") ? (
+            <section className="min-w-0">
+              <header className="mb-3 flex items-center justify-between gap-4 text-gray-600">
+                <h3 className="text-md uppercase">Tasks</h3>
+              </header>
+
+              {tasks && tasks.length > 0 ? (
+                <Card className="mt-3 max-w-full">
+                  <CardContent className="overflow-hidden">
+                    <ul className="space-y-2">
+                      {tasks.map((task) => (
+                        <Task key={task.id} task={task} />
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Placeholder icon={CheckCircleIcon}>No tasks to display yet!</Placeholder>
+              )}
+            </section>
+          ) : null}
+        </div>
+        
+        {isActionable(invoice) && (
+          <DialogFooter className="grid grid-cols-2 gap-4">
             <Button variant="outline" onClick={onReject}>
               Reject
             </Button>
@@ -294,82 +367,9 @@ const TasksModal = ({
                 setTimeout(() => onClose(), 500);
               }}
             />
-          </div>
-        ) : null
-      }
-    >
-      <div className="mt-4 grid gap-8">
-        {invoice.status === "approved" && invoice.approvals.length > 0 ? (
-          <Alert variant="default">
-            <InformationCircleIcon />
-            <AlertDescription>
-              Approved by{" "}
-              {invoice.approvals
-                .map((approval) => `${approval.approver.name} on ${formatDate(approval.approvedAt, { time: true })}`)
-                .join(", ")}
-            </AlertDescription>
-          </Alert>
-        ) : invoice.status === "rejected" ? (
-          <Alert variant="destructive">
-            <ExclamationTriangleIcon />
-            <AlertDescription>
-              Rejected {invoice.rejector ? `by ${invoice.rejector.name}` : ""}{" "}
-              {invoice.rejectedAt ? `on ${formatDate(invoice.rejectedAt)}` : ""} {invoice.rejectionReason}
-            </AlertDescription>
-          </Alert>
-        ) : null}
-        <section>
-          <header className="flex items-center justify-between gap-4 text-gray-600">
-            <h3 className="text-md uppercase">Invoice details</h3>
-            <Button variant="link" asChild>
-              <Link href={`/invoices/${invoice.id}`}>View invoice</Link>
-            </Button>
-          </header>
-          <Card className="mt-3">
-            <CardContent>
-              <div className="flex justify-between gap-2">
-                <div>Net amount in cash</div>
-                <div>{formatMoneyFromCents(invoice.cashAmountInCents)}</div>
-              </div>
-              <Separator />
-              {invoice.equityAmountInCents ? (
-                <>
-                  <div className="flex justify-between gap-2">
-                    <div>Swapped for equity ({invoice.equityPercentage}%)</div>
-                    <div>{formatMoneyFromCents(invoice.equityAmountInCents)}</div>
-                  </div>
-                  <Separator />
-                </>
-              ) : null}
-              <div className="flex justify-between gap-2 font-bold">
-                <div>Payout total</div>
-                <div>{formatMoneyFromCents(invoice.totalAmountInUsdCents)}</div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-        {company.flags.includes("team_updates") ? (
-          <section className="min-w-0">
-            <header className="mb-3 flex items-center justify-between gap-4 text-gray-600">
-              <h3 className="text-md uppercase">Tasks</h3>
-            </header>
-
-            {tasks && tasks.length > 0 ? (
-              <Card className="mt-3 max-w-full">
-                <CardContent className="overflow-hidden">
-                  <ul className="space-y-2">
-                    {tasks.map((task) => (
-                      <Task key={task.id} task={task} />
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ) : (
-              <Placeholder icon={CheckCircleIcon}>No tasks to display yet!</Placeholder>
-            )}
-          </section>
-        ) : null}
-      </div>
-    </Modal>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };
