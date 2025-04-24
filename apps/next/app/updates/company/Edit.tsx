@@ -6,13 +6,14 @@ import { useMutation } from "@tanstack/react-query";
 import { startOfMonth, startOfQuarter, startOfYear, subMonths, subQuarters, subYears } from "date-fns";
 import { useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
-import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
-import Modal from "@/components/Modal";
 import MutationButton from "@/components/MutationButton";
 import { Editor as RichTextEditor } from "@/components/RichText";
 import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
@@ -166,15 +167,20 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto]">
         <div className="grid gap-3">
-          <Input
-            value={title}
-            onChange={(title) => {
-              errors.delete("title");
-              setTitle(title);
-            }}
-            label="Title"
-            invalid={errors.has("title")}
-          />
+          <FormItem>
+            <FormLabel>Title</FormLabel>
+            <FormControl>
+              <Input
+                value={title}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  errors.delete("title");
+                  setTitle(e.target.value);
+                }}
+                className={errors.has("title") ? "border-red-500" : ""}
+              />
+            </FormControl>
+            {errors.has("title") && <FormMessage>Title is required</FormMessage>}
+          </FormItem>
           <Select
             value={selectedPeriod}
             onChange={(value) => setSelectedPeriod(periodOptions.find((o) => o.value === value)?.value ?? "")}
@@ -199,7 +205,15 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
             label="Update"
             invalid={errors.has("body")}
           />
-          <Input value={videoUrl ?? ""} onChange={(videoUrl) => setVideoUrl(videoUrl)} label="Video URL (optional)" />
+          <FormItem>
+            <FormLabel>Video URL (optional)</FormLabel>
+            <FormControl>
+              <Input 
+                value={videoUrl ?? ""} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)} 
+              />
+            </FormControl>
+          </FormItem>
         </div>
         <div className="flex flex-col gap-2">
           <div className="mb-1 text-xs text-gray-500 uppercase">Recipients ({recipientCount.toLocaleString()})</div>
@@ -221,21 +235,28 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
           ) : null}
         </div>
       </div>
-      <Modal open={modalOpen} title="Publish update?" onClose={() => setModalOpen(false)}>
-        {update?.sentAt ? (
-          <p>Your update will be visible in Flexile. No new emails will be sent.</p>
-        ) : (
-          <p>Your update will be emailed to {recipientCount.toLocaleString()} stakeholders.</p>
-        )}
-        <div className="grid auto-cols-fr grid-flow-col items-center gap-3">
-          <Button variant="outline" onClick={() => setModalOpen(false)}>
-            No, cancel
-          </Button>
-          <MutationButton mutation={saveMutation} param={{ publish: !update?.sentAt }} loadingText="Sending...">
-            Yes, {update?.sentAt ? "update" : "publish"}
-          </MutationButton>
-        </div>
-      </Modal>
+      <Dialog open={modalOpen} onOpenChange={(isOpen) => !isOpen && setModalOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Publish update?</DialogTitle>
+          </DialogHeader>
+          {update?.sentAt ? (
+            <p>Your update will be visible in Flexile. No new emails will be sent.</p>
+          ) : (
+            <p>Your update will be emailed to {recipientCount.toLocaleString()} stakeholders.</p>
+          )}
+          <DialogFooter>
+            <div className="grid auto-cols-fr grid-flow-col items-center gap-3">
+              <Button variant="outline" onClick={() => setModalOpen(false)}>
+                No, cancel
+              </Button>
+              <MutationButton mutation={saveMutation} param={{ publish: !update?.sentAt }} loadingText="Sending...">
+                Yes, {update?.sentAt ? "update" : "publish"}
+              </MutationButton>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
