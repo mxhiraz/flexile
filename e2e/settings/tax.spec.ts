@@ -1,3 +1,4 @@
+import type { Locator } from "@playwright/test";
 import { db, takeOrThrow } from "@test/db";
 import { companiesFactory } from "@test/factories/companies";
 import { companyContractorsFactory } from "@test/factories/companyContractors";
