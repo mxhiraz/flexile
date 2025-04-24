@@ -168,9 +168,10 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto]">
         <div className="grid gap-3">
           <FormItem>
-            <FormLabel>Title</FormLabel>
+            <FormLabel htmlFor="update-title">Title</FormLabel>
             <FormControl>
               <Input
+                id="update-title"
                 value={title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   errors.delete("title");
@@ -206,9 +207,10 @@ const Edit = ({ update }: { update?: CompanyUpdate }) => {
             invalid={errors.has("body")}
           />
           <FormItem>
-            <FormLabel>Video URL (optional)</FormLabel>
+            <FormLabel htmlFor="video-url">Video URL (optional)</FormLabel>
             <FormControl>
               <Input
+                id="video-url"
                 value={videoUrl ?? ""}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)}
               />
