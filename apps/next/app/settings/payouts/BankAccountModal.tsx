@@ -4,12 +4,12 @@ import { set } from "lodash-es";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import ComboBox from "@/components/ComboBox";
-import Input from "@/components/Input";
 import MutationButton from "@/components/MutationButton";
 import RadioButtons from "@/components/RadioButtons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   CURRENCIES,
@@ -40,6 +40,7 @@ const LOCAL_BANK_ACCOUNT_TITLE = "Local bank account";
 const inputFieldSchema = z.object({
   type: z.enum(["text", "date"]),
   name: z.string(),
+  key: z.string(),
   minLength: z.number().nullable(),
   maxLength: z.number().nullable(),
   displayFormat: z.string().nullable(),
@@ -52,6 +53,7 @@ const inputFieldSchema = z.object({
     .nullable(),
   example: z.string(),
 });
+// Used for type checking in BankAccountField
 type InputField = z.infer<typeof inputFieldSchema>;
 
 const fieldSchema = z
@@ -517,13 +519,25 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
 const BankAccountField = ({
   onChange,
   field,
+  invalid,
+  help,
+  value,
   ...inputProps
-}: { field: InputField } & React.ComponentProps<typeof Input>) => {
+}: { 
+  field: any; 
+  onChange: (value: string) => void;
+  invalid?: boolean;
+  help?: string;
+  value: string;
+} & Omit<React.ComponentProps<typeof Input>, "onChange" | "value">) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const fieldId = `field-${field.key}`;
 
   const applyDisplayFormat = (inputValue: string, cursorPosition = 0) => {
     // This masking is very simple and assumes formats are alphanumeric with single punctuation characters
-    if (!field.displayFormat || !inputValue) return { value: inputValue, cursorPosition };
+    if (!field.displayFormat || !inputValue) {
+      return { value: inputValue, cursorPosition };
+    }
 
     let index = 0;
     // eslint-disable-next-line @typescript-eslint/no-misused-spread -- doesn't apply to alphanumeric characters
@@ -541,26 +555,32 @@ const BankAccountField = ({
     return { value: formatted.slice(0, field.maxLength ?? undefined), cursorPosition };
   };
 
-  const handleInput = () => {
-    const input = inputRef.current;
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
     if (!input) return;
 
     const { value, cursorPosition } = applyDisplayFormat(input.value, input.selectionEnd ?? 0);
-    onChange?.(value);
+    onChange(value);
 
     requestAnimationFrame(() => input.setSelectionRange(cursorPosition, cursorPosition));
   };
 
   return (
-    <Input
-      ref={inputRef}
-      label={field.name}
-      type={field.type}
-      placeholder={applyDisplayFormat(field.example).value}
-      maxLength={field.maxLength ?? undefined}
-      onChange={handleInput}
-      {...inputProps}
-    />
+    <div className="grid gap-2">
+      <Label htmlFor={fieldId}>{field.name}</Label>
+      <Input
+        id={fieldId}
+        ref={inputRef}
+        type={field.type === "text" || field.type === "date" ? field.type : "text"}
+        placeholder={field.example ? applyDisplayFormat(field.example).value : ""}
+        maxLength={field.maxLength ?? undefined}
+        onChange={handleInput}
+        value={value}
+        className={invalid ? "border-red-500 focus-visible:ring-red-500" : ""}
+        {...inputProps}
+      />
+      {help && <div className="text-sm text-red-500">{help}</div>}
+    </div>
   );
 };
 
