@@ -156,7 +156,7 @@ const ManageModal = ({
           <DialogHeader>
             <DialogTitle>{role.id ? "Edit role" : "New role"}</DialogTitle>
           </DialogHeader>
-          
+
           <div className="grid gap-2">
             <Label htmlFor="role-name">Name</Label>
             <Input
@@ -167,7 +167,7 @@ const ManageModal = ({
             />
             {errors.includes("name") && <div className="text-destructive text-sm">Name is required</div>}
           </div>
-          
+
           <RadioButtons
             value={role.payRateType}
             onChange={(payRateType) => updateRole({ payRateType })}
@@ -179,7 +179,7 @@ const ManageModal = ({
             ].filter((option) => !!option)}
             disabled={!!role.id}
           />
-          
+
           <div className={`grid gap-3 ${expenseAccounts.length > 0 ? "md:grid-cols-2" : ""}`}>
             <div className="grid gap-2">
               <Label htmlFor="pay-rate">Rate</Label>
@@ -211,8 +211,8 @@ const ManageModal = ({
               </div>
             )}
           </div>
-          
-          {role.id && contractorsToUpdate.length > 0 && (
+
+          {role.id && contractorsToUpdate.length > 0 ? (
             <>
               {!updateContractorRates && (
                 <Alert>
@@ -230,17 +230,17 @@ const ManageModal = ({
                 label="Update rate for all contractors with this role"
               />
             </>
-          )}
-          
-          {role.id && role.payRateType === PayRateType.Hourly && (
+          ) : null}
+
+          {role.id && role.payRateType === PayRateType.Hourly ? (
             <Switch
               checked={role.trialEnabled}
               onCheckedChange={(trialEnabled) => updateRole({ trialEnabled })}
               label="Start with trial period"
             />
-          )}
-          
-          {role.id && role.trialEnabled && (
+          ) : null}
+
+          {role.id && role.trialEnabled ? (
             <div className="grid gap-2">
               <Label htmlFor="trial-rate">Rate during trial period</Label>
               <NumberInput
@@ -250,17 +250,17 @@ const ManageModal = ({
                 prefix="$"
               />
             </div>
-          )}
-          
-          {role.id && (
+          ) : null}
+
+          {role.id ? (
             <Switch
               checked={role.expenseCardEnabled}
               onCheckedChange={(expenseCardEnabled) => updateRole({ expenseCardEnabled })}
               label="Role should get expense card"
             />
-          )}
-          
-          {role.id && role.expenseCardEnabled && (
+          ) : null}
+
+          {role.id && role.expenseCardEnabled ? (
             <div className="grid gap-2">
               <Label htmlFor="expense-limit">Limit</Label>
               <NumberInput
@@ -275,23 +275,23 @@ const ManageModal = ({
                 <div className="text-destructive text-sm">Limit is required</div>
               )}
             </div>
-          )}
-          
-          {role.id && !role.expenseCardEnabled && role.expenseCardsCount > 0 && (
+          ) : null}
+
+          {role.id && !role.expenseCardEnabled && role.expenseCardsCount > 0 ? (
             <Alert variant="destructive">
               <ExclamationTriangleIcon />
               <AlertDescription>{role.expenseCardsCount} issued cards will no longer be usable.</AlertDescription>
             </Alert>
-          )}
-          
-          {role.id && (
+          ) : null}
+
+          {role.id ? (
             <RichTextEditor
               value={role.jobDescription}
               onChange={(jobDescription) => updateRole({ jobDescription })}
               label="Job description"
             />
-          )}
-          
+          ) : null}
+
           {expenseAccounts.length > 0 && (
             <Select
               value={role.expenseAccountId ?? ""}
@@ -303,20 +303,20 @@ const ManageModal = ({
               label="Expense account"
             />
           )}
-          
-          {role.id && (
+
+          {role.id ? (
             <Switch
               checked={role.activelyHiring}
               onCheckedChange={(activelyHiring) => updateRole({ activelyHiring })}
               label="Accepting candidates"
             />
-          )}
-          
+          ) : null}
+
           <div className="flex w-full gap-3">
             <Button className="flex-1" onClick={onSave}>
               {role.id ? "Save changes" : "Create"}
             </Button>
-            {role.id && (
+            {role.id ? (
               <Tooltip>
                 <TooltipTrigger asChild={canDelete}>
                   <Button
@@ -330,17 +330,20 @@ const ManageModal = ({
                 </TooltipTrigger>
                 {!canDelete ? <TooltipContent>You can't delete roles with active contractors</TooltipContent> : null}
               </Tooltip>
-            )}
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>
-      
+
       <Dialog open={confirmingRateUpdate} onOpenChange={(open) => setConfirmingRateUpdate(!open)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update rates for {contractorsToUpdate.length} {pluralize("contractor", contractorsToUpdate.length)} to match role rate?</DialogTitle>
+            <DialogTitle>
+              Update rates for {contractorsToUpdate.length} {pluralize("contractor", contractorsToUpdate.length)} to
+              match role rate?
+            </DialogTitle>
           </DialogHeader>
-          
+
           <div>Rate changes will apply to future invoices.</div>
           <Card>
             <CardContent>
@@ -361,7 +364,7 @@ const ManageModal = ({
               ))}
             </CardContent>
           </Card>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmingRateUpdate(false)}>
               Cancel
@@ -370,16 +373,16 @@ const ManageModal = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <Dialog open={confirmingDelete} onOpenChange={(open) => setConfirmingDelete(!open)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Permanently delete role?</DialogTitle>
           </DialogHeader>
-          
+
           {role.applicationCount ? <p>This will remove {role.applicationCount} candidates.</p> : null}
           <p>This action cannot be undone.</p>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmingDelete(false)}>
               No, cancel
