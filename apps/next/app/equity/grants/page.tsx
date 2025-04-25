@@ -241,8 +241,8 @@ const InvestorGrantList = () => {
                   <AlertDescription>
                     <div className="flex items-center justify-between">
                       <span className="font-bold">
-                        We're awaiting a payment of {formatMoneyFromCents(exerciseInProgress.totalCostCents)} to exercise{" "}
-                        {exerciseInProgress.numberOfOptions.toLocaleString()} options.
+                        We're awaiting a payment of {formatMoneyFromCents(exerciseInProgress.totalCostCents)} to
+                        exercise {exerciseInProgress.numberOfOptions.toLocaleString()} options.
                       </span>
                       <MutationButton
                         size="small"
