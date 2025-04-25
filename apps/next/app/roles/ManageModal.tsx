@@ -194,19 +194,22 @@ const ManageModal = ({
     },
   });
   
-  const onSubmit = form.handleSubmit((values) => {
+  const handleFormSubmit = (values: FormValues) => {
     if (contractorsToUpdate.length > 0 && updateContractorRates && id) {
       setConfirmingRateUpdate(true);
     } else {
       saveMutation.mutate(values);
     }
-  });
+  };
 
   return (
     <>
       <Modal open={open} onClose={onClose} title={id ? "Edit role" : "New role"}>
         <Form {...form}>
-          <form className="grid gap-4" onSubmit={onSubmit}>
+          <form className="grid gap-4" onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit(handleFormSubmit)(e);
+          }}>
             <FormField
               control={form.control}
               name="name"
@@ -280,7 +283,7 @@ const ManageModal = ({
                       <FormControl>
                         <NumberInput
                           id="capitalized-expense"
-                          value={field.value ?? 0}
+                          value={field.value}
                           onChange={(value) => field.onChange(value ?? 0)}
                           suffix="%"
                         />
