@@ -25,6 +25,7 @@ test.describe("Tender offer creation", () => {
     await login(page, user);
 
     await page.getByRole("link", { name: "Equity" }).click();
+    await page.waitForSelector('role=tab[name="Tender offers"]');
     await page.getByRole("tab", { name: "Tender offers" }).click();
     await page.getByRole("link", { name: "New tender offer" }).click();
 
