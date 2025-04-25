@@ -40,7 +40,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
+import { useCurrentUser, useUserStore } from "@/global";
 import { navLinks as equityNavLinks } from "@/app/equity";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -303,7 +303,7 @@ const NavLink = ({
   className?: string;
   href: string;
   active?: boolean;
-  icon: React.ComponentType;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   filledIcon?: React.ComponentType;
   badge?: number | undefined;
 }) => {
@@ -311,6 +311,7 @@ const NavLink = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active ?? false} className={className}>
+        {/* @ts-ignore - Next.js Link component type issue with href prop */}
         <Link href={href}>
           <Icon />
           <span>{children}</span>
