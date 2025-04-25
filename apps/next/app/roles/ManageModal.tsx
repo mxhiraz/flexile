@@ -208,7 +208,7 @@ const ManageModal = ({
         <Form {...form}>
           <form className="grid gap-4" onSubmit={(e) => {
             e.preventDefault();
-            form.handleSubmit(handleFormSubmit)(e);
+            void form.handleSubmit(handleFormSubmit)(e);
           }}>
             <FormField
               control={form.control}
