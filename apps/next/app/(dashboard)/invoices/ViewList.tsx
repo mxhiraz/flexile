@@ -90,7 +90,7 @@ export default function ViewList() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Invoicing</h1>
         {!unsignedContractId ? (
           <Button asChild variant="outline" size="small">

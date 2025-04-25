@@ -1,15 +1,17 @@
 "use client";
 
-import { 
-  BriefcaseIcon, 
-  ChartPieIcon, 
-  Cog6ToothIcon, 
-  CurrencyDollarIcon, 
-  DocumentDuplicateIcon, 
-  DocumentTextIcon, 
-  MegaphoneIcon, 
-  UserIcon, 
-  UsersIcon 
+import {
+  BriefcaseIcon,
+  ChartPieIcon,
+  Cog6ToothIcon,
+  CurrencyDollarIcon,
+  DocumentDuplicateIcon,
+  DocumentTextIcon,
+  MegaphoneIcon,
+  UserIcon,
+  UsersIcon,
+  ArrowPathIcon, 
+  ArrowRightStartOnRectangleIcon 
 } from "@heroicons/react/24/outline";
 import {
   BriefcaseIcon as SolidBriefcaseIcon,
@@ -22,22 +24,21 @@ import {
   UserIcon as SolidUserIcon,
   UsersIcon as SolidUsersIcon,
 } from "@heroicons/react/24/solid";
-import { ArrowPathIcon, ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline";
 import { ChevronsUpDown } from "lucide-react";
 import { SignOutButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarHeader, 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem 
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
 import { navLinks as equityNavLinks } from "@/app/equity";
@@ -61,7 +62,7 @@ type CompanyAccessRole = "administrator" | "worker" | "investor" | "lawyer";
 
 export function AppSidebar() {
   const user = useCurrentUser();
-  
+
   const [openCompanyId, setOpenCompanyId] = useState(user.currentCompanyId);
   useEffect(() => setOpenCompanyId(user.currentCompanyId), [user.currentCompanyId]);
   const openCompany = user.companies.find((company) => company.id === openCompanyId);
@@ -310,9 +311,7 @@ const NavLink = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active ?? false} className={className}>
-        <Link
-          href={href}
-        >
+        <Link href={href}>
           <Icon />
           <span>{children}</span>
           {badge && badge > 0 ? (

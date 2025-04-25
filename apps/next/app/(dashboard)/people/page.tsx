@@ -94,7 +94,7 @@ export default function People() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">People</h1>
         {user.activeRole === "administrator" ? (
           <Button asChild>
