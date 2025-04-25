@@ -271,7 +271,10 @@ const DetailsModal = ({
             </Card>
           )}
         </div>
-        {equityGrant.vestedShares > 0 && isFuture(equityGrant.expiresAt) && canExercise ? (
+        {company.flags.includes("option_exercising") &&
+        equityGrant.vestedShares > 0 &&
+        isFuture(equityGrant.expiresAt) &&
+        canExercise ? (
           <SheetFooter>
             <div className="grid gap-4">
               <Button onClick={onUpdateExercise}>Exercise options</Button>

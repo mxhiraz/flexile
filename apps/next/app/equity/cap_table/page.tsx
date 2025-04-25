@@ -96,15 +96,19 @@ export default function CapTable() {
         meta: { numeric: true },
         footer: "100%",
       }),
-      investorColumnHelper.accessor("upcomingDividendCents", {
-        header: "Upcoming dividend",
-        cell: (info) => {
-          const value = info.getValue();
-          return value ? formatMoneyFromCents(value) : "—";
-        },
-        meta: { numeric: true },
-        footer: data.upcomingDividendCents > 0 ? formatMoneyFromCents(data.upcomingDividendCents) : "—",
-      }),
+      ...(company.flags.includes("upcoming_dividend")
+        ? [
+            investorColumnHelper.accessor("upcomingDividendCents", {
+              header: "Upcoming dividend",
+              cell: (info) => {
+                const value = info.getValue();
+                return value ? formatMoneyFromCents(value) : "—";
+              },
+              meta: { numeric: true },
+              footer: data.upcomingDividendCents > 0 ? formatMoneyFromCents(data.upcomingDividendCents) : "—",
+            }),
+          ]
+        : []),
       investorColumnHelper.simple("notes", "Notes"),
     ],
     [],

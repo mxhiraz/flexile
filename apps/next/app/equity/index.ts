@@ -1,15 +1,21 @@
 import type { TabLink } from "@/components/Tabs";
 import { type Company, type CurrentUser } from "@/models/user";
 
-export const navLinks = (user: CurrentUser, _company: Company): TabLink[] => {
+export const navLinks = (user: CurrentUser, company: Company): TabLink[] => {
   const isAdmin = user.activeRole === "administrator";
   const isLawyer = user.activeRole === "lawyer";
   const isInvestor = user.activeRole === "contractorOrInvestor" && "investor" in user.roles;
   const links: (TabLink | null)[] = [
-    isAdmin || isLawyer || isInvestor ? { label: "Rounds", route: "/equity/financing_rounds" } : null,
-    isAdmin || isLawyer || isInvestor ? { label: "Cap table", route: "/equity/cap_table" } : null,
-    isAdmin || isLawyer ? { label: "Option pools", route: "/equity/option_pools" } : null,
-    isAdmin || isLawyer || (isInvestor && user.roles.investor?.hasGrants)
+    company.flags.includes("equity") && (isAdmin || isLawyer || isInvestor)
+      ? { label: "Rounds", route: "/equity/financing_rounds" }
+      : null,
+    company.flags.includes("equity") && (isAdmin || isLawyer || isInvestor)
+      ? { label: "Cap table", route: "/equity/cap_table" }
+      : null,
+    company.flags.includes("equity") && (isAdmin || isLawyer)
+      ? { label: "Option pools", route: "/equity/option_pools" }
+      : null,
+    company.flags.includes("equity") && (isAdmin || isLawyer || (isInvestor && user.roles.investor?.hasGrants))
       ? { label: "Options", route: "/equity/grants" }
       : null,
     isInvestor && user.roles.investor?.hasShares ? { label: "Shares", route: "/equity/shares" } : null,
