@@ -98,6 +98,7 @@ export default function ContractorPage() {
   const hasValidPaymentInfo = () => {
     let valid = paymentAmountInCents && paymentAmountInCents !== 0 && paymentDescription.length !== 0;
     if (!valid) return false;
+    if (!company.flags.includes("equity_compensation")) return true;
 
     if (equityType === "fixed") {
       valid =
