@@ -85,7 +85,7 @@ const ManageModal = ({
       ? { ...defaults, ...pick(lastRole, "payRateInSubunits", "trialPayRateInSubunits", "capitalizedExpense") }
       : defaults;
   };
-  
+
   const selectedRole = getSelectedRole();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -103,7 +103,7 @@ const ManageModal = ({
       expenseCardSpendingLimitCents: selectedRole.expenseCardSpendingLimitCents,
     },
   });
-  
+
   useEffect(() => {
     if (id) {
       const role = getSelectedRole();
@@ -122,22 +122,22 @@ const ManageModal = ({
       });
     }
   }, [id, form]);
-  
+
   const [updateContractorRates, setUpdateContractorRates] = useState(false);
   const [confirmingRateUpdate, setConfirmingRateUpdate] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  
+
   const watchPayRateInSubunits = form.watch("payRateInSubunits");
   const watchPayRateType = form.watch("payRateType");
   const watchTrialEnabled = form.watch("trialEnabled");
   const watchExpenseCardEnabled = form.watch("expenseCardEnabled");
-  
+
   useEffect(() => {
     if (!id && watchPayRateInSubunits > 0) {
       form.setValue("trialPayRateInSubunits", Math.floor(watchPayRateInSubunits / 2));
     }
   }, [watchPayRateInSubunits, id, form]);
-  
+
   const [quickbooks] = trpc.quickbooks.get.useSuspenseQuery({ companyId: company.id });
   const expenseAccounts = quickbooks?.expenseAccounts ?? [];
   const [{ workers: contractors }, { refetch: refetchContractors }] = trpc.contractors.list.useSuspenseQuery({
@@ -145,7 +145,7 @@ const ManageModal = ({
     roleId: id || "",
     type: "not_alumni",
   });
-  
+
   const deleteMutation = trpc.roles.delete.useMutation({
     onSuccess: async () => {
       await trpcUtils.roles.list.invalidate();
@@ -162,7 +162,7 @@ const ManageModal = ({
   const createRoleMutation = trpc.roles.create.useMutation();
   const updateRoleMutation = trpc.roles.update.useMutation();
   const updateContractorMutation = trpc.contractors.update.useMutation();
-  
+
   const saveMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       setConfirmingRateUpdate(false);
@@ -193,7 +193,7 @@ const ManageModal = ({
       onClose();
     },
   });
-  
+
   const handleFormSubmit = (values: FormValues) => {
     if (contractorsToUpdate.length > 0 && updateContractorRates && id) {
       setConfirmingRateUpdate(true);
@@ -206,10 +206,13 @@ const ManageModal = ({
     <>
       <Modal open={open} onClose={onClose} title={id ? "Edit role" : "New role"}>
         <Form {...form}>
-          <form className="grid gap-4" onSubmit={(e) => {
-            e.preventDefault();
-            void form.handleSubmit(handleFormSubmit)(e);
-          }}>
+          <form
+            className="grid gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void form.handleSubmit(handleFormSubmit)(e);
+            }}
+          >
             <FormField
               control={form.control}
               name="name"
@@ -223,7 +226,7 @@ const ManageModal = ({
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="payRateType"
@@ -237,7 +240,9 @@ const ManageModal = ({
                       options={[
                         { label: "Hourly", value: PayRateType.Hourly } as const,
                         { label: "Project-based", value: PayRateType.ProjectBased } as const,
-                        company.flags.includes("salary_roles") ? ({ label: "Salary", value: PayRateType.Salary } as const) : null,
+                        company.flags.includes("salary_roles")
+                          ? ({ label: "Salary", value: PayRateType.Salary } as const)
+                          : null,
                       ].filter((option) => !!option)}
                       disabled={!!id}
                     />
@@ -245,7 +250,7 @@ const ManageModal = ({
                 </FormItem>
               )}
             />
-            
+
             <div className={`grid gap-3 ${expenseAccounts.length > 0 ? "md:grid-cols-2" : ""}`}>
               <FormField
                 control={form.control}
@@ -272,7 +277,7 @@ const ManageModal = ({
                   </FormItem>
                 )}
               />
-              
+
               {expenseAccounts.length > 0 && (
                 <FormField
                   control={form.control}
@@ -293,7 +298,7 @@ const ManageModal = ({
                 />
               )}
             </div>
-            
+
             {id && contractorsToUpdate.length > 0 ? (
               <>
                 {!updateContractorRates && (
@@ -313,7 +318,7 @@ const ManageModal = ({
                 />
               </>
             ) : null}
-            
+
             {id && watchPayRateType === PayRateType.Hourly ? (
               <FormField
                 control={form.control}
@@ -321,17 +326,13 @@ const ManageModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        label="Start with trial period"
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} label="Start with trial period" />
                     </FormControl>
                   </FormItem>
                 )}
               />
             ) : null}
-            
+
             {id && watchTrialEnabled ? (
               <FormField
                 control={form.control}
@@ -351,7 +352,7 @@ const ManageModal = ({
                 )}
               />
             ) : null}
-            
+
             {id ? (
               <FormField
                 control={form.control}
@@ -369,7 +370,7 @@ const ManageModal = ({
                 )}
               />
             ) : null}
-            
+
             {id && watchExpenseCardEnabled ? (
               <FormField
                 control={form.control}
@@ -391,14 +392,16 @@ const ManageModal = ({
                 )}
               />
             ) : null}
-            
+
             {id && !watchExpenseCardEnabled && selectedRole.expenseCardsCount > 0 ? (
               <Alert variant="destructive">
                 <ExclamationTriangleIcon />
-                <AlertDescription>{selectedRole.expenseCardsCount} issued cards will no longer be usable.</AlertDescription>
+                <AlertDescription>
+                  {selectedRole.expenseCardsCount} issued cards will no longer be usable.
+                </AlertDescription>
               </Alert>
             ) : null}
-            
+
             {id ? (
               <FormField
                 control={form.control}
@@ -413,7 +416,7 @@ const ManageModal = ({
                 )}
               />
             ) : null}
-            
+
             {expenseAccounts.length > 0 ? (
               <FormField
                 control={form.control}
@@ -435,7 +438,7 @@ const ManageModal = ({
                 )}
               />
             ) : null}
-            
+
             {id ? (
               <FormField
                 control={form.control}
@@ -443,17 +446,13 @@ const ManageModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        label="Accepting candidates"
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} label="Accepting candidates" />
                     </FormControl>
                   </FormItem>
                 )}
               />
             ) : null}
-            
+
             <div className="flex w-full gap-3">
               <Button className="flex-1" type="submit">
                 {id ? "Save changes" : "Create"}
@@ -478,7 +477,7 @@ const ManageModal = ({
           </form>
         </Form>
       </Modal>
-      
+
       <Modal
         open={confirmingRateUpdate}
         onClose={() => setConfirmingRateUpdate(false)}
@@ -488,7 +487,9 @@ const ManageModal = ({
             <Button variant="outline" onClick={() => setConfirmingRateUpdate(false)}>
               Cancel
             </Button>
-            <MutationButton mutation={saveMutation} param={form.getValues()}>Yes, change</MutationButton>
+            <MutationButton mutation={saveMutation} param={form.getValues()}>
+              Yes, change
+            </MutationButton>
           </>
         }
       >
@@ -513,7 +514,7 @@ const ManageModal = ({
           </CardContent>
         </Card>
       </Modal>
-      
+
       <Modal title="Permanently delete role?" open={confirmingDelete} onClose={() => setConfirmingDelete(false)}>
         {selectedRole.applicationCount ? <p>This will remove {selectedRole.applicationCount} candidates.</p> : null}
         <p>This action cannot be undone.</p>
