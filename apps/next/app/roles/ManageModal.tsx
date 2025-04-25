@@ -1,8 +1,13 @@
+"use client";
+
 import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { InformationCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { pick } from "lodash-es";
 import { Fragment, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import Delta from "@/components/Delta";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
@@ -16,17 +21,30 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { PayRateType } from "@/db/enums";
 import { useCurrentCompany } from "@/global";
-import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { formatMoneyFromCents } from "@/utils/formatMoney";
 import { pluralize } from "@/utils/pluralize";
 
-type Role = RouterOutput["roles"]["list"][number];
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  payRateType: z.nativeEnum(PayRateType),
+  payRateInSubunits: z.number().min(1, "Rate is required"),
+  trialEnabled: z.boolean().default(false),
+  trialPayRateInSubunits: z.number().default(0),
+  activelyHiring: z.boolean().default(false),
+  jobDescription: z.string().default(""),
+  capitalizedExpense: z.number().default(50),
+  expenseAccountId: z.string().nullable().default(null),
+  expenseCardEnabled: z.boolean().default(false),
+  expenseCardSpendingLimitCents: z.bigint().default(BigInt(0)),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const ManageModal = ({
   open,
@@ -67,19 +85,67 @@ const ManageModal = ({
       ? { ...defaults, ...pick(lastRole, "payRateInSubunits", "trialPayRateInSubunits", "capitalizedExpense") }
       : defaults;
   };
-  const [role, setRole] = useState(getSelectedRole);
-  useEffect(() => setRole(getSelectedRole()), [id]);
+  
+  const selectedRole = getSelectedRole();
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: selectedRole.name,
+      payRateType: selectedRole.payRateType,
+      payRateInSubunits: selectedRole.payRateInSubunits,
+      trialEnabled: selectedRole.trialEnabled,
+      trialPayRateInSubunits: selectedRole.trialPayRateInSubunits,
+      activelyHiring: selectedRole.activelyHiring,
+      jobDescription: selectedRole.jobDescription,
+      capitalizedExpense: selectedRole.capitalizedExpense ?? 50,
+      expenseAccountId: selectedRole.expenseAccountId,
+      expenseCardEnabled: selectedRole.expenseCardEnabled,
+      expenseCardSpendingLimitCents: selectedRole.expenseCardSpendingLimitCents,
+    },
+  });
+  
+  useEffect(() => {
+    if (id) {
+      const role = getSelectedRole();
+      form.reset({
+        name: role.name,
+        payRateType: role.payRateType,
+        payRateInSubunits: role.payRateInSubunits,
+        trialEnabled: role.trialEnabled,
+        trialPayRateInSubunits: role.trialPayRateInSubunits,
+        activelyHiring: role.activelyHiring,
+        jobDescription: role.jobDescription,
+        capitalizedExpense: role.capitalizedExpense ?? 50,
+        expenseAccountId: role.expenseAccountId,
+        expenseCardEnabled: role.expenseCardEnabled,
+        expenseCardSpendingLimitCents: role.expenseCardSpendingLimitCents,
+      });
+    }
+  }, [id, form]);
+  
   const [updateContractorRates, setUpdateContractorRates] = useState(false);
   const [confirmingRateUpdate, setConfirmingRateUpdate] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  
+  const watchPayRateInSubunits = form.watch("payRateInSubunits");
+  const watchPayRateType = form.watch("payRateType");
+  const watchTrialEnabled = form.watch("trialEnabled");
+  const watchExpenseCardEnabled = form.watch("expenseCardEnabled");
+  
+  useEffect(() => {
+    if (!id && watchPayRateInSubunits > 0) {
+      form.setValue("trialPayRateInSubunits", Math.floor(watchPayRateInSubunits / 2));
+    }
+  }, [watchPayRateInSubunits, id, form]);
+  
   const [quickbooks] = trpc.quickbooks.get.useSuspenseQuery({ companyId: company.id });
   const expenseAccounts = quickbooks?.expenseAccounts ?? [];
   const [{ workers: contractors }, { refetch: refetchContractors }] = trpc.contractors.list.useSuspenseQuery({
     companyId: company.id,
-    roleId: role.id,
+    roleId: id || "",
     type: "not_alumni",
   });
+  
   const deleteMutation = trpc.roles.delete.useMutation({
     onSuccess: async () => {
       await trpcUtils.roles.list.invalidate();
@@ -87,42 +153,22 @@ const ManageModal = ({
       onClose();
     },
   });
-  const updateRole = (update: Partial<Role>) => setRole((prev) => ({ ...prev, ...update }));
-
-  useEffect(() => {
-    if (!role.id) setRole((prev) => ({ ...prev, trialPayRateInSubunits: Math.floor(prev.payRateInSubunits / 2) }));
-  }, [role.payRateInSubunits, role.id]);
-
-  const onSave = () => {
-    if (contractorsToUpdate.length > 0 && updateContractorRates && role.id) {
-      setConfirmingRateUpdate(true);
-    } else {
-      saveMutation.mutate();
-    }
-  };
 
   const contractorsToUpdate = contractors.filter(
-    (contractor) => contractor.payRateInSubunits !== role.payRateInSubunits,
+    (contractor) => contractor.payRateInSubunits !== watchPayRateInSubunits,
   );
   const canDelete = contractors.length === 0;
-  const validatedFields = ["name", "payRateInSubunits"] as const;
-  for (const field of validatedFields)
-    useEffect(() => setErrors((prev) => prev.filter((f) => f !== field)), [role[field]]);
 
   const createRoleMutation = trpc.roles.create.useMutation();
   const updateRoleMutation = trpc.roles.update.useMutation();
   const updateContractorMutation = trpc.contractors.update.useMutation();
+  
   const saveMutation = useMutation({
-    mutationFn: async () => {
-      const errors = validatedFields.filter((field) => !role[field]);
-      if (errors.length > 0) {
-        setErrors(errors);
-        throw new Error("Validation error");
-      }
+    mutationFn: async (values: FormValues) => {
       setConfirmingRateUpdate(false);
-      const params = { companyId: company.id, ...role };
+      const params = { companyId: company.id, ...values, id: id || "" };
 
-      if (role.id) {
+      if (id) {
         await updateRoleMutation.mutateAsync(params);
         if (updateContractorRates) {
           await Promise.all(
@@ -130,188 +176,306 @@ const ManageModal = ({
               updateContractorMutation.mutateAsync({
                 companyId: company.id,
                 id: contractor.id,
-                payRateInSubunits: role.payRateInSubunits,
+                payRateInSubunits: values.payRateInSubunits,
               }),
             ),
           );
           await refetchContractors();
         }
       } else {
-        const id = await createRoleMutation.mutateAsync(params);
-        setRole((prev) => ({ ...prev, id }));
-        return id;
+        const newId = await createRoleMutation.mutateAsync(params);
+        return newId;
       }
     },
-    onSuccess: async (id) => {
+    onSuccess: async (newId) => {
       await trpcUtils.roles.list.invalidate({ companyId: company.id });
-      if (id) onCreated?.(id);
+      if (newId) onCreated?.(newId);
       onClose();
     },
+  });
+  
+  const onSubmit = form.handleSubmit((values) => {
+    if (contractorsToUpdate.length > 0 && updateContractorRates && id) {
+      setConfirmingRateUpdate(true);
+    } else {
+      saveMutation.mutate(values);
+    }
   });
 
   return (
     <>
-      <Modal open={open} onClose={onClose} title={role.id ? "Edit role" : "New role"}>
-        <Input
-          value={role.name}
-          onChange={(name) => updateRole({ name })}
-          label="Name"
-          invalid={errors.includes("name")}
-        />
-        <RadioButtons
-          value={role.payRateType}
-          onChange={(payRateType) => updateRole({ payRateType })}
-          label="Type"
-          options={[
-            { label: "Hourly", value: PayRateType.Hourly } as const,
-            { label: "Project-based", value: PayRateType.ProjectBased } as const,
-            company.flags.includes("salary_roles") ? ({ label: "Salary", value: PayRateType.Salary } as const) : null,
-          ].filter((option) => !!option)}
-          disabled={!!role.id}
-        />
-        <div className={`grid gap-3 ${expenseAccounts.length > 0 ? "md:grid-cols-2" : ""}`}>
-          <div className="grid gap-2">
-            <Label htmlFor="pay-rate">Rate</Label>
-            <NumberInput
-              id="pay-rate"
-              value={role.payRateInSubunits / 100}
-              onChange={(value) => updateRole({ payRateInSubunits: (value ?? 0) * 100 })}
-              invalid={errors.includes("payRateInSubunits")}
-              prefix="$"
-              suffix={
-                role.payRateType === PayRateType.Hourly
-                  ? "/ hour"
-                  : role.payRateType === PayRateType.Salary
-                    ? "/ year"
-                    : ""
-              }
+      <Modal open={open} onClose={onClose} title={id ? "Edit role" : "New role"}>
+        <Form {...form}>
+          <form className="grid gap-4" onSubmit={onSubmit}>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.includes("payRateInSubunits") && <div className="text-destructive text-sm">Rate is required</div>}
-          </div>
-          {expenseAccounts.length > 0 && (
-            <div className="grid gap-2">
-              <Label htmlFor="capitalized-expense">Capitalized R&D expense</Label>
-              <NumberInput
-                id="capitalized-expense"
-                value={role.capitalizedExpense ?? 0}
-                onChange={(value) => updateRole({ capitalizedExpense: value ?? 0 })}
-                suffix="%"
+            
+            <FormField
+              control={form.control}
+              name="payRateType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <FormControl>
+                    <RadioButtons
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={[
+                        { label: "Hourly", value: PayRateType.Hourly } as const,
+                        { label: "Project-based", value: PayRateType.ProjectBased } as const,
+                        company.flags.includes("salary_roles") ? ({ label: "Salary", value: PayRateType.Salary } as const) : null,
+                      ].filter((option) => !!option)}
+                      disabled={!!id}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            <div className={`grid gap-3 ${expenseAccounts.length > 0 ? "md:grid-cols-2" : ""}`}>
+              <FormField
+                control={form.control}
+                name="payRateInSubunits"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="pay-rate">Rate</FormLabel>
+                    <FormControl>
+                      <NumberInput
+                        id="pay-rate"
+                        value={field.value / 100}
+                        onChange={(value) => field.onChange((value ?? 0) * 100)}
+                        prefix="$"
+                        suffix={
+                          watchPayRateType === PayRateType.Hourly
+                            ? "/ hour"
+                            : watchPayRateType === PayRateType.Salary
+                              ? "/ year"
+                              : ""
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
+              
+              {expenseAccounts.length > 0 && (
+                <FormField
+                  control={form.control}
+                  name="capitalizedExpense"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="capitalized-expense">Capitalized R&D expense</FormLabel>
+                      <FormControl>
+                        <NumberInput
+                          id="capitalized-expense"
+                          value={field.value ?? 0}
+                          onChange={(value) => field.onChange(value ?? 0)}
+                          suffix="%"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
-          )}
-        </div>
-        {role.id && contractorsToUpdate.length > 0 ? (
-          <>
-            {!updateContractorRates && (
-              <Alert>
-                <InformationCircleIcon />
-                <AlertDescription>
-                  {contractorsToUpdate.length}{" "}
-                  {contractorsToUpdate.length === 1 ? "contractor has a" : "contractors have"} different{" "}
-                  {pluralize("rate", contractorsToUpdate.length)} that won't be updated.
-                </AlertDescription>
+            
+            {id && contractorsToUpdate.length > 0 ? (
+              <>
+                {!updateContractorRates && (
+                  <Alert>
+                    <InformationCircleIcon />
+                    <AlertDescription>
+                      {contractorsToUpdate.length}{" "}
+                      {contractorsToUpdate.length === 1 ? "contractor has a" : "contractors have"} different{" "}
+                      {pluralize("rate", contractorsToUpdate.length)} that won't be updated.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <Checkbox
+                  checked={updateContractorRates}
+                  onCheckedChange={(checked) => setUpdateContractorRates(checked === true)}
+                  label="Update rate for all contractors with this role"
+                />
+              </>
+            ) : null}
+            
+            {id && watchPayRateType === PayRateType.Hourly ? (
+              <FormField
+                control={form.control}
+                name="trialEnabled"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        label="Start with trial period"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
+            
+            {id && watchTrialEnabled ? (
+              <FormField
+                control={form.control}
+                name="trialPayRateInSubunits"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="trial-rate">Rate during trial period</FormLabel>
+                    <FormControl>
+                      <NumberInput
+                        id="trial-rate"
+                        value={field.value / 100}
+                        onChange={(value) => field.onChange((value ?? 0) * 100)}
+                        prefix="$"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
+            
+            {id ? (
+              <FormField
+                control={form.control}
+                name="expenseCardEnabled"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        label="Role should get expense card"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
+            
+            {id && watchExpenseCardEnabled ? (
+              <FormField
+                control={form.control}
+                name="expenseCardSpendingLimitCents"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="expense-limit">Limit</FormLabel>
+                    <FormControl>
+                      <NumberInput
+                        id="expense-limit"
+                        value={Number(field.value) / 100}
+                        onChange={(value) => field.onChange(BigInt((value ?? 0) * 100))}
+                        prefix="$"
+                        suffix="/ month"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : null}
+            
+            {id && !watchExpenseCardEnabled && selectedRole.expenseCardsCount > 0 ? (
+              <Alert variant="destructive">
+                <ExclamationTriangleIcon />
+                <AlertDescription>{selectedRole.expenseCardsCount} issued cards will no longer be usable.</AlertDescription>
               </Alert>
-            )}
-            <Checkbox
-              checked={updateContractorRates}
-              onCheckedChange={(checked) => setUpdateContractorRates(checked === true)}
-              label="Update rate for all contractors with this role"
-            />
-          </>
-        ) : null}
-        {role.id && role.payRateType === PayRateType.Hourly ? (
-          <Switch
-            checked={role.trialEnabled}
-            onCheckedChange={(trialEnabled) => updateRole({ trialEnabled })}
-            label="Start with trial period"
-          />
-        ) : null}
-        {role.id && role.trialEnabled ? (
-          <div className="grid gap-2">
-            <Label htmlFor="trial-rate">Rate during trial period</Label>
-            <NumberInput
-              id="trial-rate"
-              value={role.trialPayRateInSubunits / 100}
-              onChange={(value) => updateRole({ trialPayRateInSubunits: (value ?? 0) * 100 })}
-              prefix="$"
-            />
-          </div>
-        ) : null}
-        {role.id ? (
-          <Switch
-            checked={role.expenseCardEnabled}
-            onCheckedChange={(expenseCardEnabled) => updateRole({ expenseCardEnabled })}
-            label="Role should get expense card"
-          />
-        ) : null}
-        {role.id && role.expenseCardEnabled ? (
-          <div className="grid gap-2">
-            <Label htmlFor="expense-limit">Limit</Label>
-            <NumberInput
-              id="expense-limit"
-              value={Number(role.expenseCardSpendingLimitCents) / 100}
-              onChange={(value) => updateRole({ expenseCardSpendingLimitCents: BigInt((value ?? 0) * 100) })}
-              invalid={errors.includes("expenseCardSpendingLimitCents")}
-              prefix="$"
-              suffix="/ month"
-            />
-            {errors.includes("expenseCardSpendingLimitCents") && (
-              <div className="text-destructive text-sm">Limit is required</div>
-            )}
-          </div>
-        ) : null}
-        {role.id && !role.expenseCardEnabled && role.expenseCardsCount > 0 ? (
-          <Alert variant="destructive">
-            <ExclamationTriangleIcon />
-            <AlertDescription>{role.expenseCardsCount} issued cards will no longer be usable.</AlertDescription>
-          </Alert>
-        ) : null}
-        {role.id ? (
-          <RichTextEditor
-            value={role.jobDescription}
-            onChange={(jobDescription) => updateRole({ jobDescription })}
-            label="Job description"
-          />
-        ) : null}
-        {expenseAccounts.length > 0 ? (
-          <Select
-            value={role.expenseAccountId ?? ""}
-            onChange={(expenseAccountId) => updateRole({ expenseAccountId })}
-            options={[
-              { value: "", label: "Default" },
-              ...expenseAccounts.map(({ id, name }) => ({ value: id, label: name })),
-            ]}
-            label="Expense account"
-          />
-        ) : null}
-        {role.id ? (
-          <Switch
-            checked={role.activelyHiring}
-            onCheckedChange={(activelyHiring) => updateRole({ activelyHiring })}
-            label="Accepting candidates"
-          />
-        ) : null}
-        <div className="flex w-full gap-3">
-          <Button className="flex-1" onClick={onSave}>
-            {role.id ? "Save changes" : "Create"}
-          </Button>
-          {role.id ? (
-            <Tooltip>
-              <TooltipTrigger asChild={canDelete}>
-                <Button
-                  variant="critical"
-                  aria-label="Delete role"
-                  disabled={!canDelete}
-                  onClick={() => setConfirmingDelete(true)}
-                >
-                  <TrashIcon className="size-5" />
-                </Button>
-              </TooltipTrigger>
-              {!canDelete ? <TooltipContent>You can't delete roles with active contractors</TooltipContent> : null}
-            </Tooltip>
-          ) : null}
-        </div>
+            ) : null}
+            
+            {id ? (
+              <FormField
+                control={form.control}
+                name="jobDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job description</FormLabel>
+                    <FormControl>
+                      <RichTextEditor value={field.value} onChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
+            
+            {expenseAccounts.length > 0 ? (
+              <FormField
+                control={form.control}
+                name="expenseAccountId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Expense account</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        options={[
+                          { value: "", label: "Default" },
+                          ...expenseAccounts.map(({ id, name }) => ({ value: id, label: name })),
+                        ]}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
+            
+            {id ? (
+              <FormField
+                control={form.control}
+                name="activelyHiring"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        label="Accepting candidates"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
+            
+            <div className="flex w-full gap-3">
+              <Button className="flex-1" type="submit">
+                {id ? "Save changes" : "Create"}
+              </Button>
+              {id ? (
+                <Tooltip>
+                  <TooltipTrigger asChild={canDelete}>
+                    <Button
+                      variant="critical"
+                      aria-label="Delete role"
+                      disabled={!canDelete}
+                      onClick={() => setConfirmingDelete(true)}
+                      type="button"
+                    >
+                      <TrashIcon className="size-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  {!canDelete ? <TooltipContent>You can't delete roles with active contractors</TooltipContent> : null}
+                </Tooltip>
+              ) : null}
+            </div>
+          </form>
+        </Form>
       </Modal>
+      
       <Modal
         open={confirmingRateUpdate}
         onClose={() => setConfirmingRateUpdate(false)}
@@ -321,7 +485,7 @@ const ManageModal = ({
             <Button variant="outline" onClick={() => setConfirmingRateUpdate(false)}>
               Cancel
             </Button>
-            <MutationButton mutation={saveMutation}>Yes, change</MutationButton>
+            <MutationButton mutation={saveMutation} param={form.getValues()}>Yes, change</MutationButton>
           </>
         }
       >
@@ -334,9 +498,9 @@ const ManageModal = ({
                   <b>{contractor.user.name}</b>
                   <div>
                     <del>{formatMoneyFromCents(contractor.payRateInSubunits)}</del>{" "}
-                    {formatMoneyFromCents(role.payRateInSubunits)}{" "}
+                    {formatMoneyFromCents(watchPayRateInSubunits)}{" "}
                     <span>
-                      (<Delta diff={role.payRateInSubunits / contractor.payRateInSubunits - 1} />)
+                      (<Delta diff={watchPayRateInSubunits / contractor.payRateInSubunits - 1} />)
                     </span>
                   </div>
                 </div>
@@ -346,14 +510,15 @@ const ManageModal = ({
           </CardContent>
         </Card>
       </Modal>
+      
       <Modal title="Permanently delete role?" open={confirmingDelete} onClose={() => setConfirmingDelete(false)}>
-        {role.applicationCount ? <p>This will remove {role.applicationCount} candidates.</p> : null}
+        {selectedRole.applicationCount ? <p>This will remove {selectedRole.applicationCount} candidates.</p> : null}
         <p>This action cannot be undone.</p>
         <div className="flex justify-end gap-4">
           <Button variant="outline" onClick={() => setConfirmingDelete(false)}>
             No, cancel
           </Button>
-          <MutationButton mutation={deleteMutation} param={{ companyId: company.id, id: role.id }}>
+          <MutationButton mutation={deleteMutation} param={{ companyId: company.id, id: id || "" }}>
             Yes, delete
           </MutationButton>
         </div>
