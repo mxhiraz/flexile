@@ -277,11 +277,9 @@ const QuickInvoiceSection = ({ disabled }: { disabled?: boolean }) => {
 
       <CardFooter className="flex-wrap justify-between gap-3">
         <div className="flex flex-wrap items-center gap-4">
-          {company.flags.includes("expenses") ? (
-            <a href={`${newCompanyInvoiceRoute}&expenses=true`} inert={submit.isPending} className={linkClasses}>
-              <CurrencyDollarIcon className="inline size-4" /> Add expenses
-            </a>
-          ) : null}
+          <a href={`${newCompanyInvoiceRoute}&expenses=true`} inert={submit.isPending} className={linkClasses}>
+            <CurrencyDollarIcon className="inline size-4" /> Add expenses
+          </a>
           <a href={newCompanyInvoiceRoute} inert={submit.isPending} className={linkClasses}>
             <ChatBubbleLeftIcon className="inline size-4" /> Add notes
           </a>

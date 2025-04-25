@@ -1,21 +1,15 @@
 import type { TabLink } from "@/components/Tabs";
 import { type Company, type CurrentUser } from "@/models/user";
 
-export const navLinks = (user: CurrentUser, company: Company): TabLink[] => {
+export const navLinks = (user: CurrentUser, _company: Company): TabLink[] => {
   const isAdmin = user.activeRole === "administrator";
   const isLawyer = user.activeRole === "lawyer";
   const isInvestor = user.activeRole === "contractorOrInvestor" && "investor" in user.roles;
   const links: (TabLink | null)[] = [
-    company.flags.includes("financing_rounds") && (isAdmin || isLawyer || isInvestor)
-      ? { label: "Rounds", route: "/equity/financing_rounds" }
-      : null,
-    company.flags.includes("cap_table") && (isAdmin || isLawyer || isInvestor)
-      ? { label: "Cap table", route: "/equity/cap_table" }
-      : null,
-    company.flags.includes("equity_grants") && (isAdmin || isLawyer)
-      ? { label: "Option pools", route: "/equity/option_pools" }
-      : null,
-    company.flags.includes("equity_grants") && (isAdmin || isLawyer || (isInvestor && user.roles.investor?.hasGrants))
+    isAdmin || isLawyer || isInvestor ? { label: "Rounds", route: "/equity/financing_rounds" } : null,
+    isAdmin || isLawyer || isInvestor ? { label: "Cap table", route: "/equity/cap_table" } : null,
+    isAdmin || isLawyer ? { label: "Option pools", route: "/equity/option_pools" } : null,
+    isAdmin || isLawyer || (isInvestor && user.roles.investor?.hasGrants)
       ? { label: "Options", route: "/equity/grants" }
       : null,
     isInvestor && user.roles.investor?.hasShares ? { label: "Shares", route: "/equity/shares" } : null,
@@ -24,12 +18,10 @@ export const navLinks = (user: CurrentUser, company: Company): TabLink[] => {
       : null,
     isInvestor
       ? { label: "Dividends", route: "/equity/dividends" }
-      : company.flags.includes("dividends") && (isAdmin || isLawyer)
+      : isAdmin || isLawyer
         ? { label: "Dividends", route: "/equity/dividend_rounds" }
         : null,
-    company.flags.includes("tender_offers") && (isAdmin || isInvestor)
-      ? { label: "Tender offers", route: "/equity/tender_offers" }
-      : null,
+    isAdmin || isInvestor ? { label: "Tender offers", route: "/equity/tender_offers" } : null,
   ];
   return links.filter((link) => !!link);
 };

@@ -163,8 +163,8 @@ const ManageModal = ({
           options={[
             { label: "Hourly", value: PayRateType.Hourly } as const,
             { label: "Project-based", value: PayRateType.ProjectBased } as const,
-            company.flags.includes("salary_roles") ? ({ label: "Salary", value: PayRateType.Salary } as const) : null,
-          ].filter((option) => !!option)}
+            { label: "Salary", value: PayRateType.Salary } as const,
+          ]}
           disabled={!!role.id}
         />
         <div className={`grid gap-3 ${expenseAccounts.length > 0 ? "md:grid-cols-2" : ""}`}>

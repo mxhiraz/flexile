@@ -98,7 +98,6 @@ export default function ContractorPage() {
   const hasValidPaymentInfo = () => {
     let valid = paymentAmountInCents && paymentAmountInCents !== 0 && paymentDescription.length !== 0;
     if (!valid) return false;
-    if (!company.flags.includes("equity_compensation")) return true;
 
     if (equityType === "fixed") {
       valid =
@@ -182,14 +181,6 @@ export default function ContractorPage() {
       let invoice;
       try {
         const equityAttributes = (() => {
-          if (!company.flags.includes("equity_compensation")) {
-            return {
-              equityPercentage: 0,
-              minAllowedEquityPercentage: null,
-              maxAllowedEquityPercentage: null,
-            };
-          }
-
           if (equityType === "fixed") {
             return {
               equityPercentage: fixedEquityPercentage ?? 0,
@@ -348,53 +339,51 @@ export default function ContractorPage() {
             label="What is this for?"
             placeholder="Enter payment description"
           />
-          {company.flags.includes("equity_compensation") ? (
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <Label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="equityType"
-                    checked={equityType === "fixed"}
-                    onChange={() => setEquityType("fixed")}
-                    className="h-4 w-4"
-                  />
-                  Fixed equity percentage
-                </Label>
-                <Label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="equityType"
-                    checked={equityType === "range"}
-                    onChange={() => setEquityType("range")}
-                    className="h-4 w-4"
-                  />
-                  Equity percentage range
-                </Label>
-              </div>
-
-              {equityType === "fixed" ? (
-                <NumberInput
-                  value={fixedEquityPercentage}
-                  onChange={setFixedEquityPercentage}
-                  placeholder="Enter percentage"
-                  suffix="%"
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <Label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="equityType"
+                  checked={equityType === "fixed"}
+                  onChange={() => setEquityType("fixed")}
+                  className="h-4 w-4"
                 />
-              ) : (
-                <div className="space-y-2">
-                  <Slider
-                    defaultValue={[equityRange[0], equityRange[1]]}
-                    minStepsBetweenThumbs={1}
-                    onValueChange={([min, max]) => setEquityRange([min ?? equityRange[0], max ?? equityRange[1]])}
-                  />
-                  <div className="flex justify-between text-gray-600">
-                    <span>{(equityRange[0] / 100).toLocaleString(undefined, { style: "percent" })}</span>
-                    <span>{(equityRange[1] / 100).toLocaleString(undefined, { style: "percent" })}</span>
-                  </div>
-                </div>
-              )}
+                Fixed equity percentage
+              </Label>
+              <Label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="equityType"
+                  checked={equityType === "range"}
+                  onChange={() => setEquityType("range")}
+                  className="h-4 w-4"
+                />
+                Equity percentage range
+              </Label>
             </div>
-          ) : null}
+
+            {equityType === "fixed" ? (
+              <NumberInput
+                value={fixedEquityPercentage}
+                onChange={setFixedEquityPercentage}
+                placeholder="Enter percentage"
+                suffix="%"
+              />
+            ) : (
+              <div className="space-y-2">
+                <Slider
+                  defaultValue={[equityRange[0], equityRange[1]]}
+                  minStepsBetweenThumbs={1}
+                  onValueChange={([min, max]) => setEquityRange([min ?? equityRange[0], max ?? equityRange[1]])}
+                />
+                <div className="flex justify-between text-gray-600">
+                  <span>{(equityRange[0] / 100).toLocaleString(undefined, { style: "percent" })}</span>
+                  <span>{(equityRange[1] / 100).toLocaleString(undefined, { style: "percent" })}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {issuePaymentError ? <small className="text-red">{issuePaymentError}</small> : null}

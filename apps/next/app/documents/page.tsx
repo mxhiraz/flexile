@@ -353,7 +353,7 @@ export default function DocumentsPage() {
       headerActions={
         <>
           {isCompanyRepresentative && documents.length === 0 ? <EditTemplates /> : null}
-          {user.activeRole === "administrator" && company.flags.includes("lawyers") ? (
+          {user.activeRole === "administrator" ? (
             <Button onClick={() => setShowInviteModal(true)}>
               <BriefcaseIcon className="size-4" />
               Invite lawyer
@@ -363,9 +363,7 @@ export default function DocumentsPage() {
       }
     >
       <div className="grid gap-4">
-        {company.flags.includes("irs_tax_forms") &&
-        user.activeRole === "administrator" &&
-        new Date() <= filingDueDateFor1099DIV ? (
+        {user.activeRole === "administrator" && new Date() <= filingDueDateFor1099DIV ? (
           <Alert className="mb-4">
             <AlertTitle>Upcoming filing dates for 1099-NEC, 1099-DIV, and 1042-S</AlertTitle>
             <AlertDescription>
