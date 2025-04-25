@@ -394,7 +394,6 @@ export default function ContractorPage() {
               )}
             </div>
           ) : null}
-          </div>
         </div>
 
         {issuePaymentError ? <small className="text-red">{issuePaymentError}</small> : null}
