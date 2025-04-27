@@ -24,25 +24,38 @@ import { useOnChange } from "@/utils/useOnChange";
 function Create() {
   const company = useCurrentCompany();
   const router = useRouter();
-  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({ 
+  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({
     companyId: company.id,
-    type: "not_alumni" 
+    type: "not_alumni",
   });
   const [templateId, setTemplateId] = useState<string | null>(null);
 
-  const roles = contractors.reduce((acc: { id: string; name: string; payRateInSubunits: number; payRateType: PayRateType; trialEnabled: boolean; trialPayRateInSubunits: number }[], contractor) => {
-    if (!acc.some(r => r.id === contractor.role.id)) {
-      acc.push({
-        id: contractor.role.id,
-        name: contractor.role.name,
-        payRateInSubunits: contractor.payRateInSubunits,
-        payRateType: PayRateType.Hourly, // Default to Hourly
-        trialEnabled: false,
-        trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2)
-      });
-    }
-    return acc;
-  }, []);
+  const roles = contractors.reduce(
+    (
+      acc: {
+        id: string;
+        name: string;
+        payRateInSubunits: number;
+        payRateType: PayRateType;
+        trialEnabled: boolean;
+        trialPayRateInSubunits: number;
+      }[],
+      contractor,
+    ) => {
+      if (!acc.some((r) => r.id === contractor.role.id)) {
+        acc.push({
+          id: contractor.role.id,
+          name: contractor.role.name,
+          payRateInSubunits: contractor.payRateInSubunits,
+          payRateType: PayRateType.Hourly, // Default to Hourly
+          trialEnabled: false,
+          trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2),
+        });
+      }
+      return acc;
+    },
+    [],
+  );
 
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState(roles[0]?.id);

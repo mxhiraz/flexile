@@ -55,9 +55,9 @@ const ManageModal = ({
     companyId: company.id,
     type: "not_alumni",
   });
-  
+
   const roles = contractors.reduce((acc: Role[], contractor) => {
-    if (!acc.some(r => r.id === contractor.role.id)) {
+    if (!acc.some((r) => r.id === contractor.role.id)) {
       acc.push({
         id: contractor.role.id,
         name: contractor.role.name,
@@ -69,7 +69,7 @@ const ManageModal = ({
         expenseAccountId: null,
         expenseCardEnabled: false,
         expenseCardSpendingLimitCents: BigInt(0),
-        expenseCardsCount: 0
+        expenseCardsCount: 0,
       });
     }
     return acc;
@@ -104,11 +104,11 @@ const ManageModal = ({
   const [errors, setErrors] = useState<string[]>([]);
   const [quickbooks] = trpc.quickbooks.get.useSuspenseQuery({ companyId: company.id });
   const expenseAccounts = quickbooks?.expenseAccounts ?? [];
-  
-  const roleContractors = contractors.filter(c => c.role.id === role.id);
-  
+
+  const roleContractors = contractors.filter((c) => c.role.id === role.id);
+
   const refetchContractors = contractorsQuery.refetch;
-  
+
   const deleteMutation = trpc.contractors.update.useMutation({
     onSuccess: async () => {
       await refetchContractors();
@@ -116,7 +116,7 @@ const ManageModal = ({
       onClose();
     },
   });
-  
+
   const updateRole = (update: Partial<Role>) => setRole((prev) => ({ ...prev, ...update }));
 
   useEffect(() => {
@@ -220,7 +220,7 @@ const ManageModal = ({
               <NumberInput
                 id="capitalized-expense"
                 value={role.capitalizedExpense}
-                onChange={(value) => updateRole({ capitalizedExpense: (value ?? 0) })}
+                onChange={(value) => updateRole({ capitalizedExpense: value ?? 0 })}
                 suffix="%"
               />
             </div>

@@ -79,26 +79,39 @@ export default function ContractorPage() {
 
   const [selectedRoleId, setSelectedRoleId] = useState(contractor?.role ?? "");
   useEffect(() => setSelectedRoleId(contractor?.role ?? ""), [contractor]);
-  
-  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({ 
+
+  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({
     companyId: company.id,
-    type: "not_alumni" 
+    type: "not_alumni",
   });
-  
-  const roles = contractors.reduce((acc: { id: string; name: string; payRateInSubunits: number; payRateType: PayRateType; trialEnabled: boolean; trialPayRateInSubunits: number }[], contractor) => {
-    if (!acc.some(r => r.id === contractor.role.id)) {
-      acc.push({
-        id: contractor.role.id,
-        name: contractor.role.name,
-        payRateInSubunits: contractor.payRateInSubunits,
-        payRateType: PayRateType.Hourly, // Default to Hourly
-        trialEnabled: false,
-        trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2)
-      });
-    }
-    return acc;
-  }, []);
-  
+
+  const roles = contractors.reduce(
+    (
+      acc: {
+        id: string;
+        name: string;
+        payRateInSubunits: number;
+        payRateType: PayRateType;
+        trialEnabled: boolean;
+        trialPayRateInSubunits: number;
+      }[],
+      contractor,
+    ) => {
+      if (!acc.some((r) => r.id === contractor.role.id)) {
+        acc.push({
+          id: contractor.role.id,
+          name: contractor.role.name,
+          payRateInSubunits: contractor.payRateInSubunits,
+          payRateType: PayRateType.Hourly, // Default to Hourly
+          trialEnabled: false,
+          trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2),
+        });
+      }
+      return acc;
+    },
+    [],
+  );
+
   const selectedRole = roles.find((role) => role.id === selectedRoleId);
   const [endModalOpen, setEndModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -482,26 +495,39 @@ const DetailsTab = ({
   const router = useRouter();
   const [user] = trpc.users.get.useSuspenseQuery({ companyId: company.id, id: userId });
   const [contractor] = trpc.contractors.get.useSuspenseQuery({ companyId: company.id, userId });
-  
-  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({ 
+
+  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({
     companyId: company.id,
-    type: "not_alumni" 
+    type: "not_alumni",
   });
-  
-  const roles = contractors.reduce((acc: { id: string; name: string; payRateInSubunits: number; payRateType: PayRateType; trialEnabled: boolean; trialPayRateInSubunits: number }[], contractor) => {
-    if (!acc.some(r => r.id === contractor.role.id)) {
-      acc.push({
-        id: contractor.role.id,
-        name: contractor.role.name,
-        payRateInSubunits: contractor.payRateInSubunits,
-        payRateType: PayRateType.Hourly, // Default to Hourly
-        trialEnabled: false,
-        trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2)
-      });
-    }
-    return acc;
-  }, []);
-  
+
+  const roles = contractors.reduce(
+    (
+      acc: {
+        id: string;
+        name: string;
+        payRateInSubunits: number;
+        payRateType: PayRateType;
+        trialEnabled: boolean;
+        trialPayRateInSubunits: number;
+      }[],
+      contractor,
+    ) => {
+      if (!acc.some((r) => r.id === contractor.role.id)) {
+        acc.push({
+          id: contractor.role.id,
+          name: contractor.role.name,
+          payRateInSubunits: contractor.payRateInSubunits,
+          payRateType: PayRateType.Hourly, // Default to Hourly
+          trialEnabled: false,
+          trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2),
+        });
+      }
+      return acc;
+    },
+    [],
+  );
+
   const [payRateInSubunits, setPayRateInSubunits] = useState(contractor.payRateInSubunits);
   const [hoursPerWeek, setHoursPerWeek] = useState(contractor.hoursPerWeek);
   const selectedRole = roles.find((role) => role.id === selectedRoleId);

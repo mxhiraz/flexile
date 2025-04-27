@@ -8,21 +8,21 @@ import ManageModal from "./ManageModal";
 
 const Selector = ({ value, onChange }: { value: string | null; onChange: (id: string) => void }) => {
   const company = useCurrentCompany();
-  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({ 
+  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({
     companyId: company.id,
-    type: "not_alumni" 
+    type: "not_alumni",
   });
-  
+
   const roles = contractors.reduce((acc: { id: string; name: string }[], contractor) => {
-    if (!acc.some(r => r.id === contractor.role.id)) {
+    if (!acc.some((r) => r.id === contractor.role.id)) {
       acc.push({
         id: contractor.role.id,
-        name: contractor.role.name
+        name: contractor.role.name,
       });
     }
     return acc;
   }, []);
-  
+
   const [creatingRole, setCreatingRole] = useState(false);
   const uid = useId();
 
