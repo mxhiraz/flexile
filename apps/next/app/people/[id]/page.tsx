@@ -13,7 +13,7 @@ import DividendStatusIndicator from "@/app/equity/DividendStatusIndicator";
 import EquityGrantExerciseStatusIndicator from "@/app/equity/EquityGrantExerciseStatusIndicator";
 import DetailsModal from "@/app/equity/grants/DetailsModal";
 import InvoiceStatus from "@/app/invoices/Status";
-import RoleSelector from "@/app/roles/Selector";
+import RoleSelector from "@/app/components/role/Selector";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import FormSection from "@/components/FormSection";
 import Input from "@/components/Input";

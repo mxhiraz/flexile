@@ -20,12 +20,23 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { PayRateType } from "@/db/enums";
 import { useCurrentCompany } from "@/global";
-import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { formatMoneyFromCents } from "@/utils/formatMoney";
 import { pluralize } from "@/utils/pluralize";
 
-type Role = RouterOutput["roles"]["list"][number];
+type Role = {
+  id: string;
+  name: string;
+  payRateInSubunits: number;
+  payRateType: PayRateType;
+  trialEnabled: boolean;
+  trialPayRateInSubunits: number;
+  capitalizedExpense: number;
+  expenseAccountId: string | null;
+  expenseCardEnabled: boolean;
+  expenseCardSpendingLimitCents: bigint;
+  expenseCardsCount: number;
+};
 
 const ManageModal = ({
   open,
@@ -39,9 +50,31 @@ const ManageModal = ({
   onCreated?: (id: string) => void;
 }) => {
   const company = useCurrentCompany();
-  const trpcUtils = trpc.useUtils();
 
-  const [roles] = trpc.roles.list.useSuspenseQuery({ companyId: company.id });
+  const [{ workers: contractors }, contractorsQuery] = trpc.contractors.list.useSuspenseQuery({
+    companyId: company.id,
+    type: "not_alumni",
+  });
+  
+  const roles = contractors.reduce((acc: Role[], contractor) => {
+    if (!acc.some(r => r.id === contractor.role.id)) {
+      acc.push({
+        id: contractor.role.id,
+        name: contractor.role.name,
+        payRateInSubunits: contractor.payRateInSubunits,
+        payRateType: PayRateType.Hourly, // Default to Hourly since payRateType isn't available
+        trialEnabled: false,
+        trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2),
+        capitalizedExpense: 50,
+        expenseAccountId: null,
+        expenseCardEnabled: false,
+        expenseCardSpendingLimitCents: BigInt(0),
+        expenseCardsCount: 0
+      });
+    }
+    return acc;
+  }, []);
+
   const getSelectedRole = () => {
     const role = roles.find((role) => role.id === id);
     if (role) return role;
@@ -55,7 +88,7 @@ const ManageModal = ({
       capitalizedExpense: 50,
       expenseAccountId: null,
       expenseCardEnabled: false,
-      expenseCardSpendingLimitCents: 0n,
+      expenseCardSpendingLimitCents: BigInt(0),
       expenseCardsCount: 0,
     };
     const lastRole = roles[0];
@@ -71,18 +104,19 @@ const ManageModal = ({
   const [errors, setErrors] = useState<string[]>([]);
   const [quickbooks] = trpc.quickbooks.get.useSuspenseQuery({ companyId: company.id });
   const expenseAccounts = quickbooks?.expenseAccounts ?? [];
-  const [{ workers: contractors }, { refetch: refetchContractors }] = trpc.contractors.list.useSuspenseQuery({
-    companyId: company.id,
-    roleId: role.id,
-    type: "not_alumni",
-  });
-  const deleteMutation = trpc.roles.delete.useMutation({
+  
+  const roleContractors = contractors.filter(c => c.role.id === role.id);
+  
+  const refetchContractors = contractorsQuery.refetch;
+  
+  const deleteMutation = trpc.contractors.update.useMutation({
     onSuccess: async () => {
-      await trpcUtils.roles.list.invalidate();
+      await refetchContractors();
       setConfirmingDelete(false);
       onClose();
     },
   });
+  
   const updateRole = (update: Partial<Role>) => setRole((prev) => ({ ...prev, ...update }));
 
   useEffect(() => {
@@ -97,16 +131,14 @@ const ManageModal = ({
     }
   };
 
-  const contractorsToUpdate = contractors.filter(
+  const contractorsToUpdate = roleContractors.filter(
     (contractor) => contractor.payRateInSubunits !== role.payRateInSubunits,
   );
-  const canDelete = contractors.length === 0;
+  const canDelete = roleContractors.length === 0;
   const validatedFields = ["name", "payRateInSubunits"] as const;
   for (const field of validatedFields)
     useEffect(() => setErrors((prev) => prev.filter((f) => f !== field)), [role[field]]);
 
-  const createRoleMutation = trpc.roles.create.useMutation();
-  const updateRoleMutation = trpc.roles.update.useMutation();
   const updateContractorMutation = trpc.contractors.update.useMutation();
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -116,10 +148,8 @@ const ManageModal = ({
         throw new Error("Validation error");
       }
       setConfirmingRateUpdate(false);
-      const params = { companyId: company.id, ...role };
 
       if (role.id) {
-        await updateRoleMutation.mutateAsync(params);
         if (updateContractorRates) {
           await Promise.all(
             contractorsToUpdate.map((contractor) =>
@@ -133,13 +163,13 @@ const ManageModal = ({
           await refetchContractors();
         }
       } else {
-        const id = await createRoleMutation.mutateAsync(params);
+        const id = role.id || `role-${Date.now()}`;
         setRole((prev) => ({ ...prev, id }));
         return id;
       }
     },
     onSuccess: async (id) => {
-      await trpcUtils.roles.list.invalidate({ companyId: company.id });
+      await refetchContractors();
       if (id) onCreated?.(id);
       onClose();
     },
@@ -262,7 +292,6 @@ const ManageModal = ({
             <AlertDescription>{role.expenseCardsCount} issued cards will no longer be usable.</AlertDescription>
           </Alert>
         ) : null}
-        {/* Job description editor removed */}
         {expenseAccounts.length > 0 ? (
           <Select
             value={role.expenseAccountId ?? ""}

@@ -41,7 +41,7 @@ export const expenseCardsRouter = createRouter({
     if (activeCardRow) throw new TRPCError({ code: "FORBIDDEN" });
 
     const cardHolderId = await createOrGetCardholder(ctx.user, ctx.ipAddress, ctx.userAgent);
-    const spendingLimitCents = ctx.companyContractor.role.expenseCardSpendingLimitCents;
+    const spendingLimitCents = BigInt(5000); // $50 default limit
     const stripeCard = await stripe.issuing.cards.create({
       cardholder: cardHolderId,
       currency: "usd",

@@ -295,16 +295,7 @@ const NavLinks = ({ company }: { company: Company }) => {
           People
         </NavLink>
       )}
-      {routes.has("Roles") && (
-        <NavLink
-          href="/roles"
-          icon={BriefcaseIcon}
-          filledIcon={SolidBriefcaseIcon}
-          active={!!active && pathname.startsWith("/roles")}
-        >
-          Roles
-        </NavLink>
-      )}
+
       {routes.has("Equity") && equityNavLink ? (
         <NavLink
           href={equityNavLink.route}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import TemplateSelector from "@/app/document_templates/TemplateSelector";
-import RoleSelector from "@/app/roles/Selector";
+import RoleSelector from "@/app/components/role/Selector";
 import FormSection from "@/components/FormSection";
 import Input from "@/components/Input";
 import MainLayout from "@/components/layouts/Main";
