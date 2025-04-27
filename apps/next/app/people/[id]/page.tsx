@@ -482,7 +482,26 @@ const DetailsTab = ({
   const router = useRouter();
   const [user] = trpc.users.get.useSuspenseQuery({ companyId: company.id, id: userId });
   const [contractor] = trpc.contractors.get.useSuspenseQuery({ companyId: company.id, userId });
-  const [roles] = trpc.roles.list.useSuspenseQuery({ companyId: company.id });
+  
+  const [{ workers: contractors }] = trpc.contractors.list.useSuspenseQuery({ 
+    companyId: company.id,
+    type: "not_alumni" 
+  });
+  
+  const roles = contractors.reduce((acc: { id: string; name: string; payRateInSubunits: number; payRateType: PayRateType; trialEnabled: boolean; trialPayRateInSubunits: number }[], contractor) => {
+    if (!acc.some(r => r.id === contractor.role.id)) {
+      acc.push({
+        id: contractor.role.id,
+        name: contractor.role.name,
+        payRateInSubunits: contractor.payRateInSubunits,
+        payRateType: PayRateType.Hourly, // Default to Hourly
+        trialEnabled: false,
+        trialPayRateInSubunits: Math.floor(contractor.payRateInSubunits / 2)
+      });
+    }
+    return acc;
+  }, []);
+  
   const [payRateInSubunits, setPayRateInSubunits] = useState(contractor.payRateInSubunits);
   const [hoursPerWeek, setHoursPerWeek] = useState(contractor.hoursPerWeek);
   const selectedRole = roles.find((role) => role.id === selectedRoleId);
