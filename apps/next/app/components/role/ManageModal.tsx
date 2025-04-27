@@ -219,8 +219,8 @@ const ManageModal = ({
               <Label htmlFor="capitalized-expense">Capitalized R&D expense</Label>
               <NumberInput
                 id="capitalized-expense"
-                value={role.capitalizedExpense ?? 0}
-                onChange={(value) => updateRole({ capitalizedExpense: value ?? 0 })}
+                value={role.capitalizedExpense}
+                onChange={(value) => updateRole({ capitalizedExpense: (value ?? 0) })}
                 suffix="%"
               />
             </div>
