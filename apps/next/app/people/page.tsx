@@ -95,7 +95,9 @@ export default function People() {
         user.activeRole === "administrator" ? (
           <>
             <Button variant="outline" asChild className="mr-2">
-              <CopyButton copyText={`${window.location.origin}/companies/${(company as any).externalId || company.id}/worker/onboarding`}>
+              <CopyButton
+                copyText={`${window.location.origin}/companies/${company.id}/worker/onboarding`}
+              >
                 <LinkIcon className="mr-1 size-4" />
                 Share invite link
               </CopyButton>
