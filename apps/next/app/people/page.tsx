@@ -1,9 +1,10 @@
 "use client";
-import { UserPlusIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { LinkIcon, UserPlusIcon, UsersIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import React, { useMemo } from "react";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
+import CopyButton from "@/components/CopyButton";
 import MainLayout from "@/components/layouts/Main";
 import Placeholder from "@/components/Placeholder";
 import Status from "@/components/Status";
@@ -92,12 +93,20 @@ export default function People() {
       title="People"
       headerActions={
         user.activeRole === "administrator" ? (
-          <Button asChild>
-            <Link href="/people/new">
-              <UserPlusIcon className="size-4" />
-              Invite contractor
-            </Link>
-          </Button>
+          <>
+            <Button variant="outline" asChild className="mr-2">
+              <CopyButton copyText={`${window.location.origin}/companies/${company.id}/worker/onboarding`}>
+                <LinkIcon className="mr-1 size-4" />
+                Share invite link
+              </CopyButton>
+            </Button>
+            <Button asChild>
+              <Link href="/people/new">
+                <UserPlusIcon className="size-4" />
+                Invite contractor
+              </Link>
+            </Button>
+          </>
         ) : null
       }
     >
