@@ -16,32 +16,24 @@ export const navLinks = (user: CurrentUser, company: Company): TabLink[] => {
   const isAdmin = user.activeRole === "administrator";
   const isLawyer = user.activeRole === "lawyer";
   const isInvestor = user.activeRole === "contractorOrInvestor" && "investor" in user.roles;
-  
+
   const links: (TabLink | null)[] = [
-    company.flags.includes("equity") && (isAdmin || isLawyer || isInvestor)
-      ? { label: "Rounds", route: ROUNDS }
-      : null,
+    company.flags.includes("equity") && (isAdmin || isLawyer || isInvestor) ? { label: "Rounds", route: ROUNDS } : null,
     company.flags.includes("equity") && (isAdmin || isLawyer || isInvestor)
       ? { label: "Cap table", route: CAP_TABLE }
       : null,
-    company.flags.includes("equity") && (isAdmin || isLawyer)
-      ? { label: "Option pools", route: OPTION_POOLS }
-      : null,
+    company.flags.includes("equity") && (isAdmin || isLawyer) ? { label: "Option pools", route: OPTION_POOLS } : null,
     company.flags.includes("equity") && (isAdmin || isLawyer || (isInvestor && user.roles.investor?.hasGrants))
       ? { label: "Options", route: GRANTS }
       : null,
     isInvestor && user.roles.investor?.hasShares ? { label: "Shares", route: SHARES } : null,
-    isInvestor && user.roles.investor?.hasConvertibles
-      ? { label: "Convertibles", route: CONVERTIBLES }
-      : null,
+    isInvestor && user.roles.investor?.hasConvertibles ? { label: "Convertibles", route: CONVERTIBLES } : null,
     isInvestor
       ? { label: "Dividends", route: DIVIDENDS }
       : isAdmin || isLawyer
         ? { label: "Dividends", route: DIVIDEND_ROUNDS }
         : null,
-    company.flags.includes("equity") && (isAdmin || isInvestor)
-      ? { label: "Buybacks", route: BUYBACKS }
-      : null,
+    company.flags.includes("equity") && (isAdmin || isInvestor) ? { label: "Buybacks", route: BUYBACKS } : null,
   ];
   return links.filter((link) => !!link);
 };
