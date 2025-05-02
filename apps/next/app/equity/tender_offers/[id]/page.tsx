@@ -101,7 +101,6 @@ export default function BuybackView() {
     ];
   }, [bids, selectedBudget, company.fullyDilutedShares]);
 
-  // Restore original column definitions and table hook
   const columnHelper = createColumnHelper<Bid>();
   const columns = useMemo(
     () =>
@@ -131,7 +130,6 @@ export default function BuybackView() {
               cell: (info) => formatMoney(info.getValue()),
             })
           : null,
-        // Restore Actions column
         isOpen && user.activeRole !== "administrator"
           ? columnHelper.display({
               id: "actions",
@@ -142,13 +140,12 @@ export default function BuybackView() {
               ),
             })
           : null,
-      ].filter((column): column is NonNullable<typeof column> => !!column),
+      ].filter((column) => !!column),
     [user.activeRole, company.fullyDilutedShares, isOpen],
   );
 
   const bidsTable = useTable({ data: bids, columns });
 
-  // Restore state/mutations needed for bid creation/deletion/signing
   const defaultBid: NewBidState = { shareClass: holdings[0]?.className ?? "", numberOfShares: 0, pricePerShare: 0 };
   const [newBid, setNewBid] = useState<NewBidState>(defaultBid);
   useEffect(() => setNewBid(defaultBid), [holdings]);
@@ -206,17 +203,21 @@ export default function BuybackView() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <RangeInput
-            label="Total Budget"
-            ariaLabel="Total Budget Slider and Input"
-            min={0}
-            max={maxBudget}
-            value={selectedBudget}
-            onChange={setSelectedBudget}
-            unit="USD"
-          />
-          <Figures items={figures} />
+        <CardContent className="space-y-6 pt-0">
+          {user.activeRole === "administrator" && maxBudget > 0 ? (
+            <>
+              <RangeInput
+                label="Total Budget"
+                ariaLabel="Total Budget Slider and Input"
+                min={0}
+                max={maxBudget}
+                value={selectedBudget}
+                onChange={setSelectedBudget}
+                unit="USD"
+              />
+              <Figures items={figures} />
+            </>
+          ) : null}
           <div className="grid grid-cols-2 gap-x-4 gap-y-6 pt-2 md:grid-cols-4">
             <div>
               <Label>Start date</Label>
@@ -240,7 +241,9 @@ export default function BuybackView() {
         <CardHeader>
           <CardTitle>Bids Table</CardTitle>
         </CardHeader>
-        <CardContent>{bids.length > 0 ? <DataTable table={bidsTable} /> : null}</CardContent>
+        <CardContent className="pt-0">
+          {bids.length > 0 ? <DataTable table={bidsTable} /> : <p>No bids yet.</p>}
+        </CardContent>
       </Card>
 
       {user.activeRole === "contractorOrInvestor" && user.roles.investor?.investedInAngelListRuv ? (
