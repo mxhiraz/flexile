@@ -107,7 +107,7 @@ export default function BuybackView() {
       [
         columnHelper.accessor("companyInvestor.user.email", {
           header: "Investor",
-          cell: (info) => (user.activeRole !== "administrator" ? "You!" : info.getValue()),
+          cell: (info) => (user.roles.administrator ? info.getValue() : "You!"),
         }),
         columnHelper.accessor("shareClass", { header: "Share class" }),
         columnHelper.accessor("numberOfShares", {
@@ -130,7 +130,7 @@ export default function BuybackView() {
               cell: (info) => formatMoney(info.getValue()),
             })
           : null,
-        isOpen && user.activeRole !== "administrator"
+        isOpen && !user.roles.administrator
           ? columnHelper.display({
               id: "actions",
               cell: (info) => (
@@ -141,7 +141,7 @@ export default function BuybackView() {
             })
           : null,
       ].filter((column) => !!column),
-    [user.activeRole, company.fullyDilutedShares, isOpen],
+    [user.roles.administrator, company.fullyDilutedShares, isOpen],
   );
 
   const bidsTable = useTable({ data: bids, columns });
@@ -187,33 +187,6 @@ export default function BuybackView() {
     },
   });
 
-  const columnHelper = createColumnHelper<Bid>();
-  const columns = useMemo(
-    () =>
-      [
-        columnHelper.accessor("companyInvestor.user.email", {
-          header: "Investor",
-          cell: (info) => (info.row.original.companyInvestor.user.id === user.id ? "You!" : info.getValue()),
-        }),
-        columnHelper.simple("shareClass", "Share class"),
-        columnHelper.simple("numberOfShares", "Number of shares", (value) => value.toLocaleString()),
-        columnHelper.simple("sharePriceCents", "Bid price", formatMoneyFromCents),
-        isOpen
-          ? columnHelper.display({
-              id: "actions",
-              cell: (info) =>
-                info.row.original.companyInvestor.user.id === user.id ? (
-                  <Button onClick={() => setCancelingBid(info.row.original)}>
-                    <TrashIcon className="size-4" />
-                  </Button>
-                ) : null,
-            })
-          : null,
-      ].filter((column) => !!column),
-    [],
-  );
-
-  const bidsTable = useTable({ data: bids, columns });
   const buttonTooltip = !signed ? "Please sign the letter of transmittal before submitting a bid" : null;
 
   return (
@@ -231,7 +204,7 @@ export default function BuybackView() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6 pt-0">
-          {user.activeRole === "administrator" && maxBudget > 0 ? (
+          {user.roles.administrator && maxBudget > 0 ? (
             <>
               <RangeInput
                 label="Total Budget"
