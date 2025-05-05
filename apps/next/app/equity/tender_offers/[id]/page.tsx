@@ -240,7 +240,6 @@ export default function BuybackView() {
         {/* TODO: Add Close Tender Offer button conditionally */}
       </Card>
 
-      {/* Wrap DataTable in Card */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Bids Table</CardTitle>
