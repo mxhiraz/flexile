@@ -97,7 +97,7 @@ export default function BuybackView() {
       {
         caption: "Implied Valuation",
         value: formatMoney(impliedValuation),
-        tooltip: company.fullyDilutedShares
+        alt: company.fullyDilutedShares
           ? `Based on ${company.fullyDilutedShares.toLocaleString()} fully diluted shares`
           : undefined,
       },
