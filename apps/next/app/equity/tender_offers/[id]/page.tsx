@@ -95,8 +95,11 @@ export default function BuybackView() {
       { caption: "Total Amount Spent", value: formatMoney(amountSpent) },
       { caption: "Effective Price Per Share", value: formatMoney(effectivePrice) },
       {
-        caption: `Implied Valuation${company.fullyDilutedShares ? ` (Based on ${company.fullyDilutedShares.toLocaleString()} fully diluted shares)` : ""}`,
+        caption: "Implied Valuation",
         value: formatMoney(impliedValuation),
+        tooltip: company.fullyDilutedShares
+          ? `Based on ${company.fullyDilutedShares.toLocaleString()} fully diluted shares`
+          : undefined,
       },
     ];
   }, [bids, selectedBudget, company.fullyDilutedShares]);
@@ -204,7 +207,8 @@ export default function BuybackView() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6 pt-0">
-          {user.roles.administrator && maxBudget > 0 ? (
+          {/* TODO: Need to handle pulling in the max budget */}
+          {user.roles.administrator && maxBudget >= 0 ? (
             <>
               <RangeInput
                 label="Total Budget"
