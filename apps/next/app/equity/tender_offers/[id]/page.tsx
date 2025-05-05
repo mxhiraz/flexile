@@ -41,11 +41,11 @@ export default function BuybackView() {
   const user = useCurrentUser();
   const [data] = trpc.tenderOffers.get.useSuspenseQuery({ companyId: company.id, id });
   const isOpen = isPast(data.startsAt) && isFuture(data.endsAt);
-  const investorId = user.activeRole === "administrator" ? undefined : user.roles.investor?.id;
+  const investorId = user.roles.investor?.id;
   const [bids, { refetch: refetchBids }] = trpc.tenderOffers.bids.list.useSuspenseQuery({
     companyId: company.id,
     tenderOfferId: id,
-    investorId,
+    investorId: user.roles.administrator ? undefined : investorId,
   });
   const { data: ownShareHoldings } = trpc.shareHoldings.sumByShareClass.useQuery(
     { companyId: company.id, investorId },
@@ -187,6 +187,33 @@ export default function BuybackView() {
     },
   });
 
+  const columnHelper = createColumnHelper<Bid>();
+  const columns = useMemo(
+    () =>
+      [
+        columnHelper.accessor("companyInvestor.user.email", {
+          header: "Investor",
+          cell: (info) => (info.row.original.companyInvestor.user.id === user.id ? "You!" : info.getValue()),
+        }),
+        columnHelper.simple("shareClass", "Share class"),
+        columnHelper.simple("numberOfShares", "Number of shares", (value) => value.toLocaleString()),
+        columnHelper.simple("sharePriceCents", "Bid price", formatMoneyFromCents),
+        isOpen
+          ? columnHelper.display({
+              id: "actions",
+              cell: (info) =>
+                info.row.original.companyInvestor.user.id === user.id ? (
+                  <Button onClick={() => setCancelingBid(info.row.original)}>
+                    <TrashIcon className="size-4" />
+                  </Button>
+                ) : null,
+            })
+          : null,
+      ].filter((column) => !!column),
+    [],
+  );
+
+  const bidsTable = useTable({ data: bids, columns });
   const buttonTooltip = !signed ? "Please sign the letter of transmittal before submitting a bid" : null;
 
   return (
@@ -246,7 +273,7 @@ export default function BuybackView() {
         </CardContent>
       </Card>
 
-      {user.activeRole === "contractorOrInvestor" && user.roles.investor?.investedInAngelListRuv ? (
+      {user.roles.investor?.investedInAngelListRuv ? (
         <Alert variant="destructive">
           <ExclamationTriangleIcon />
           <AlertDescription>

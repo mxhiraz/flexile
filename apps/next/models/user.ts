@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-const companyAccessRoleSchema = z.enum(["administrator", "worker", "lawyer", "investor"]);
-
 const navLinkSchema = z.object({ label: z.string(), name: z.string() });
 const addressSchema = z.object({
   street_address: z.string().nullable(),
@@ -19,8 +17,6 @@ const companySchema = z.object({
   address: addressSchema,
   flags: z.array(z.string()),
   routes: z.array(navLinkSchema.extend({ subLinks: z.array(navLinkSchema).optional() })),
-  selected_access_role: companyAccessRoleSchema.nullable(),
-  other_access_roles: z.array(companyAccessRoleSchema),
   requiredInvoiceApprovals: z.number(),
   equityCompensationEnabled: z.boolean(),
   completedPaymentMethodSetup: z.boolean(),
@@ -48,6 +44,7 @@ export const currentUserSchema = z.object({
   preferredName: z.string().nullable(),
   legalName: z.string().nullable(),
   billingEntityName: z.string().nullable(),
+  hasPayoutMethod: z.boolean(),
   roles: z.object({
     administrator: z.object({ id: z.string(), isInvited: z.boolean(), isBoardMember: z.boolean() }).optional(),
     lawyer: z.object({ id: z.string() }).optional(),
@@ -74,7 +71,6 @@ export const currentUserSchema = z.object({
       })
       .optional(),
   }),
-  activeRole: z.enum(["administrator", "lawyer", "contractorOrInvestor"]),
 });
 
 export type Company = z.infer<typeof companySchema>;
