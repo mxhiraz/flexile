@@ -1,4 +1,3 @@
-import { db } from "@test/db";
 import { companiesFactory } from "@test/factories/companies";
 import { companyContractorsFactory } from "@test/factories/companyContractors";
 import { equityAllocationsFactory } from "@test/factories/equityAllocations";
