@@ -45,9 +45,9 @@
     "zeed-dom": "^0.15.1"
   },
   "scripts": {
-    "typecheck": "pnpm run setup && tsc -p apps/frontend",
+    "typecheck": "pnpm run setup && tsc -p frontend",
     "typecheck:watch": "pnpm run typecheck --watch --preserveWatchOutput",
-    "setup": "cd apps/backend && bundle exec rails js:routes:typescript",
+    "setup": "cd backend && bundle exec rails js:routes:typescript",
     "lint-fast": "DISABLE_TYPE_CHECKED=1 pnpm eslint",
     "build-next": "pnpm next build apps/frontend --no-lint"
   },

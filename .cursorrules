@@ -5,9 +5,9 @@
 - Newlines at end of files, always
 
 - To add a feature:
-  - Add page to `apps/frontend/app/**/page.tsx`
-  - Add any components to `apps/frontend/components/**/*.tsx`
-  - Add tRPC API routes to `apps/frontend/trpc/routes/**/index.ts` and then add those to `apps/frontend/trpc/server.ts`
+  - Add page to `frontend/app/**/page.tsx`
+  - Add any components to `frontend/components/**/*.tsx`
+  - Add tRPC API routes to `frontend/trpc/routes/**/index.ts` and then add those to `frontend/trpc/server.ts`
   - Create API handlers using tRPC API routes that follow REST principles
 
 - For writing end-to-end tests:
@@ -21,9 +21,9 @@
 
 - After any functional code change:
   - For Ruby/Rails changes:
-    - Add or update unit tests in `apps/backend/spec/models/` for model changes
-    - Add or update controller tests in `apps/backend/spec/controllers/` for controller changes
-    - Add or update system tests in `apps/backend/spec/system/` for UI flow changes
+    - Add or update unit tests in `backend/spec/models/` for model changes
+    - Add or update controller tests in `backend/spec/controllers/` for controller changes
+    - Add or update system tests in `backend/spec/system/` for UI flow changes
     - Run tests with `bundle exec rspec <path_to_spec>` to verify
   - For TypeScript/Next.js changes:
     - Add or update unit tests for front-end business logic

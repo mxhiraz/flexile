@@ -13,10 +13,10 @@ runs:
     - run: pnpm i
       shell: bash
 
-    - run: cp .env.example .env && ln -s $PWD/.env ./apps/frontend/.env
+    - run: cp .env.example .env && ln -s $PWD/.env ./frontend/.env
       shell: bash
 
     - uses: ruby/setup-ruby@v1
       with:
-        working-directory: apps/backend
+        working-directory: backend
         bundler-cache: true # runs "bundle install" and caches installed gems automatically

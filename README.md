@@ -15,7 +15,7 @@ You'll need:
 The easiest way to set up the development environment is to use the [`bin/setup` script](bin/setup), but feel free to run the commands in it yourself to:
 
 - Set up Ruby (ideally using `rbenv`/`rvm`) and PostgreSQL
-- Install dependencies using `pnpm i` and `cd apps/backend && bundle i`
+- Install dependencies using `pnpm i` and `cd backend && bundle i`
 - Set up your environment by either using `pnpx vercel env pull` or `cp .env.example .env` and filling in missing values and your own keys
 - Run `cd apps/backend && gem install foreman`
 

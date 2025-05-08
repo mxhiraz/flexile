@@ -66,7 +66,7 @@ jobs:
         uses: ./.github/common/
 
       - name: Setup test database
-        run: cd apps/backend && bundle exec rails db:create db:schema:load
+        run: cd backend && bundle exec rails db:create db:schema:load
 
       - name: Run tests
         env:
@@ -105,8 +105,8 @@ jobs:
         id: next-cache
         uses: actions/cache@v4
         with:
-          path: apps/frontend/.next/cache
-          key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/*/pnpm-lock.yaml') }}-${{ hashFiles('apps/frontend/**/*.{ts,tsx}') }}
+          path: frontend/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/*/pnpm-lock.yaml') }}-${{ hashFiles('frontend/**/*.{ts,tsx}') }}
           restore-keys: |
             next-${{ runner.os }}-
 
