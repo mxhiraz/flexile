@@ -18,7 +18,7 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 export RAILS_ENV=test
 export NODE_ENV=test
 
-cd apps/rails
+cd apps/backend
 bundle exec rails db:drop db:create db:schema:load db:seed_test_data
 cd ../..
 

@@ -1,5 +1,5 @@
-apps/next/utils/routes.*
-apps/rails
+apps/frontend/utils/routes.*
+apps/backend
 vendor
 tmp
-apps/next/.next
+apps/frontend/.next

@@ -19,10 +19,10 @@ tmp
 /certificates
 
 # Rails credentials
-/apps/rails/config/master.key
-/apps/rails/config/credentials.yml.enc
-/apps/rails/config/credentials/*.yml.enc
-/apps/rails/config/credentials/*.key
+/apps/backend/config/master.key
+/apps/backend/config/credentials.yml.enc
+/apps/backend/config/credentials/*.yml.enc
+/apps/backend/config/credentials/*.key
 
 # IDE
 .vscode

@@ -9,13 +9,13 @@ import reactPlugin from "eslint-plugin-react";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-const nextIgnores = includeIgnoreFile(fileURLToPath(import.meta.resolve("./apps/next/.gitignore")));
-nextIgnores.ignores = nextIgnores.ignores.map((file) => `apps/next/${file}`);
+const nextIgnores = includeIgnoreFile(fileURLToPath(import.meta.resolve("./apps/frontend/.gitignore")));
+nextIgnores.ignores = nextIgnores.ignores.map((file) => `apps/frontend/${file}`);
 
 export default [
   includeIgnoreFile(fileURLToPath(import.meta.resolve("./.gitignore"))),
   nextIgnores,
-  { ignores: ["apps/next/utils/routes.*", "apps/rails"] },
+  { ignores: ["apps/next/utils/routes.*", "apps/backend"] },
   prettierRecommended,
   js.configs.recommended,
   {

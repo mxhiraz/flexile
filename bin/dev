@@ -9,7 +9,7 @@ elif [ ! -f ".env" ]; then
 fi
 
 pnpm install
-cd apps/rails
+cd apps/backend
 bundle install
 bin/rails db:prepare
 cd ../..
