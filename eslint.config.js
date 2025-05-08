@@ -58,7 +58,7 @@ export default [
       "import/no-duplicates": "error",
     },
     settings: {
-      next: { rootDir: "apps/next" },
+      next: { rootDir: "frontend" },
     },
   },
   nextPlugin.flatConfig.recommended,
@@ -123,8 +123,8 @@ export default [
     files: [
       ".puppeteerrc.cjs",
       "eslint.config.js",
-      "apps/next/next.config.ts",
-      "apps/next/drizzle.config.js",
+      "frontend/next.config.ts",
+      "frontend/drizzle.config.js",
       "playwright.config.ts",
       "docker/createCertificate.js",
     ],
