@@ -12,8 +12,9 @@ import {
   type TableOptions,
   useReactTable,
 } from "@tanstack/react-table";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { FilterIcon, SearchIcon } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,9 @@ interface TableProps<T> {
   onRowClicked?: ((row: T) => void) | undefined;
   actions?: React.ReactNode;
   searchColumn?: string | undefined;
+  virtualized?: boolean;
+  rowHeight?: number;
+  overscan?: number;
 }
 
 export default function DataTable<T extends RowData>({
@@ -92,6 +96,9 @@ export default function DataTable<T extends RowData>({
   onRowClicked,
   actions,
   searchColumn: searchColumnName,
+  virtualized = false,
+  rowHeight = 40,
+  overscan = 5,
 }: TableProps<T>) {
   const data = useMemo(
     () => ({
@@ -133,6 +140,17 @@ export default function DataTable<T extends RowData>({
   const searchColumn = searchColumnName ? table.getColumn(searchColumnName) : null;
   const getColumnName = (column: Column<T>) =>
     typeof column.columnDef.header === "string" ? column.columnDef.header : "";
+    
+  const tableBodyRef = useRef<HTMLTableSectionElement>(null);
+  
+  const virtualizer = virtualized
+    ? useVirtualizer({
+        count: data.rows.length,
+        getScrollElement: () => tableBodyRef.current,
+        estimateSize: () => rowHeight,
+        overscan,
+      })
+    : null;
 
   return (
     <div className="grid gap-4">
@@ -268,42 +286,110 @@ export default function DataTable<T extends RowData>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody className="not-print:max-md:contents">
+        <TableBody 
+          ref={tableBodyRef}
+          className={cn(
+            "not-print:max-md:contents",
+            virtualized && "relative block overflow-auto"
+          )}
+          style={
+            virtualized && data.rows.length > 0
+              ? {
+                  height: `${Math.min(data.rows.length * rowHeight, 400)}px`,
+                  maxHeight: "400px",
+                }
+              : undefined
+          }
+        >
           {data.rows.length > 0 ? (
-            data.rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className={rowClasses}
-                data-state={row.getIsSelected() ? "selected" : undefined}
-                onClick={() => onRowClicked?.(row.original)}
+            virtualized && virtualizer ? (
+              <div
+                style={{
+                  height: `${data.rows.length * rowHeight}px`,
+                  width: "100%",
+                  position: "relative",
+                }}
               >
-                {selectable ? (
-                  <TableCell className={cellClasses(null)} onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      checked={row.getIsSelected()}
-                      aria-label="Select row"
-                      disabled={!row.getCanSelect()}
-                      onCheckedChange={row.getToggleSelectedHandler()}
-                      className="relative z-1"
-                    />
-                  </TableCell>
-                ) : null}
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={`${cellClasses(cell.column)} ${cell.column.id === "actions" ? "relative z-1 md:text-right print:hidden" : ""}`}
-                    onClick={(e) => cell.column.id === "actions" && e.stopPropagation()}
-                  >
-                    {typeof cell.column.columnDef.header === "string" && (
-                      <div className="text-gray-500 md:hidden print:hidden" aria-hidden>
-                        {cell.column.columnDef.header}
-                      </div>
-                    )}
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+                {virtualizer.getVirtualItems().map((virtualRow) => {
+                  const row = data.rows[virtualRow.index];
+                  if (!row) return null;
+                  
+                  return (
+                    <TableRow
+                      key={row.id}
+                      className={cn(rowClasses, "absolute w-full")}
+                      data-state={row.getIsSelected() ? "selected" : undefined}
+                      onClick={() => onRowClicked?.(row.original)}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      {selectable ? (
+                        <TableCell className={cellClasses(null)} onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={row.getIsSelected()}
+                            aria-label="Select row"
+                            disabled={!row.getCanSelect()}
+                            onCheckedChange={row.getToggleSelectedHandler()}
+                            className="relative z-1"
+                          />
+                        </TableCell>
+                      ) : null}
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className={`${cellClasses(cell.column)} ${cell.column.id === "actions" ? "relative z-1 md:text-right print:hidden" : ""}`}
+                          onClick={(e) => cell.column.id === "actions" && e.stopPropagation()}
+                        >
+                          {typeof cell.column.columnDef.header === "string" && (
+                            <div className="text-gray-500 md:hidden print:hidden" aria-hidden>
+                              {cell.column.columnDef.header}
+                            </div>
+                          )}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })}
+              </div>
+            ) : (
+              data.rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className={rowClasses}
+                  data-state={row.getIsSelected() ? "selected" : undefined}
+                  onClick={() => onRowClicked?.(row.original)}
+                >
+                  {selectable ? (
+                    <TableCell className={cellClasses(null)} onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={row.getIsSelected()}
+                        aria-label="Select row"
+                        disabled={!row.getCanSelect()}
+                        onCheckedChange={row.getToggleSelectedHandler()}
+                        className="relative z-1"
+                      />
+                    </TableCell>
+                  ) : null}
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={`${cellClasses(cell.column)} ${cell.column.id === "actions" ? "relative z-1 md:text-right print:hidden" : ""}`}
+                      onClick={(e) => cell.column.id === "actions" && e.stopPropagation()}
+                    >
+                      {typeof cell.column.columnDef.header === "string" && (
+                        <div className="text-gray-500 md:hidden print:hidden" aria-hidden>
+                          {cell.column.columnDef.header}
+                        </div>
+                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )
           ) : (
             <TableRow className="h-24">
               <TableCell colSpan={table.getAllColumns().length} className="text-center align-middle">

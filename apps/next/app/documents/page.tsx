@@ -393,6 +393,9 @@ export default function DocumentsPage() {
               table={table}
               actions={isCompanyRepresentative ? <EditTemplates /> : undefined}
               {...(isCompanyRepresentative && { searchColumn: "Signer" })}
+              virtualized={true}
+              rowHeight={48}
+              overscan={10}
             />
             {signDocument ? (
               <SignDocumentModal document={signDocument} onClose={() => setSignDocumentId(null)} />
