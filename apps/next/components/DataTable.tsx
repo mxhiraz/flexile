@@ -140,9 +140,9 @@ export default function DataTable<T extends RowData>({
   const searchColumn = searchColumnName ? table.getColumn(searchColumnName) : null;
   const getColumnName = (column: Column<T>) =>
     typeof column.columnDef.header === "string" ? column.columnDef.header : "";
-    
+
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
-  
+
   const virtualizer = virtualized
     ? useVirtualizer({
         count: data.rows.length,
@@ -286,12 +286,9 @@ export default function DataTable<T extends RowData>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody 
+        <TableBody
           ref={tableBodyRef}
-          className={cn(
-            "not-print:max-md:contents",
-            virtualized && "relative block overflow-auto"
-          )}
+          className={cn("not-print:max-md:contents", virtualized && "relative block overflow-auto")}
           style={
             virtualized && data.rows.length > 0
               ? {
@@ -313,7 +310,7 @@ export default function DataTable<T extends RowData>({
                 {virtualizer.getVirtualItems().map((virtualRow) => {
                   const row = data.rows[virtualRow.index];
                   if (!row) return null;
-                  
+
                   return (
                     <TableRow
                       key={row.id}
