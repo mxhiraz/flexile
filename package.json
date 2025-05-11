@@ -47,7 +47,7 @@
   "scripts": {
     "typecheck": "pnpm run setup && tsc -p frontend",
     "typecheck:watch": "pnpm run typecheck --watch --preserveWatchOutput",
-    "setup": "cd backend && bundle exec rails js:routes:typescript",
+    "setup": "cd backend && DOMAIN=flexile.dev bundle exec rails js:routes:typescript",
     "lint-fast": "DISABLE_TYPE_CHECKED=1 pnpm eslint",
     "build-next": "pnpm next build frontend --no-lint"
   },
