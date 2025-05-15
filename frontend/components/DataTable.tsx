@@ -88,6 +88,8 @@ interface TableProps<T> {
   actions?: React.ReactNode;
   searchColumn?: string | undefined;
   rowHeight?: number;
+  virtualized?: boolean;
+  overscan?: number;
 }
 
 const cellClasses = <T extends RowData>(column: Column<T> | null, type?: "header" | "footer") => {
@@ -100,7 +102,16 @@ const cellClasses = <T extends RowData>(column: Column<T> | null, type?: "header
 };
 
 export default function DataTable<T extends RowData>(props: TableProps<T>) {
-  const { table, caption, onRowClicked, actions, searchColumn: searchColumnName, rowHeight = 40 } = props;
+  const { 
+    table, 
+    caption, 
+    onRowClicked, 
+    actions, 
+    searchColumn: searchColumnName, 
+    rowHeight = 40,
+    virtualized = false,
+    overscan = 5
+  } = props;
   const data = useMemo(
     () => ({
       headers: table
@@ -147,11 +158,14 @@ export default function DataTable<T extends RowData>(props: TableProps<T>) {
     if (!scrollElement || !ref.current) return 0;
     return ref.current.getBoundingClientRect().top - scrollElement.getBoundingClientRect().top;
   }, [scrollElement]);
-  const virtualizer = useVirtualizer({
-    count: rows.length * 10,
-    getScrollElement: () => scrollElement,
-    estimateSize: () => rowHeight,
-  });
+  const virtualizer = virtualized
+    ? useVirtualizer({
+        count: rows.length * 10,
+        getScrollElement: () => scrollElement,
+        estimateSize: () => rowHeight,
+        overscan,
+      })
+    : null;
 
   return (
     <div className="grid gap-4" ref={ref}>
@@ -249,11 +263,134 @@ export default function DataTable<T extends RowData>(props: TableProps<T>) {
           <div className="flex gap-2">{actions}</div>
         </div>
       ) : null}
-      <div style={{ height: `${virtualizer.getTotalSize()}px` }} className="relative">
-        <ShadcnTable
-          className="absolute w-full caption-top not-print:max-md:grid"
-          style={{ top: `${virtualizer.getVirtualItems()[0]?.start ?? 0}px` }}
-        >
+
+      {virtualized && virtualizer ? (
+        <div style={{ height: `${virtualizer.getTotalSize()}px` }} className="relative">
+          <ShadcnTable
+            className="absolute w-full caption-top not-print:max-md:grid"
+            style={{ top: `${virtualizer.getVirtualItems()[0]?.start ?? 0}px` }}
+          >
+            {caption ? (
+              <TableCaption className="mb-2 text-left text-lg font-bold text-black">{caption}</TableCaption>
+            ) : null}
+            <TableHeader className="not-print:max-md:hidden">
+              {data.headers.map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {selectable ? (
+                    <TableHead className={cellClasses(null, "header")}>
+                      <Checkbox
+                        checked={table.getIsAllRowsSelected()}
+                        aria-label="Select all"
+                        onCheckedChange={(checked) => table.toggleAllRowsSelected(checked === true)}
+                      />
+                    </TableHead>
+                  ) : null}
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      className={`${cellClasses(header.column, "header")} ${sortable && header.column.getCanSort() ? "cursor-pointer" : ""}`}
+                      aria-sort={
+                        header.column.getIsSorted() === "asc"
+                          ? "ascending"
+                          : header.column.getIsSorted() === "desc"
+                            ? "descending"
+                            : undefined
+                      }
+                      onClick={() => sortable && header.column.getCanSort() && header.column.toggleSorting()}
+                    >
+                      {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())}
+                      {header.column.getIsSorted() === "asc" && <ChevronUpIcon className="inline size-5" />}
+                      {header.column.getIsSorted() === "desc" && <ChevronDownIcon className="inline size-5" />}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody className="not-print:max-md:contents">
+              {table.getRowModel().rows.length > 0 ? (
+                virtualizer.getVirtualItems().map((virtualRow) => {
+                  const row = rows[virtualRow.index % rows.length];
+                  if (!row) return null;
+
+                  return (
+                    <TableRow
+                      key={virtualRow.index}
+                      style={{
+                        top: `${virtualRow.start - paddingStart}px`,
+                        height: `${virtualRow.size}px`,
+                      }}
+                      className="w-full"
+                      data-state={row.getIsSelected() ? "selected" : undefined}
+                      onClick={() => onRowClicked?.(row.original)}
+                    >
+                      {table.options.enableRowSelection ? (
+                        <TableCell className={cellClasses(null)} onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={row.getIsSelected()}
+                            aria-label="Select row"
+                            disabled={!row.getCanSelect()}
+                            onCheckedChange={row.getToggleSelectedHandler()}
+                            className="relative z-1"
+                          />
+                        </TableCell>
+                      ) : null}
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className={`${cellClasses(cell.column)} ${cell.column.id === "actions" ? "relative z-1 md:text-right print:hidden" : ""}`}
+                          onClick={(e) => cell.column.id === "actions" && e.stopPropagation()}
+                        >
+                          {typeof cell.column.columnDef.header === "string" && (
+                            <div className="text-gray-500 md:hidden print:hidden" aria-hidden>
+                              {cell.column.columnDef.header}
+                            </div>
+                          )}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow className="h-24">
+                  <TableCell colSpan={table.getAllColumns().length} className="text-center align-middle">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+            {data.footers.length > 0 && (
+              <TableFooter>
+                {data.footers.map((footerGroup) => (
+                  <TableRow key={footerGroup.id} className={rowClasses}>
+                    {selectable ? <TableCell className={cellClasses(null, "footer")} /> : null}
+                    {footerGroup.headers.map((header) => (
+                      <TableCell
+                        key={header.id}
+                        className={cellClasses(header.column, "footer")}
+                        colSpan={header.colSpan}
+                      >
+                        {header.isPlaceholder ? null : (
+                          <>
+                            {typeof header.column.columnDef.header === "string" && (
+                              <div className="text-gray-500 md:hidden print:hidden" aria-hidden>
+                                {header.column.columnDef.header}
+                              </div>
+                            )}
+                            {flexRender(header.column.columnDef.footer, header.getContext())}
+                          </>
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableFooter>
+            )}
+          </ShadcnTable>
+        </div>
+      ) : (
+        <ShadcnTable className="caption-top not-print:max-md:grid">
           {caption ? (
             <TableCaption className="mb-2 text-left text-lg font-bold text-black">{caption}</TableCaption>
           ) : null}
@@ -293,49 +430,40 @@ export default function DataTable<T extends RowData>(props: TableProps<T>) {
           </TableHeader>
           <TableBody className="not-print:max-md:contents">
             {table.getRowModel().rows.length > 0 ? (
-              virtualizer.getVirtualItems().map((virtualRow) => {
-                const row = rows[virtualRow.index % rows.length];
-                if (!row) return null;
-
-                return (
-                  <TableRow
-                    key={virtualRow.index}
-                    style={{
-                      top: `${virtualRow.start - paddingStart}px`,
-                      height: `${virtualRow.size}px`,
-                    }}
-                    className="w-full"
-                    data-state={row.getIsSelected() ? "selected" : undefined}
-                    onClick={() => onRowClicked?.(row.original)}
-                  >
-                    {table.options.enableRowSelection ? (
-                      <TableCell className={cellClasses(null)} onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={row.getIsSelected()}
-                          aria-label="Select row"
-                          disabled={!row.getCanSelect()}
-                          onCheckedChange={row.getToggleSelectedHandler()}
-                          className="relative z-1"
-                        />
-                      </TableCell>
-                    ) : null}
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={`${cellClasses(cell.column)} ${cell.column.id === "actions" ? "relative z-1 md:text-right print:hidden" : ""}`}
-                        onClick={(e) => cell.column.id === "actions" && e.stopPropagation()}
-                      >
-                        {typeof cell.column.columnDef.header === "string" && (
-                          <div className="text-gray-500 md:hidden print:hidden" aria-hidden>
-                            {cell.column.columnDef.header}
-                          </div>
-                        )}
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className={rowClasses}
+                  data-state={row.getIsSelected() ? "selected" : undefined}
+                  onClick={() => onRowClicked?.(row.original)}
+                >
+                  {selectable ? (
+                    <TableCell className={cellClasses(null)} onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={row.getIsSelected()}
+                        aria-label="Select row"
+                        disabled={!row.getCanSelect()}
+                        onCheckedChange={row.getToggleSelectedHandler()}
+                        className="relative z-1"
+                      />
+                    </TableCell>
+                  ) : null}
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={`${cellClasses(cell.column)} ${cell.column.id === "actions" ? "relative z-1 md:text-right print:hidden" : ""}`}
+                      onClick={(e) => cell.column.id === "actions" && e.stopPropagation()}
+                    >
+                      {typeof cell.column.columnDef.header === "string" && (
+                        <div className="text-gray-500 md:hidden print:hidden" aria-hidden>
+                          {cell.column.columnDef.header}
+                        </div>
+                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : (
               <TableRow className="h-24">
                 <TableCell colSpan={table.getAllColumns().length} className="text-center align-middle">
@@ -372,7 +500,7 @@ export default function DataTable<T extends RowData>(props: TableProps<T>) {
             </TableFooter>
           )}
         </ShadcnTable>
-      </div>
+      )}
     </div>
   );
 }
