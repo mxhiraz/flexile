@@ -11,7 +11,6 @@ import {
   type Table,
   type TableOptions,
   useReactTable,
-  type Row,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { FilterIcon, SearchIcon } from "lucide-react";
@@ -295,7 +294,6 @@ export default function DataTable<T extends RowData>(props: TableProps<T>) {
           <TableBody className="not-print:max-md:contents">
             {table.getRowModel().rows.length > 0 ? (
               virtualizer.getVirtualItems().map((virtualRow) => {
-                console.log(virtualRow.index);
                 const row = rows[virtualRow.index % rows.length];
                 if (!row) return null;
 
