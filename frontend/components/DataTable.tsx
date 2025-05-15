@@ -102,15 +102,15 @@ const cellClasses = <T extends RowData>(column: Column<T> | null, type?: "header
 };
 
 export default function DataTable<T extends RowData>(props: TableProps<T>) {
-  const { 
-    table, 
-    caption, 
-    onRowClicked, 
-    actions, 
-    searchColumn: searchColumnName, 
+  const {
+    table,
+    caption,
+    onRowClicked,
+    actions,
+    searchColumn: searchColumnName,
     rowHeight = 40,
     virtualized = false,
-    overscan = 5
+    overscan = 5,
   } = props;
   const data = useMemo(
     () => ({
