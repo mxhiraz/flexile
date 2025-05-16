@@ -338,7 +338,7 @@ function InvoicesNavLink({ companyId, active }: { companyId: string; active: boo
   );
 }
 
-function DocumentsNavLink({ companyId, active }: { companyId: string; active: boolean }) {
+function DocumentsNavLink({ companyId, active }: { companyId: string; active?: boolean }) {
   const user = useCurrentUser();
   const { data } = trpc.documents.list.useQuery(
     { companyId, userId: user.id, signable: true },
