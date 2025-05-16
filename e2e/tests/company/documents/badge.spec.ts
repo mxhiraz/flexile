@@ -16,12 +16,12 @@ test.describe("Document badge counter", () => {
     company = await companiesFactory.create();
     adminUser = (await usersFactory.create()).user;
     contractorUser = (await usersFactory.create()).user;
-    
+
     await companyAdministratorsFactory.create({
       companyId: company.company.id,
       userId: adminUser.id,
     });
-    
+
     await companyContractorsFactory.create({
       companyId: company.company.id,
       userId: contractorUser.id,
@@ -36,7 +36,7 @@ test.describe("Document badge counter", () => {
       },
       {
         signatures: [{ userId: contractorUser.id, title: "Signer" }],
-      }
+      },
     );
 
     const doc2 = await documentsFactory.createUnsigned(
@@ -46,15 +46,15 @@ test.describe("Document badge counter", () => {
       },
       {
         signatures: [{ userId: contractorUser.id, title: "Signer" }],
-      }
+      },
     );
 
     await login(page, adminUser);
-    
+
     const documentsBadge = locateDocumentsBadge(page);
     await expect(documentsBadge).toBeVisible();
     await expect(documentsBadge).toContainText("2");
-    
+
     await documentsFactory.createSigned(
       {
         companyId: company.company.id,
@@ -62,31 +62,31 @@ test.describe("Document badge counter", () => {
       },
       {
         signatures: [{ userId: contractorUser.id, title: "Signer" }],
-      }
+      },
     );
-    
+
     await page.reload();
-    
+
     await expect(documentsBadge).toBeVisible();
     await expect(documentsBadge).toContainText("2");
-    
+
     await documentSignaturesFactory.createSigned({
       documentId: doc1.document.id,
       userId: contractorUser.id,
     });
-    
+
     await page.reload();
-    
+
     await expect(documentsBadge).toBeVisible();
     await expect(documentsBadge).toContainText("1");
-    
+
     await documentSignaturesFactory.createSigned({
       documentId: doc2.document.id,
       userId: contractorUser.id,
     });
-    
+
     await page.reload();
-    
+
     await expect(documentsBadge).not.toBeVisible();
   });
 
