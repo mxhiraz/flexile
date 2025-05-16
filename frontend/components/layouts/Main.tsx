@@ -346,7 +346,7 @@ function DocumentsNavLink({ companyId, active }: { companyId: string; active?: b
   );
 
   return (
-    <NavLink href="/documents" icon={Files} active={active} badge={data?.length}>
+    <NavLink href="/documents" icon={Files} active={active ?? false} badge={data?.length}>
       Documents
     </NavLink>
   );
