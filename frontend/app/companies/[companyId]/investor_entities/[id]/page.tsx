@@ -3,7 +3,7 @@ import { CircleCheck } from "lucide-react";
 import { useParams } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
-import { MainLayout } from "@/app/(dashboard)/layout";
+import MainLayout from "@/app/components/main-layout";
 import Placeholder from "@/components/Placeholder";
 import Tabs from "@/components/Tabs";
 import { useCurrentCompany } from "@/global";

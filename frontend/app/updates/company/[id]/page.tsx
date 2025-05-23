@@ -3,7 +3,7 @@ import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useParams } from "next/navigation";
 import React from "react";
 import FinancialOverview from "@/app/updates/company/FinancialOverview";
-import { MainLayout } from "@/app/(dashboard)/layout";
+import MainLayout from "@/app/components/main-layout";
 import MutationButton from "@/components/MutationButton";
 import RichText from "@/components/RichText";
 import { useCurrentCompany } from "@/global";
