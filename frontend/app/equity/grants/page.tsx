@@ -13,7 +13,7 @@ import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { formatMoney } from "@/utils/formatMoney";
 import { formatDate } from "@/utils/time";
-import EquityLayout from "../Layout";
+import EquityLayout from "../layout";
 import { useMemo, useState } from "react";
 import {
   DialogContent,
