@@ -1,6 +1,6 @@
 import React from "react";
 import type { ReactNode } from "react";
-import { 
+import {
   Rss,
   ChevronsUpDown,
   ReceiptIcon,
@@ -17,6 +17,7 @@ import { skipToken, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SignOutButton } from "@clerk/nextjs";
 import { navLinks as equityNavLinks } from "@/app/equity";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -56,14 +57,7 @@ type MainLayoutProps = {
   footer?: ReactNode;
 };
 
-function MainLayout({
-  children,
-  title,
-  subtitle,
-  headerActions,
-  subheader,
-  footer,
-}: MainLayoutProps) {
+function MainLayout({ children, title, subtitle, headerActions, subheader, footer }: MainLayoutProps) {
   const user = useCurrentUser();
   const pathname = usePathname();
 
@@ -340,5 +334,5 @@ const NavLink = <T extends string>({
 export { MainLayout };
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return children;
 }

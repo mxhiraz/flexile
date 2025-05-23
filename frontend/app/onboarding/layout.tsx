@@ -8,16 +8,17 @@ import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/global";
-import logo from "@/images/flexile-logo.svg";
 import SimpleLayout from "@/app/components/simple-layout";
 
-export default function OnboardingLayout({ 
+const logoSrc = "/images/flexile-logo.svg";
+
+export default function OnboardingLayout({
   children,
   steps,
   stepIndex,
   title,
-  subtitle
-}: { 
+  subtitle,
+}: {
   children: React.ReactNode;
   steps?: string[];
   stepIndex?: number;
@@ -25,25 +26,22 @@ export default function OnboardingLayout({
   subtitle?: React.ReactNode;
 }) {
   const user = useCurrentUser();
-  
+
   const [childProps, setChildProps] = useState({
     steps: steps || [],
     stepIndex: stepIndex || 0,
     title: title || "",
-    subtitle: subtitle || ""
+    subtitle: subtitle || "",
   });
-  
+
   useEffect(() => {
-    if (!steps && React.isValidElement(children)) {
-      const pageProps = children.props;
-      if (pageProps) {
-        setChildProps({
-          steps: pageProps.steps || [],
-          stepIndex: pageProps.stepIndex || 0,
-          title: pageProps.title || "",
-          subtitle: pageProps.subtitle || ""
-        });
-      }
+    if (React.isValidElement(children)) {
+      setChildProps({
+        steps: steps || [],
+        stepIndex: stepIndex || 0,
+        title: title || "",
+        subtitle: subtitle || "",
+      });
     }
   }, [children, steps, stepIndex, title, subtitle]);
 
@@ -54,7 +52,7 @@ export default function OnboardingLayout({
           href="https://flexile.com/"
           className={`hidden text-4xl invert md:block ${childProps.steps.length === 0 ? "col-start-2" : ""}`}
         >
-          <Image src={logo} alt="Flexile" />
+          <Image src={logoSrc} alt="Flexile" />
         </Link>
         {childProps.steps.length > 0 && (
           <ol className="flex list-none justify-center gap-2">
@@ -72,7 +70,9 @@ export default function OnboardingLayout({
         <div className="hidden justify-self-end text-sm md:block">
           Signing up as {user.email}.{" "}
           <SignOutButton>
-            <Button variant="link" className="text-white">Logout</Button>
+            <Button variant="link" className="text-white">
+              Logout
+            </Button>
           </SignOutButton>
         </div>
       </header>
