@@ -1,5 +1,5 @@
 "use client";
-import { CircleCheck, CircleAlert, Pencil, Info } from "lucide-react";
+import { CircleCheck, CircleAlert, Info } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
@@ -83,18 +83,7 @@ export default function GrantsPage() {
   });
 
   return (
-    <EquityLayout
-      headerActions={
-        equityPlanContractTemplates.length > 0 && boardConsentTemplates.length > 0 ? (
-          <Button asChild>
-            <Link href={`/companies/${company.id}/administrator/equity_grants/new`}>
-              <Pencil className="size-4" />
-              New option grant
-            </Link>
-          </Button>
-        ) : null
-      }
-    >
+    <EquityLayout>
       {equityPlanContractTemplates.length === 0 || boardConsentTemplates.length === 0 ? (
         <Alert>
           <Info />
