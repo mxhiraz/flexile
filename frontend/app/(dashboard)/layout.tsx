@@ -1,5 +1,6 @@
-import { SignOutButton } from "@clerk/nextjs";
-import {
+import React from "react";
+import type { ReactNode } from "react";
+import { 
   Rss,
   ChevronsUpDown,
   ReceiptIcon,
@@ -16,7 +17,6 @@ import { skipToken, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
 import { navLinks as equityNavLinks } from "@/app/equity";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,21 +47,23 @@ import { company_switch_path } from "@/utils/routes";
 import type { Route } from "next";
 import { useIsActionable } from "@/app/invoices";
 
-export default function MainLayout({
+type MainLayoutProps = {
+  children: ReactNode;
+  title?: ReactNode;
+  subtitle?: ReactNode;
+  headerActions?: ReactNode;
+  subheader?: ReactNode;
+  footer?: ReactNode;
+};
+
+function MainLayout({
   children,
   title,
   subtitle,
   headerActions,
   subheader,
   footer,
-}: {
-  children: React.ReactNode;
-  title?: React.ReactNode;
-  subtitle?: React.ReactNode;
-  headerActions?: React.ReactNode;
-  subheader?: React.ReactNode;
-  footer?: React.ReactNode;
-}) {
+}: MainLayoutProps) {
   const user = useCurrentUser();
   const pathname = usePathname();
 
@@ -334,3 +336,9 @@ const NavLink = <T extends string>({
     </SidebarMenuItem>
   );
 };
+
+export { MainLayout };
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}

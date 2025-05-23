@@ -1,6 +1,6 @@
 "use client";
 
-import OnboardingLayout from "@/components/layouts/Onboarding";
+import OnboardingLayout from "@/app/onboarding/layout";
 import { steps } from "..";
 import { CompanyDetails } from ".";
 

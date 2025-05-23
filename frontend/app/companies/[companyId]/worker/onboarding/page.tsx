@@ -1,5 +1,5 @@
 import PersonalDetails from "@/app/onboarding/PersonalDetails";
-import OnboardingLayout from "@/components/layouts/Onboarding";
+import OnboardingLayout from "@/app/onboarding/layout";
 import { steps } from ".";
 
 export default function Page() {
