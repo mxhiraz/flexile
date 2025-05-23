@@ -1,23 +1,16 @@
 "use client";
 import React, { Suspense, useState } from "react";
-import { steps as adminSteps } from "@/app/companies/[companyId]/administrator/onboarding";
 import { CompanyDetails } from "@/app/companies/[companyId]/administrator/onboarding/details";
 import PersonalDetails from "@/app/onboarding/PersonalDetails";
 import OnboardingLayout from "@/app/onboarding/layout";
 import RadioButtons from "@/components/RadioButtons";
-import { steps } from "..";
 import { Label } from "@/components/ui/label";
 
 export default function SignUp() {
   const [accessRole, setAccessRole] = useState<"administrator" | "contractor">("administrator");
 
   return (
-    <OnboardingLayout
-      stepIndex={1}
-      steps={accessRole === "administrator" ? adminSteps : steps}
-      title="Let's get to know you"
-      subtitle="We'll use this information for contracts and payments."
-    >
+    <OnboardingLayout>
       <div className="grid gap-2">
         <Label>I'm a...</Label>
         <RadioButtons

@@ -1,12 +1,11 @@
 "use client";
-import { CircleCheck, Plus } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import Placeholder from "@/components/Placeholder";
-import { Button } from "@/components/ui/button";
-import { useCurrentCompany, useCurrentUser } from "@/global";
+import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { formatMoney } from "@/utils/formatMoney";
@@ -16,7 +15,6 @@ import EquityLayout from "../layout";
 export default function Buybacks() {
   const company = useCurrentCompany();
   const router = useRouter();
-  const user = useCurrentUser();
   const [data] = trpc.tenderOffers.list.useSuspenseQuery({ companyId: company.id });
 
   const columnHelper = createColumnHelper<RouterOutput["tenderOffers"]["list"][number]>();
@@ -32,18 +30,7 @@ export default function Buybacks() {
   const table = useTable({ columns, data });
 
   return (
-    <EquityLayout
-      headerActions={
-        user.roles.administrator ? (
-          <Button asChild size="small" variant="outline">
-            <Link href="/equity/tender_offers/new">
-              <Plus className="size-4" />
-              New buyback
-            </Link>
-          </Button>
-        ) : null
-      }
-    >
+    <EquityLayout>
       {data.length ? (
         <DataTable table={table} onRowClicked={(row) => router.push(`/equity/tender_offers/${row.id}`)} />
       ) : (
