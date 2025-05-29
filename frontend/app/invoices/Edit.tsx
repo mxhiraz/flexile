@@ -96,11 +96,11 @@ type Data = z.infer<typeof dataSchema>;
 type InvoiceFormLineItem = Data["invoice"]["line_items"][number] & { errors?: string[] | null };
 type InvoiceFormExpense = Data["invoice"]["expenses"][number] & { errors?: string[] | null; blob?: File | null };
 
-const Edit = () => {
+const Edit = ({ contractorId, isAdminMode }: { contractorId?: string; isAdminMode?: boolean } = {}) => {
   const company = useCurrentCompany();
   const { canSubmitInvoices } = useCanSubmitInvoices();
   const uid = useId();
-  if (!canSubmitInvoices) throw redirect("/invoices");
+  if (!canSubmitInvoices && !isAdminMode) throw redirect("/invoices");
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const [errorField, setErrorField] = useState<string | null>(null);
@@ -166,6 +166,27 @@ const Edit = () => {
       lineItems.every((lineItem) => !lineItem.errors?.length) &&
       expenses.every((expense) => !expense.errors?.length)
     );
+  };
+
+  const createAsAdminMutation = trpc.invoices.createAsAdmin.useMutation({
+    onSuccess: () => {
+      router.push("/invoices");
+    }
+  });
+
+  const submitAsAdmin = () => {
+    if (!contractorId || !isAdminMode) return;
+    
+    const firstLineItem = lineItems.get(0);
+    if (!firstLineItem) return;
+    
+    createAsAdminMutation.mutate({
+      companyId: company.id,
+      userExternalId: contractorId,
+      description: firstLineItem.description,
+      totalAmountCents: BigInt(totalInvoiceAmountInCents),
+      equityPercentage: equityPercentage,
+    });
   };
 
   const submit = useMutation({
@@ -293,9 +314,19 @@ const Edit = () => {
               <Link href="/invoices">Cancel</Link>
             </Button>
           )}
-          <Button variant="primary" onClick={() => validate() && submit.mutate()} disabled={submit.isPending}>
+          <Button 
+            variant="primary" 
+            onClick={() => {
+              if (isAdminMode) {
+                submitAsAdmin();
+              } else if (validate()) {
+                submit.mutate();
+              }
+            }} 
+            disabled={submit.isPending || createAsAdminMutation.isPending}
+          >
             <PaperAirplaneIcon className="size-4" />
-            {submit.isPending ? "Sending..." : data.invoice.id ? "Re-submit invoice" : "Send invoice"}
+            {submit.isPending || createAsAdminMutation.isPending ? "Sending..." : data.invoice.id ? "Re-submit invoice" : "Send invoice"}
           </Button>
         </>
       }
