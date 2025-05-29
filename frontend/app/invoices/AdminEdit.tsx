@@ -15,7 +15,7 @@ const AdminEdit = () => {
   const company = useCurrentCompany();
   const searchParams = useSearchParams();
   const isAdminMode = searchParams.get("admin") === "true";
-  
+
   if (!user.roles.administrator || !isAdminMode) {
     return <Edit />;
   }
@@ -77,7 +77,7 @@ const AdminEdit = () => {
               unit="%"
             />
           </div>
-          <button 
+          <button
             onClick={() => setSelectedEquityPercentage(selectedEquityPercentage || 25)}
             className="w-full rounded bg-blue-600 px-4 py-2 text-white"
           >
@@ -88,7 +88,7 @@ const AdminEdit = () => {
     );
   }
 
-  return <Edit contractorId={selectedContractor} isAdminMode={true} equityPercentage={selectedEquityPercentage} />;
+  return <Edit contractorId={selectedContractor} isAdminMode equityPercentage={selectedEquityPercentage} />;
 };
 
 export default AdminEdit;

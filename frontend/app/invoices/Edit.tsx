@@ -96,7 +96,11 @@ type Data = z.infer<typeof dataSchema>;
 type InvoiceFormLineItem = Data["invoice"]["line_items"][number] & { errors?: string[] | null };
 type InvoiceFormExpense = Data["invoice"]["expenses"][number] & { errors?: string[] | null; blob?: File | null };
 
-const Edit = ({ contractorId, isAdminMode, equityPercentage: adminEquityPercentage }: { contractorId?: string; isAdminMode?: boolean; equityPercentage?: number } = {}) => {
+const Edit = ({
+  contractorId,
+  isAdminMode,
+  equityPercentage: adminEquityPercentage,
+}: { contractorId?: string; isAdminMode?: boolean; equityPercentage?: number } = {}) => {
   const company = useCurrentCompany();
   const { canSubmitInvoices } = useCanSubmitInvoices();
   const uid = useId();
@@ -154,7 +158,7 @@ const Edit = ({ contractorId, isAdminMode, equityPercentage: adminEquityPercenta
     year: invoiceYear,
   });
   const [equityPercentage, setEquityPercent] = useState(
-    adminEquityPercentage ?? parseInt(searchParams.get("split") ?? "", 10) || equityAllocation?.equityPercentage || 0,
+    adminEquityPercentage ?? (parseInt(searchParams.get("split") ?? "", 10) || equityAllocation?.equityPercentage || 0),
   );
 
   const equityPercentageMutation = trpc.equitySettings.update.useMutation();
