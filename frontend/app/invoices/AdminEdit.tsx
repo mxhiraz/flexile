@@ -22,6 +22,8 @@ const AdminEdit = () => {
 
   const [selectedContractor, setSelectedContractor] = useState<string>("");
   const [selectedEquityPercentage, setSelectedEquityPercentage] = useState<number>(25);
+  const [showEquitySelection, setShowEquitySelection] = useState<boolean>(false);
+  const [showInvoiceForm, setShowInvoiceForm] = useState<boolean>(false);
   const { data: contractors } = trpc.contractors.list.useQuery({
     companyId: company.id,
     excludeAlumni: true,
@@ -49,18 +51,29 @@ const AdminEdit = () => {
             />
           </div>
           <button
-            onClick={() => setSelectedContractor(selectedContractor)}
+            onClick={() => {
+              if (selectedContractor) {
+                if (company.equityCompensationEnabled) {
+                  // If equity is enabled, go to equity selection step
+                  setSelectedEquityPercentage(25); // Ensure default is 25%
+                  setShowEquitySelection(true);
+                } else {
+                  // If equity is not enabled, go straight to invoice form
+                  setShowInvoiceForm(true);
+                }
+              }
+            }}
             disabled={!selectedContractor}
             className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
           >
-            Continue to invoice form
+            Continue
           </button>
         </div>
       </div>
     );
   }
 
-  if (company.equityCompensationEnabled) {
+  if (company.equityCompensationEnabled && showEquitySelection && !showInvoiceForm) {
     return (
       <div className="mx-auto mt-8 max-w-md rounded-lg border p-6">
         <h2 className="mb-4 text-xl font-semibold">Set equity percentage</h2>
@@ -77,11 +90,11 @@ const AdminEdit = () => {
               unit="%"
             />
           </div>
-          <button
-            onClick={() => setSelectedEquityPercentage(selectedEquityPercentage)}
+          <button 
+            onClick={() => setShowInvoiceForm(true)}
             className="w-full rounded bg-blue-600 px-4 py-2 text-white"
           >
-            Continue to invoice form
+            Continue
           </button>
         </div>
       </div>

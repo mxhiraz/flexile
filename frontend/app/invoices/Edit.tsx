@@ -198,7 +198,7 @@ const Edit = ({
       const formData = new FormData();
       formData.append("invoice[invoice_number]", invoiceNumber);
       formData.append("invoice[invoice_date]", issueDate.toString());
-      for (const lineItem of lineItems) {
+      lineItems.forEach((lineItem) => {
         if (lineItem.id) {
           formData.append("invoice_line_items[][id]", lineItem.id.toString());
         }
@@ -208,8 +208,8 @@ const Edit = ({
         } else if (lineItem.minutes) {
           formData.append("invoice_line_items[][minutes]", lineItem.minutes.toString());
         }
-      }
-      for (const expense of expenses) {
+      });
+      expenses.forEach((expense) => {
         if (expense.id) {
           formData.append("invoice_expenses[][id]", expense.id.toString());
         }
@@ -219,7 +219,7 @@ const Edit = ({
         if (expense.blob) {
           formData.append("invoice_expenses[][attachment]", expense.blob);
         }
-      }
+      });
       if (notes.length) formData.append("invoice[notes]", notes);
 
       if (equityPercentage !== data.equity_allocation?.percentage && !data.equity_allocation?.is_locked) {
@@ -255,7 +255,7 @@ const Edit = ({
     setShowExpenses(true);
     setExpenses((expenses) =>
       expenses.push(
-        ...[...files].map((file) => ({
+        ...Array.from(files).map((file) => ({
           description: "",
           category_id: expenseCategory.id,
           total_amount_in_cents: 0,
