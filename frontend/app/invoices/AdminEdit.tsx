@@ -90,10 +90,7 @@ const AdminEdit = () => {
               unit="%"
             />
           </div>
-          <button 
-            onClick={() => setShowInvoiceForm(true)}
-            className="w-full rounded bg-blue-600 px-4 py-2 text-white"
-          >
+          <button onClick={() => setShowInvoiceForm(true)} className="w-full rounded bg-blue-600 px-4 py-2 text-white">
             Continue
           </button>
         </div>
