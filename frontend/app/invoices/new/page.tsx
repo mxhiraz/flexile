@@ -1,3 +1,5 @@
+"use client";
+
 import { Suspense } from "react";
 import Edit from "@/app/invoices/Edit";
 import AdminEdit from "@/app/invoices/AdminEdit";
