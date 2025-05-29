@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 function NewInvoicePage() {
   const searchParams = useSearchParams();
   const isAdminMode = searchParams.get("admin") === "true";
-  
+
   return isAdminMode ? <AdminEdit /> : <Edit />;
 }
 

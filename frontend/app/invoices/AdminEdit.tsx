@@ -13,26 +13,27 @@ const AdminEdit = () => {
   const company = useCurrentCompany();
   const searchParams = useSearchParams();
   const isAdminMode = searchParams.get("admin") === "true";
-  
+
   if (!user.roles.administrator || !isAdminMode) {
     return <Edit />;
   }
 
   const [selectedContractor, setSelectedContractor] = useState<string>("");
-  const { data: contractors } = trpc.contractors.list.useQuery({ 
-    companyId: company.id, 
-    excludeAlumni: true 
+  const { data: contractors } = trpc.contractors.list.useQuery({
+    companyId: company.id,
+    excludeAlumni: true,
   });
 
-  const contractorOptions = contractors?.map(contractor => ({
-    value: contractor.user.id,
-    label: `${contractor.user.name} (${contractor.role || 'No role'})`
-  })) || [];
+  const contractorOptions =
+    contractors?.map((contractor) => ({
+      value: contractor.user.id,
+      label: `${contractor.user.name} (${contractor.role || "No role"})`,
+    })) || [];
 
   if (!selectedContractor) {
     return (
-      <div className="max-w-md mx-auto mt-8 p-6 border rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">Create invoice for contractor</h2>
+      <div className="mx-auto mt-8 max-w-md rounded-lg border p-6">
+        <h2 className="mb-4 text-xl font-semibold">Create invoice for contractor</h2>
         <div className="space-y-4">
           <div>
             <Label htmlFor="contractor-select">Select contractor</Label>
@@ -44,10 +45,10 @@ const AdminEdit = () => {
               placeholder="Choose a contractor..."
             />
           </div>
-          <button 
+          <button
             onClick={() => setSelectedContractor(selectedContractor)}
             disabled={!selectedContractor}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded disabled:opacity-50"
+            className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
           >
             Continue to invoice form
           </button>
@@ -56,7 +57,7 @@ const AdminEdit = () => {
     );
   }
 
-  return <Edit contractorId={selectedContractor} isAdminMode={true} />;
+  return <Edit contractorId={selectedContractor} isAdminMode />;
 };
 
 export default AdminEdit;

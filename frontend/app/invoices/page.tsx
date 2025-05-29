@@ -328,9 +328,7 @@ export default function InvoicesPage() {
                 user.roles.administrator ? (
                   <>
                     <Button variant="outline" size="small" asChild>
-                      <Link href="/invoices/new?admin=true">
-                        New invoice
-                      </Link>
+                      <Link href="/invoices/new?admin=true">New invoice</Link>
                     </Button>
                     <Button variant="outline" size="small" asChild>
                       <a href={export_company_invoices_path(company.id)}>
