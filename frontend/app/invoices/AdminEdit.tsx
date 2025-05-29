@@ -15,13 +15,13 @@ const AdminEdit = () => {
   const company = useCurrentCompany();
   const searchParams = useSearchParams();
   const isAdminMode = searchParams.get("admin") === "true";
-
+  
   if (!user.roles.administrator || !isAdminMode) {
     return <Edit />;
   }
 
   const [selectedContractor, setSelectedContractor] = useState<string>("");
-  const [selectedEquityPercentage, setSelectedEquityPercentage] = useState<number>(0);
+  const [selectedEquityPercentage, setSelectedEquityPercentage] = useState<number>(25);
   const { data: contractors } = trpc.contractors.list.useQuery({
     companyId: company.id,
     excludeAlumni: true,
@@ -60,7 +60,7 @@ const AdminEdit = () => {
     );
   }
 
-  if (!selectedEquityPercentage && company.equityCompensationEnabled) {
+  if (company.equityCompensationEnabled) {
     return (
       <div className="mx-auto mt-8 max-w-md rounded-lg border p-6">
         <h2 className="mb-4 text-xl font-semibold">Set equity percentage</h2>
@@ -77,8 +77,8 @@ const AdminEdit = () => {
               unit="%"
             />
           </div>
-          <button
-            onClick={() => setSelectedEquityPercentage(selectedEquityPercentage || 25)}
+          <button 
+            onClick={() => setSelectedEquityPercentage(selectedEquityPercentage)}
             className="w-full rounded bg-blue-600 px-4 py-2 text-white"
           >
             Continue to invoice form
