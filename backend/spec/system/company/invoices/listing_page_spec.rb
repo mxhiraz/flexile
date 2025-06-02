@@ -8,7 +8,11 @@ RSpec.describe "Invoice listing page" do
   let(:contractor_user) { create(:user) }
   let(:admin_user) { create(:user) }
   let(:company) { create(:company, required_invoice_approval_count: 2) }
-  let!(:company_worker) { create(:company_worker, company:, user: contractor_user) }
+  let!(:company_worker) { 
+    worker = create(:company_worker, company:, user: contractor_user)
+    create(:pay_rate, company_contractor: worker, type: :hourly, amount: 5000)
+    worker
+  }
   let!(:administrator) { create(:company_administrator, company:, user: admin_user) }
 
   def invoice_action_path(invoice)

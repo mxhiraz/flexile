@@ -3,7 +3,7 @@
 RSpec.describe GrantStockOptions do
   let(:user) { create(:user) }
   let(:company) { create(:company, name: "Acme", share_price_in_usd: 17.68, fmv_per_share_in_usd: 8.68, conversion_share_price_usd: 7.68) }
-  let(:company_worker) { create(:company_worker, user:, company:, pay_rate_in_subunits: 193_00) }
+  let(:company_worker) { create(:company_worker, user:, company:, pay_rates_attributes: [{ amount: 193_00, type: :hourly, currency: "usd" }]) }
   let!(:option_pool) { create(:option_pool, company:, authorized_shares: 10_000_000, issued_shares: 50_000) }
   let!(:administrator) { create(:company_administrator, company:) }
   let(:board_approval_date) { "2020-08-01" }
@@ -39,8 +39,8 @@ RSpec.describe GrantStockOptions do
         expect(result).to eq(success: false, error: "Cannot grant stock options for #{user.display_name} because they are an alum")
       end
 
-      it "returns an error if pay_rate_in_subunits is nil" do
-        company_worker.pay_rate_in_subunits = nil
+      it "returns an error if pay_rates is empty" do
+        company_worker.pay_rates.destroy_all
         result = service.process
         expect(result).to eq(success: false, error: "Please set the pay rate for #{user.display_name} first")
       end

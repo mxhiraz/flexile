@@ -91,7 +91,7 @@ class InvoicePresenter
         legal_name: user.legal_name,
         business_entity: user.business_entity?,
         billing_entity_name: user.billing_entity_name,
-        pay_rate_in_subunits: contractor.pay_rate_in_subunits,
+        pay_rate_in_subunits: contractor.pay_rates.first&.amount || 0,
         project_based: contractor.project_based?,
       }
     end

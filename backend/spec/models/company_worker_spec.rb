@@ -16,19 +16,17 @@ RSpec.describe CompanyWorker do
 
     it { is_expected.to validate_uniqueness_of(:user_id).scoped_to(:company_id) }
     it { is_expected.to validate_presence_of(:started_at) }
-    it { is_expected.to validate_presence_of(:pay_rate_in_subunits) }
-    it { is_expected.to validate_numericality_of(:pay_rate_in_subunits).is_greater_than(0).only_integer }
-    it { is_expected.to validate_inclusion_of(:pay_rate_type).in_array(described_class.pay_rate_types.values) }
+    it { is_expected.to validate_presence_of(:pay_rates) }
 
-    context "when pay_rate_type is 'hourly'" do
-      subject(:company_worker) { create(:company_worker, pay_rate_type: :hourly) }
+    context "when pay_rates include hourly type" do
+      subject(:company_worker) { create(:company_worker, :hourly) }
 
       it { is_expected.to validate_presence_of(:hours_per_week) }
       it { is_expected.to validate_numericality_of(:hours_per_week).is_greater_than(0).only_integer }
     end
 
-    context "when pay_rate_type is 'project_based'" do
-      subject(:company_worker) { build(:company_worker, pay_rate_type: :project_based, hours_per_week: nil) }
+    context "when pay_rates include project_based type" do
+      subject(:company_worker) { build(:company_worker, :project_based, hours_per_week: nil) }
 
       it "does not validate presence of hours_per_week" do
         expect(company_worker.valid?).to eq(true)
@@ -187,7 +185,7 @@ RSpec.describe CompanyWorker do
 
           it "does not schedule a QuickBooks data sync job" do
             expect do
-              company_worker.update!(pay_rate_in_subunits: new_pay_rate_in_subunits)
+              company_worker.pay_rates.first.update!(amount: new_pay_rate_in_subunits)
             end.to_not change { QuickbooksDataSyncJob.jobs.size }
           end
         end
@@ -197,7 +195,7 @@ RSpec.describe CompanyWorker do
 
           it "schedules a QuickBooks data sync job" do
             expect do
-              company_worker.update!(pay_rate_in_subunits: new_pay_rate_in_subunits)
+              company_worker.pay_rates.first.update!(amount: new_pay_rate_in_subunits)
             end.to change { QuickbooksDataSyncJob.jobs.size }.by(1)
 
             expect(QuickbooksDataSyncJob).to have_enqueued_sidekiq_job(company_worker.company_id, "CompanyWorker", company_worker.id)

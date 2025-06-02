@@ -299,10 +299,13 @@
             "model_attributes": {
               "started_at": "2024-03-01",
               "hours_per_week": 35,
-              "pay_rate_in_subunits": 19900,
-              "role": "Software engineer",
-              "pay_rate_type": "hourly"
-            }
+              "role": "Software engineer"
+            },
+            "pay_rates_attributes": [{
+              "amount": 19900,
+              "type": "hourly",
+              "currency": "usd"
+            }]
           },
           "contractor_profile_attributes": {
             "available_hours_per_week": 5,
@@ -373,10 +376,13 @@
             "model_attributes": {
               "started_at": "2024-08-01",
               "hours_per_week": 10,
-              "pay_rate_in_subunits": 10000,
-              "role": "Software engineer",
-              "pay_rate_type": "hourly"
-            }
+              "role": "Software engineer"
+            },
+            "pay_rates_attributes": [{
+              "amount": 10000,
+              "type": "hourly",
+              "currency": "usd"
+            }]
           }
         },
         {
@@ -404,10 +410,13 @@
               "started_at": "2023-07-01",
               "ended_at": "2024-01-20",
               "hours_per_week": 10,
-              "pay_rate_in_subunits": 9900,
-              "role": "Software engineer",
-              "pay_rate_type": "hourly"
-            }
+              "role": "Software engineer"
+            },
+            "pay_rates_attributes": [{
+              "amount": 9900,
+              "type": "hourly",
+              "currency": "usd"
+            }]
           },
           "contractor_profile_attributes": {
             "available_hours_per_week": 5,
@@ -436,10 +445,13 @@
             "model_attributes": {
               "started_at": "2023-05-01",
               "hours_per_week": 15,
-              "pay_rate_in_subunits": 19800,
-              "role": "Product designer",
-              "pay_rate_type": "hourly"
-            }
+              "role": "Product designer"
+            },
+            "pay_rates_attributes": [{
+              "amount": 19800,
+              "type": "hourly",
+              "currency": "usd"
+            }]
           },
           "contractor_profile_attributes": {
             "available_hours_per_week": 10,
@@ -469,10 +481,13 @@
           "company_worker": {
             "model_attributes": {
               "started_at": "2024-06-01",
-              "pay_rate_in_subunits": 50000,
-              "role": "Project-based engineer",
-              "pay_rate_type": "project_based"
-            }
+              "role": "Project-based engineer"
+            },
+            "pay_rates_attributes": [{
+              "amount": 50000,
+              "type": "project_based",
+              "currency": "usd"
+            }]
           }
         },
         {

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Quickbooks::CompanyWorkerSerializer < BaseSerializer
-  delegate :user, :pay_rate_in_subunits, :ended_at, :integration_external_id, :sync_token, to: :object
+  delegate :user, :ended_at, :integration_external_id, :sync_token, to: :object
   delegate :legal_name, :billing_entity_name, :display_email, :tax_id, :business_name,
            :city, :street_address, :zip_code, :state, :display_country, to: :user
 
@@ -15,7 +15,7 @@ class Quickbooks::CompanyWorkerSerializer < BaseSerializer
         Country: display_country,
         CountrySubDivisionCode: state,
       },
-      BillRate: pay_rate_in_subunits / 100.0,
+      BillRate: (object.pay_rates.first&.amount || 0) / 100.0,
       GivenName: legal_name,
       DisplayName: billing_entity_name,
       PrimaryEmailAddr: { Address: display_email },

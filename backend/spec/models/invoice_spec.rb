@@ -79,7 +79,6 @@ RSpec.describe Invoice do
         {
           description: "Doing",
           minutes: 60,
-          pay_rate_in_subunits: 50_00,
           total_amount_cents: 50_00,
         }
       )

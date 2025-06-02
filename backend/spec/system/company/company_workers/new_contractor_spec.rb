@@ -94,7 +94,8 @@ RSpec.describe "New Contractor" do
     )
 
     contractor = CompanyWorker.last
-    expect(contractor).to have_attributes({ company_role: project_based_role, pay_rate_usd: 1000, pay_rate_type: "project_based" })
+    expect(contractor).to have_attributes({ company_role: project_based_role, pay_rate_usd: 1000 })
+    expect(contractor.pay_rates.first&.type).to eq "project_based"
   end
 
   it "allows reactivating an alumni contractor" do
@@ -272,7 +273,7 @@ RSpec.describe "New Contractor" do
     contractor = CompanyWorker.last
     expect(contractor.company_role).to eq role
     expect(contractor.pay_rate_usd).to eq rate.pay_rate_usd
-    expect(contractor.pay_rate_type).to eq rate.pay_rate_type
+    expect(contractor.pay_rates.first&.type).to eq rate.pay_rate_type
   end
 
   it "allows creating a new project-based role ad-hoc" do
@@ -302,6 +303,6 @@ RSpec.describe "New Contractor" do
     contractor = CompanyWorker.last
     expect(contractor.company_role).to eq role
     expect(contractor.pay_rate_usd).to eq rate.pay_rate_usd
-    expect(contractor.pay_rate_type).to eq rate.pay_rate_type
+    expect(contractor.pay_rates.first&.type).to eq rate.pay_rate_type
   end
 end

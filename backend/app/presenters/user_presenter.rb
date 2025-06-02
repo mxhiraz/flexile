@@ -78,9 +78,9 @@ class UserPresenter
         id: worker.external_id,
         hasDocuments: has_documents,
         endedAt: worker.ended_at,
-        payRateType: worker.pay_rate_type,
+        payRateType: worker.pay_rates.first&.type || 0,
         role: worker.role,
-        payRateInSubunits: worker.pay_rate_in_subunits,
+        payRateInSubunits: worker.pay_rates.first&.amount || 0,
         hoursPerWeek: worker.hours_per_week,
       }
     end
@@ -163,7 +163,7 @@ class UserPresenter
       if company_worker.present?
         result[:flags][:irs_tax_forms] = company.irs_tax_forms?
         if company_worker.active?
-          result[:flags][:equity] = true if company_worker.hourly?
+          result[:flags][:equity] = true if company_worker.pay_rates.any?(&:hourly?)
           result[:flags][:cap_table] = true if company.is_gumroad? && company.cap_table_enabled?
           result[:flags][:upcoming_dividend] = Flipper.enabled?(:upcoming_dividend, company)
         end

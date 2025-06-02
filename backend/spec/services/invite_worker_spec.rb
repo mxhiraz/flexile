@@ -13,7 +13,11 @@ RSpec.describe InviteWorker do
       started_at: yesterday,
       hours_per_week: 10,
       role: "Role",
-      pay_rate_in_subunits: 50_00,
+      pay_rates_attributes: [{
+        amount: 50_00,
+        type: "hourly",
+        currency: "usd"
+      }],
     }
   end
   let(:current_user) { create(:user, email: "flexi.bob@example.org", legal_name: "Flexi Bob") }
@@ -40,7 +44,7 @@ RSpec.describe InviteWorker do
     contractor = CompanyWorker.last
     expect(contractor.started_at).to eq(yesterday)
     expect(contractor.hours_per_week).to eq(10)
-    expect(contractor.pay_rate_in_subunits).to eq(50_00)
+    expect(contractor.pay_rates.first.amount).to eq(50_00)
     expect(contractor.role).to eq("Role")
 
     contract = user.documents.consulting_contract.first
@@ -105,7 +109,7 @@ RSpec.describe InviteWorker do
         expect(contractor.company).to eq(company)
         expect(contractor.started_at).to eq(yesterday)
         expect(contractor.hours_per_week).to eq(10)
-        expect(contractor.pay_rate_in_subunits).to eq(50_00)
+        expect(contractor.pay_rates.first.amount).to eq(50_00)
         expect(contractor.role).to eq("Role")
       end
     end
@@ -117,7 +121,11 @@ RSpec.describe InviteWorker do
         company:,
         ended_at: 3.months.ago,
         hours_per_week: 25,
-        pay_rate_in_subunits: 100_00
+        pay_rates_attributes: [{
+          amount: 100_00,
+          type: "hourly",
+          currency: "usd"
+        }]
       )
 
       expect do
@@ -132,7 +140,7 @@ RSpec.describe InviteWorker do
       expect(company_worker.started_at).to eq(yesterday)
       expect(company_worker.ended_at).to eq(nil)
       expect(company_worker.hours_per_week).to eq(10)
-      expect(company_worker.pay_rate_in_subunits).to eq(50_00)
+      expect(company_worker.pay_rates.first.amount).to eq(50_00)
       expect(company_worker.role).to eq("Role")
     end
   end
@@ -143,14 +151,18 @@ RSpec.describe InviteWorker do
         email:,
         started_at: yesterday,
         hours_per_week: -10,
-        pay_rate_in_subunits: -50_00,
+        pay_rates_attributes: [{
+          amount: -50_00,
+          type: "hourly",
+          currency: "usd"
+        }],
         role: "",
       }
     end
 
     it "returns contractor specific validation error messages" do
       expect do
-        expect(invite_contractor).to eq({ success: false, error_message: "Role can't be blank, Hours per week must be greater than 0, and Pay rate in subunits must be greater than 0" })
+        expect(invite_contractor).to eq({ success: false, error_message: "Role can't be blank, Hours per week must be greater than 0, and Pay rates amount must be greater than 0" })
       end.to change { User.count }.by(0)
          .and change { CompanyWorker.count }.by(0)
          .and change { Document.count }.by(0)

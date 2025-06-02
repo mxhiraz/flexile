@@ -25,8 +25,8 @@ class Internal::Companies::WorkersController < Internal::Companies::BaseControll
 
   private
     def worker_params
-      permitted_keys = %i[email started_at pay_rate_type pay_rate_in_subunits role]
-      permitted_keys << :hours_per_week if params.dig(:contractor, :pay_rate_type) == "hourly"
-      params.require(:contractor).permit(*permitted_keys)
+      permitted_keys = %i[email started_at role hours_per_week]
+      permitted_params = params.require(:contractor).permit(*permitted_keys, pay_rates: [:type, :amount, :currency])
+      permitted_params
     end
 end

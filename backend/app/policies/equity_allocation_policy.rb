@@ -4,7 +4,7 @@ class EquityAllocationPolicy < ApplicationPolicy
   def show?
     return false unless company.equity_compensation_enabled?
 
-    !company_worker&.salary? && authorized_to(:create?, Invoice)
+    !company_worker&.pay_rates&.any?(&:salary?) && authorized_to(:create?, Invoice)
   end
 
   def update?

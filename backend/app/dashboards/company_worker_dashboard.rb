@@ -12,10 +12,10 @@ class CompanyWorkerDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     company: Field::BelongsTo,
     user: Field::BelongsTo,
+    pay_rates: Field::HasMany,
     id: Field::Number,
     started_at: Field::DateTime,
     hours_per_week: Field::Number,
-    pay_rate_in_subunits: Field::Number,
     role: Field::String,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
@@ -38,10 +38,10 @@ class CompanyWorkerDashboard < Administrate::BaseDashboard
   SHOW_PAGE_ATTRIBUTES = %i[
     company
     user
+    pay_rates
     id
     started_at
     hours_per_week
-    pay_rate_in_subunits
     role
     created_at
     updated_at
@@ -55,7 +55,7 @@ class CompanyWorkerDashboard < Administrate::BaseDashboard
     user
     started_at
     hours_per_week
-    pay_rate_in_subunits
+    pay_rates
     role
   ].freeze
 
