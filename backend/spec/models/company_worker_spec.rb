@@ -178,7 +178,7 @@ RSpec.describe CompanyWorker do
     describe "#notify_rate_updated" do
       context "when company worker has an hourly-based role" do
         let!(:company_worker) { create(:company_worker, started_at: 1.day.ago) }
-        let(:old_pay_rate_in_subunits) { company_worker.pay_rate_in_subunits }
+        let(:old_pay_rate_in_subunits) { company_worker.pay_rates.first.amount }
 
         context "when rate is unchanged" do
           let(:new_pay_rate_in_subunits) { old_pay_rate_in_subunits }
@@ -205,14 +205,14 @@ RSpec.describe CompanyWorker do
 
       context "when company worker has a project-based role" do
         let!(:company_worker) { create(:company_worker, :project_based, started_at: 1.day.ago) }
-        let(:old_pay_rate_in_subunits) { company_worker.pay_rate_in_subunits }
+        let(:old_pay_rate_in_subunits) { company_worker.pay_rates.first.amount }
 
         context "when rate is unchanged" do
           let(:new_pay_rate_in_subunits) { old_pay_rate_in_subunits }
 
           it "does not schedule a QuickBooks data sync job" do
             expect do
-              company_worker.update!(pay_rate_in_subunits: new_pay_rate_in_subunits)
+              company_worker.pay_rates.first.update!(amount: new_pay_rate_in_subunits)
             end.to_not change { QuickbooksDataSyncJob.jobs.size }
           end
         end
@@ -222,7 +222,7 @@ RSpec.describe CompanyWorker do
 
           it "does not schedule a QuickBooks data sync job" do
             expect do
-              company_worker.update!(pay_rate_in_subunits: new_pay_rate_in_subunits)
+              company_worker.pay_rates.first.update!(amount: new_pay_rate_in_subunits)
             end.to_not change { QuickbooksDataSyncJob.jobs.size }
           end
         end
@@ -244,7 +244,8 @@ RSpec.describe CompanyWorker do
 
   describe "#avg_yearly_usd" do
     it "calculates and returns the average pay in USD for a year" do
-      company_worker = build(:company_worker, hours_per_week: 40, pay_rate_in_subunits: 30_00)
+      company_worker = build(:company_worker, hours_per_week: 40)
+      company_worker.pay_rates.first.amount = 30_00
 
       yearly_rate_in_usd = company_worker.avg_yearly_usd
       expect(yearly_rate_in_usd).to eq(52_800)

@@ -83,10 +83,10 @@ export default function InvoicePage() {
       "description",
       complianceInfo?.businessEntity ? `Services (${complianceInfo.legalName})` : "Services",
     ),
-    invoice.contractor.payRateType === PayRateType.ProjectBased
+    invoice.contractor.payRates[0]?.type === PayRateType.ProjectBased
       ? null
       : columnHelper.simple("minutes", "Hours", (v) => (v ? formatDuration(v) : null), "numeric"),
-    invoice.contractor.payRateType === PayRateType.ProjectBased
+    invoice.contractor.payRates[0]?.type === PayRateType.ProjectBased
       ? null
       : columnHelper.simple(
           "payRateInSubunits",

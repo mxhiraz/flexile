@@ -94,8 +94,8 @@ export default function NewEquityGrant() {
       form.setValue("issueDateRelationship", "employee");
     } else {
       const lastGrant = recipient?.lastGrant;
-      form.setValue("optionGrantType", lastGrant?.optionGrantType ?? "nso");
-      form.setValue("issueDateRelationship", lastGrant?.issueDateRelationship ?? "employee");
+      form.setValue("optionGrantType", lastGrant?.optionGrantType || "nso");
+      form.setValue("issueDateRelationship", lastGrant?.issueDateRelationship || "employee");
     }
   }, [recipientId]);
 

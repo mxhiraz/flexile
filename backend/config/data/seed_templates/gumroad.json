@@ -514,10 +514,13 @@
             "model_attributes": {
               "started_at": "2024-05-01",
               "hours_per_week": 15,
-              "pay_rate_in_subunits": 12400,
-              "role": "Customer supporter",
-              "pay_rate_type": "hourly"
-            }
+              "role": "Customer supporter"
+            },
+            "pay_rates_attributes": [{
+              "amount": 12400,
+              "type": "hourly",
+              "currency": "usd"
+            }]
           }
         }
       ]

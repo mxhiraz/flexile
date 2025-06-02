@@ -1799,7 +1799,10 @@ export const payRates = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    index("index_pay_rates_on_company_contractor_id").using("btree", table.companyContractorId.asc().nullsLast().op("int8_ops")),
+    index("index_pay_rates_on_company_contractor_id").using(
+      "btree",
+      table.companyContractorId.asc().nullsLast().op("int8_ops"),
+    ),
   ],
 );
 
