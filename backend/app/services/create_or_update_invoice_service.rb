@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
 class CreateOrUpdateInvoiceService
-  delegate :pay_rate_in_subunits, :hourly?, to: :contractor, private: true
+  delegate :hourly?, to: :contractor, private: true
+
+  def pay_rate_in_subunits
+    contractor.pay_rates.first&.amount || 0
+  end
   delegate :street_address, :city, :state, :zip_code, :country_code, to: :user, private: true
 
   def initialize(params:, user:, company:, contractor:, invoice: nil)

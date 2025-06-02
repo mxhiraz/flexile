@@ -1771,10 +1771,7 @@ export const companyContractors = pgTable(
     role: varchar("role").notNull(),
 
     externalId: varchar("external_id").$default(nanoid).notNull(),
-    payRateType: integer("pay_rate_type").$type<PayRateType>().default(PayRateType.Hourly).notNull(),
     sentEquityPercentSelectionEmail: boolean("sent_equity_percent_selection_email").notNull().default(false),
-    payRateInSubunits: integer("pay_rate_in_subunits").notNull(),
-    payRateCurrency: varchar("pay_rate_currency").default("usd").notNull(),
   },
   (table) => [
     index("index_company_contractors_on_company_id").using("btree", table.companyId.asc().nullsLast().op("int8_ops")),
@@ -1785,6 +1782,24 @@ export const companyContractors = pgTable(
       table.userId.asc().nullsLast().op("int8_ops"),
       table.companyId.asc().nullsLast().op("int8_ops"),
     ),
+  ],
+);
+
+export const payRates = pgTable(
+  "pay_rates",
+  {
+    id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
+    companyContractorId: bigint("company_contractor_id", { mode: "bigint" }).notNull(),
+    amount: integer("amount").notNull(),
+    currency: varchar("currency").default("usd").notNull(),
+    type: integer("type").$type<PayRateType>().default(PayRateType.Hourly).notNull(),
+    createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { precision: 6, mode: "date" })
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("index_pay_rates_on_company_contractor_id").using("btree", table.companyContractorId.asc().nullsLast().op("int8_ops")),
   ],
 );
 
@@ -2074,6 +2089,14 @@ export const companyContractorsRelations = relations(companyContractors, ({ one,
   documents: many(documents),
   invoices: many(invoices),
   equityAllocations: many(equityAllocations),
+  payRates: many(payRates),
+}));
+
+export const payRatesRelations = relations(payRates, ({ one }) => ({
+  companyContractor: one(companyContractors, {
+    fields: [payRates.companyContractorId],
+    references: [companyContractors.id],
+  }),
 }));
 
 export const equityAllocationsRelations = relations(equityAllocations, ({ one }) => ({

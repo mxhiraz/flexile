@@ -18,19 +18,15 @@ class CompanyWorker < ApplicationRecord
   MAX_EQUITY_PERCENTAGE = 100
   MIN_COMPENSATION_AMOUNT_FOR_1099_NEC = 600_00
 
-  enum :pay_rate_type, {
-    hourly: 0,
-    project_based: 1,
-    salary: 2,
-  }, validate: true
+  has_many :pay_rates, foreign_key: :company_contractor_id, dependent: :destroy
 
   validates :user_id, uniqueness: { scope: :company_id }
   validates :role, presence: true
   validates :started_at, presence: true
   validates :hours_per_week, presence: true,
                              numericality: { only_integer: true, greater_than: 0 },
-                             if: :hourly?
-  validates :pay_rate_in_subunits, presence: true, numericality: { only_integer: true, greater_than: 0 }
+                             if: -> { pay_rates.any?(&:hourly?) }
+  validates :pay_rates, presence: true
 
   scope :active, -> { where(ended_at: nil) }
   scope :active_as_of, ->(date) { active.or(where("ended_at > ?", date)) }
@@ -81,10 +77,10 @@ class CompanyWorker < ApplicationRecord
     joins(:company).merge(Company.active.irs_tax_forms)
       .joins(user: :compliance_info).merge(User.where(country_code: "US"))
       .where(id: invoices_subquery)
-      .where.not(pay_rate_type: :salary)
+      .joins(:pay_rates).where.not(pay_rates: { type: :salary })
   end
 
-  after_commit :notify_rate_updated, on: :update, if: -> { saved_change_to_pay_rate_in_subunits? && hourly? }
+  after_commit :notify_rate_updated, on: :update, if: -> { pay_rates.any?(&:hourly?) }
 
   def equity_allocation_for(year)
     equity_allocations.find_by(year:)
@@ -97,8 +93,28 @@ class CompanyWorker < ApplicationRecord
   def active? = ended_at.nil?
 
   def avg_yearly_usd
-    (pay_rate_in_subunits / 100) * hours_per_week * WORKING_WEEKS_PER_YEAR
+    primary_rate = pay_rates.first
+    return 0 unless primary_rate
+    (primary_rate.amount / 100) * hours_per_week * WORKING_WEEKS_PER_YEAR
   end
+
+  def hourly?
+    pay_rates.any?(&:hourly?)
+  end
+
+  def project_based?
+    pay_rates.any?(&:project_based?)
+  end
+
+  def salary?
+    pay_rates.any?(&:salary?)
+  end
+
+  def pay_rate_in_subunits
+    pay_rates.first&.amount || 0
+  end
+
+  accepts_nested_attributes_for :pay_rates, allow_destroy: true
 
   def alumni?
     ended_at?

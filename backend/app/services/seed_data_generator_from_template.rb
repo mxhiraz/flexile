@@ -579,8 +579,11 @@ class SeedDataGeneratorFromTemplate
             worker_params = {
               email: generate_user_email(user_attributes),
               started_at:,
-              pay_rate_in_subunits: company_worker_attributes.fetch("pay_rate_in_subunits"),
-              pay_rate_type: company_worker_attributes.fetch("pay_rate_type"),
+              pay_rates_attributes: [{
+                amount: company_worker_attributes.fetch("pay_rate_in_subunits"),
+                type: company_worker_attributes.fetch("pay_rate_type"),
+                currency: "usd"
+              }],
               role: company_worker_attributes.fetch("role"),
               hours_per_week: company_worker_attributes.fetch("hours_per_week", nil),
             }
@@ -651,10 +654,10 @@ class SeedDataGeneratorFromTemplate
       while invoice_datetime < current_time - 1.month
         break if ended_at && invoice_datetime >= ended_at
 
-        invoice_line_item = if company_worker.project_based?
+        invoice_line_item = if company_worker.pay_rates.any?(&:project_based?)
           {
             description: "Project work",
-            total_amount_cents: company_worker.pay_rate_in_subunits,
+            total_amount_cents: company_worker.pay_rates.first.amount,
           }
         else
           {

@@ -377,9 +377,12 @@ export default function ContractorPage() {
 }
 
 const detailsFormSchema = z.object({
-  payRateInSubunits: z.number(),
+  payRates: z.array(z.object({
+    type: z.nativeEnum(PayRateType),
+    amount: z.number().min(1, "Amount must be greater than 0"),
+    currency: z.string().default("usd"),
+  })).min(1, "At least one pay rate is required"),
   hoursPerWeek: z.number().nullable(),
-  payRateType: z.nativeEnum(PayRateType),
   role: z.string(),
 });
 
@@ -396,10 +399,17 @@ const DetailsTab = ({
   const [contractor] = trpc.contractors.get.useSuspenseQuery({ companyId: company.id, userId });
   const form = useForm({
     resolver: zodResolver(detailsFormSchema),
-    defaultValues: contractor,
+    defaultValues: {
+      ...contractor,
+      payRates: contractor.payRates?.length ? contractor.payRates : [{
+        type: PayRateType.Hourly,
+        amount: 0,
+        currency: "usd",
+      }],
+    },
     disabled: !!contractor.endedAt,
   });
-  const payRateInSubunits = form.watch("payRateInSubunits");
+  const payRates = form.watch("payRates");
   const trpcUtils = trpc.useUtils();
   const updateContractor = trpc.contractors.update.useMutation({
     onSuccess: async (data) => {
@@ -439,7 +449,7 @@ const DetailsTab = ({
           ) : null}
 
           <FormFields />
-          {contractor.payRateType !== PayRateType.ProjectBased && company.flags.includes("equity_compensation") && (
+          {contractor.payRates?.[0]?.type !== PayRateType.ProjectBased && company.flags.includes("equity_compensation") && (
             <div>
               <span>Equity split</span>
               <div className="my-2 flex h-2 overflow-hidden rounded-xs bg-gray-200">
