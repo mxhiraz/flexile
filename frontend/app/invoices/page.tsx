@@ -470,7 +470,7 @@ const QuickInvoicesSection = () => {
   const form = useForm({
     resolver: zodResolver(quickInvoiceSchema),
     defaultValues: {
-      amountUsd: payRateInSubunits ? payRateInSubunits / 100 : 0,
+      amountUsd: (payRateInSubunits ?? 0) / 100,
       duration: 0,
       date: today(getLocalTimeZone()),
       invoiceEquityPercent: 0,
