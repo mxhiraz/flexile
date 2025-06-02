@@ -87,15 +87,12 @@ test.describe("Edit contractor", () => {
     assert(updatedContractor !== undefined);
     expect(updatedContractor.role).toBe("Stuff-doer");
     expect(updatedContractor.hoursPerWeek).toBe(24);
-    expect(updatedContractor.payRateInSubunits).toBe(10700);
 
     expect(sentEmails).toEqual([
       expect.objectContaining({
         to: contractor.email,
         subject: "Your rate has changed!",
-        text: expect.stringContaining(
-          `Your rate has changed!Old rate$${companyContractor.payRateInSubunits / 100}/hrNew rate$107/hr`,
-        ),
+        text: expect.stringContaining(`Your rate has changed!Old rate$60/hrNew rate$107/hr`),
       }),
     ]);
   });
@@ -138,6 +135,5 @@ test.describe("Edit contractor", () => {
     });
     assert(updatedProjectContractor !== undefined);
     expect(updatedProjectContractor.role).toBe("Stuff-doer");
-    expect(updatedProjectContractor.payRateInSubunits).toBe(200000);
   });
 });

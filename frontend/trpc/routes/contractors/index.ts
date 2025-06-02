@@ -53,7 +53,7 @@ export const contractorsRouter = createRouter({
       const workers = rows.map((worker) => ({
         ...pick(worker, ["startedAt", "hoursPerWeek", "endedAt", "role"]),
         id: worker.externalId,
-        payRates: worker.payRates.map((rate: any) => ({
+        payRates: worker.payRates.map((rate) => ({
           type: rate.type,
           amount: rate.amount,
           currency: rate.currency,
@@ -84,7 +84,7 @@ export const contractorsRouter = createRouter({
     return {
       ...pick(contractor, ["hoursPerWeek", "endedAt", "role"]),
       id: contractor.externalId,
-      payRates: contractor.payRates.map((rate: any) => ({
+      payRates: contractor.payRates.map((rate) => ({
         type: rate.type,
         amount: rate.amount,
         currency: rate.currency,
@@ -99,11 +99,15 @@ export const contractorsRouter = createRouter({
       z.object({
         email: z.string(),
         startedAt: z.string(),
-        payRates: z.array(z.object({
-          type: z.nativeEnum(PayRateType),
-          amount: z.number(),
-          currency: z.string().default("usd"),
-        })).min(1),
+        payRates: z
+          .array(
+            z.object({
+              type: z.nativeEnum(PayRateType),
+              amount: z.number(),
+              currency: z.string().default("usd"),
+            }),
+          )
+          .min(1),
         hoursPerWeek: z.number().nullable(),
         role: z.string(),
         documentTemplateId: z.string(),
@@ -132,14 +136,15 @@ export const contractorsRouter = createRouter({
           contractor: {
             email: input.email,
             started_at: input.startedAt,
-            pay_rates: input.payRates.map(rate => ({
+            pay_rates: input.payRates.map((rate) => ({
               amount: rate.amount,
               currency: rate.currency,
-              type: rate.type === PayRateType.Hourly
-                ? "hourly"
-                : rate.type === PayRateType.ProjectBased
-                  ? "project_based"
-                  : "salary",
+              type:
+                rate.type === PayRateType.Hourly
+                  ? "hourly"
+                  : rate.type === PayRateType.ProjectBased
+                    ? "project_based"
+                    : "salary",
             })),
             role: input.role,
             contract_signed_elsewhere: input.contractSignedElsewhere,
@@ -151,7 +156,7 @@ export const contractorsRouter = createRouter({
         const json = z.object({ error_message: z.string() }).parse(await response.json());
         throw new TRPCError({ code: "BAD_REQUEST", message: json.error_message });
       }
-      const hasSalaryRate = input.payRates.some(rate => rate.type === PayRateType.Salary);
+      const hasSalaryRate = input.payRates.some((rate) => rate.type === PayRateType.Salary);
       if (hasSalaryRate || !template) return { documentId: null };
       const { new_user_id, document_id } = z
         .object({ new_user_id: z.number(), document_id: z.number() })
@@ -169,11 +174,16 @@ export const contractorsRouter = createRouter({
     .input(
       z.object({
         id: z.string(),
-        payRates: z.array(z.object({
-          type: z.nativeEnum(PayRateType),
-          amount: z.number(),
-          currency: z.string().default("usd"),
-        })).min(1).optional(),
+        payRates: z
+          .array(
+            z.object({
+              type: z.nativeEnum(PayRateType),
+              amount: z.number(),
+              currency: z.string().default("usd"),
+            }),
+          )
+          .min(1)
+          .optional(),
         hoursPerWeek: z.number().nullable().optional(),
         role: z.string().optional(),
       }),
@@ -186,7 +196,7 @@ export const contractorsRouter = createRouter({
           with: { user: true, payRates: true },
         });
         if (!contractor) throw new TRPCError({ code: "NOT_FOUND" });
-        
+
         await tx
           .update(companyContractors)
           .set(pick(input, ["hoursPerWeek", "role"]))
@@ -194,14 +204,14 @@ export const contractorsRouter = createRouter({
 
         if (input.payRates) {
           await tx.delete(payRates).where(eq(payRates.companyContractorId, contractor.id));
-          
+
           await tx.insert(payRates).values(
-            input.payRates.map(rate => ({
+            input.payRates.map((rate) => ({
               companyContractorId: contractor.id,
               amount: rate.amount,
               currency: rate.currency,
               type: rate.type,
-            }))
+            })),
           );
         }
         let documentId: bigint | null = null;

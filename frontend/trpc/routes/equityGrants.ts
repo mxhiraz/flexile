@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { omit, pick } from "lodash-es";
 import { z } from "zod";
 import { byExternalId, db } from "@/db";
-import { DocumentTemplateType, optionGrantTypes, optionGrantVestingTriggers, PayRateType } from "@/db/enums";
+import { DocumentTemplateType, optionGrantTypes, optionGrantVestingTriggers } from "@/db/enums";
 import {
   companyContractors,
   companyInvestors,
@@ -14,6 +14,7 @@ import {
   equityGrants,
   equityGrantTransactions,
   optionPools,
+  // payRates,
   users,
   vestingEvents,
   vestingSchedules,
@@ -276,7 +277,6 @@ export const equityGrantsRouter = createRouter({
     const workers = await db.query.companyContractors.findMany({
       columns: {
         externalId: true,
-        payRateType: true,
       },
       with: {
         user: {
@@ -293,6 +293,7 @@ export const equityGrantsRouter = createRouter({
             },
           },
         },
+        payRates: true,
       },
       where: and(
         eq(companyContractors.companyId, ctx.company.id),
@@ -334,7 +335,7 @@ export const equityGrantsRouter = createRouter({
         return {
           id: worker.externalId,
           user: { ...simpleUser(worker.user), legalName: worker.user.legalName },
-          salaried: worker.payRateType === PayRateType.Salary,
+          salaried: worker.payRates.length > 0,
           lastGrant: lastGrant
             ? {
                 optionGrantType: lastGrant.optionGrantType,

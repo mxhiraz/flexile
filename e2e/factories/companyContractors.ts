@@ -4,7 +4,7 @@ import { documentsFactory } from "@test/factories/documents";
 import { usersFactory } from "@test/factories/users";
 import { subDays } from "date-fns";
 import { eq } from "drizzle-orm";
-import { PayRateType } from "@/db/enums";
+
 import { companyAdministrators, companyContractors } from "@/db/schema";
 import { assert } from "@/utils/assert";
 
@@ -25,8 +25,7 @@ export const companyContractorsFactory = {
         userId,
         startedAt: new Date(),
         hoursPerWeek: 40,
-        payRateInSubunits: 6000,
-        payRateType: PayRateType.Hourly,
+
         role: "Role",
         ...overrides,
       })
@@ -74,8 +73,7 @@ export const companyContractorsFactory = {
     companyContractorsFactory.create(
       {
         hoursPerWeek: 40,
-        payRateInSubunits: 6000,
-        payRateType: PayRateType.Hourly,
+
         ...overrides,
       },
       options,
@@ -88,8 +86,7 @@ export const companyContractorsFactory = {
     companyContractorsFactory.create(
       {
         hoursPerWeek: null,
-        payRateInSubunits: 100000,
-        payRateType: PayRateType.ProjectBased,
+
         ...overrides,
       },
       options,

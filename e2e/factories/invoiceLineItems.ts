@@ -25,8 +25,8 @@ export const invoiceLineItemsFactory = {
         invoiceId: invoice.id,
         description: faker.company.buzzPhrase(),
         totalAmountCents: BigInt(60_00),
-        payRateInSubunits: contractor.payRateInSubunits,
-        payRateCurrency: contractor.payRateCurrency,
+        payRateInSubunits: 6000,
+        payRateCurrency: "usd",
         ...overrides,
       })
       .returning();

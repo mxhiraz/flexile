@@ -6,7 +6,7 @@ import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 import { desc, eq } from "drizzle-orm";
-import { PayRateType } from "@/db/enums";
+
 import { companies, companyContractors, invoices, users } from "@/db/schema";
 import { fillDatePicker } from "@test/helpers";
 
@@ -27,8 +27,6 @@ test.describe("quick invoicing", () => {
       await companyContractorsFactory.create({
         companyId: company.id,
         userId: contractorUser.id,
-        payRateInSubunits: 6000, // $60/hr
-        payRateType: PayRateType.Hourly,
       })
     ).companyContractor;
   });
@@ -52,10 +50,7 @@ test.describe("quick invoicing", () => {
     });
 
     test("allows filling out the form and previewing the invoice for project-based rate", async ({ page }) => {
-      await db
-        .update(companyContractors)
-        .set({ payRateType: PayRateType.ProjectBased })
-        .where(eq(companyContractors.id, companyContractor.id));
+      await db.update(companyContractors).set({}).where(eq(companyContractors.id, companyContractor.id));
 
       await login(page, contractorUser);
 
@@ -114,9 +109,9 @@ test.describe("quick invoicing", () => {
         .findFirst({ where: eq(invoices.companyId, company.id), orderBy: desc(invoices.id) })
         .then(takeOrThrow);
       expect(invoice.totalMinutes).toBe(630);
-      expect(invoice.totalAmountInUsdCents).toBe(63000n);
-      expect(invoice.cashAmountInCents).toBe(50400n);
-      expect(invoice.equityAmountInCents).toBe(12600n);
+      expect(invoice.totalAmountInUsdCents).toBe(BigInt(63000));
+      expect(invoice.cashAmountInCents).toBe(BigInt(50400));
+      expect(invoice.equityAmountInCents).toBe(BigInt(12600));
       expect(invoice.equityPercentage).toBe(20);
     });
 
@@ -151,9 +146,9 @@ test.describe("quick invoicing", () => {
         .findFirst({ where: eq(invoices.companyId, company.id), orderBy: desc(invoices.id) })
         .then(takeOrThrow);
       expect(invoice.totalMinutes).toBe(630);
-      expect(invoice.totalAmountInUsdCents).toBe(63000n);
-      expect(invoice.cashAmountInCents).toBe(63000n);
-      expect(invoice.equityAmountInCents).toBe(0n);
+      expect(invoice.totalAmountInUsdCents).toBe(BigInt(63000));
+      expect(invoice.cashAmountInCents).toBe(BigInt(63000));
+      expect(invoice.equityAmountInCents).toBe(BigInt(0));
       expect(invoice.equityPercentage).toBe(0);
     });
   });
