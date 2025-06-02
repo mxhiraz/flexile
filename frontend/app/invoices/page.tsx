@@ -120,7 +120,7 @@ export default function InvoicesPage() {
           </div>
         ),
         meta: {
-          filterOptions: [...new Set(data.map((invoice) => statusNames[invoice.status]))],
+          filterOptions: Array.from(new Set(data.map((invoice) => statusNames[invoice.status]))),
         },
       }),
       columnHelper.accessor(isActionable, {
@@ -464,8 +464,8 @@ const QuickInvoicesSection = () => {
   const company = useCurrentCompany();
   const trpcUtils = trpc.useUtils();
   if (!user.roles.worker) return null;
-  const isProjectBased = user.roles.worker.payRateType === "project_based";
-  const payRateInSubunits = user.roles.worker.payRateInSubunits;
+  const isProjectBased = user.roles.worker.payRates[0]?.type === "project_based";
+  const payRateInSubunits = user.roles.worker.payRates[0]?.amount ?? 0;
 
   const { canSubmitInvoices } = useCanSubmitInvoices();
   const form = useForm({

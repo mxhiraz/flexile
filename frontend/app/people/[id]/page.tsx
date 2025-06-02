@@ -475,13 +475,21 @@ const DetailsTab = ({
                   <span>
                     {(contractor.equityPercentage / 100).toLocaleString(undefined, { style: "percent" })} Equity{" "}
                     <span className="text-gray-600">
-                      ({formatMoneyFromCents((contractor.equityPercentage * payRateInSubunits) / 100)})
+                      (
+                      {formatMoneyFromCents(
+                        (contractor.equityPercentage * (contractor.payRates[0]?.amount ?? 0)) / 100,
+                      )}
+                      )
                     </span>
                   </span>
                   <span>
                     {((100 - contractor.equityPercentage) / 100).toLocaleString(undefined, { style: "percent" })} Cash{" "}
                     <span className="text-gray-600">
-                      ({formatMoneyFromCents(((100 - contractor.equityPercentage) * payRateInSubunits) / 100)})
+                      (
+                      {formatMoneyFromCents(
+                        ((100 - contractor.equityPercentage) * (contractor.payRates[0]?.amount ?? 0)) / 100,
+                      )}
+                      )
                     </span>
                   </span>
                 </div>

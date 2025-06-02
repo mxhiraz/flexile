@@ -105,6 +105,7 @@ export const templatesRouter = createRouter({
                 companyContractors: {
                   with: {
                     equityAllocations: { where: eq(equityAllocations.year, new Date().getFullYear()) },
+                    payRates: true,
                   },
                   where: eq(companyContractors.companyId, ctx.company.id),
                 },
@@ -159,20 +160,20 @@ export const templatesRouter = createRouter({
         __role: contractor.role,
         __startDate: startDate.toLocaleString(),
         __electionYear: startDate.getFullYear().toString(),
-        __payRate: `${(contractor.payRateInSubunits / 100).toLocaleString()} ${
-          contractor.payRateType === PayRateType.Hourly
+        __payRate: `${((contractor.payRates[0]?.amount ?? 0) / 100).toLocaleString()} ${
+          contractor.payRates[0]?.type === PayRateType.Hourly
             ? "per hour"
-            : contractor.payRateType === PayRateType.ProjectBased
+            : contractor.payRates[0]?.type === PayRateType.ProjectBased
               ? "per project"
               : "per year"
         }`,
         __targetAnnualHours:
-          contractor.payRateType === PayRateType.Hourly && contractor.hoursPerWeek
+          contractor.payRates[0]?.type === PayRateType.Hourly && contractor.hoursPerWeek
             ? `Target Annual Hours: ${(contractor.hoursPerWeek * WORKING_WEEKS_PER_YEAR).toLocaleString()}`
             : "",
         __maximumFee:
-          contractor.payRateType === PayRateType.Hourly && contractor.hoursPerWeek
-            ? `Maximum fee payable to Contractor on this Project Assignment, including all items in the first two paragraphs above is $${((contractor.payRateInSubunits / 100) * MAX_WORKING_HOURS_PER_WEEK * WORKING_WEEKS_PER_YEAR).toLocaleString()} (the "Maximum Fee").`
+          contractor.payRates[0]?.type === PayRateType.Hourly && contractor.hoursPerWeek
+            ? `Maximum fee payable to Contractor on this Project Assignment, including all items in the first two paragraphs above is $${(((contractor.payRates[0]?.amount ?? 0) / 100) * MAX_WORKING_HOURS_PER_WEEK * WORKING_WEEKS_PER_YEAR).toLocaleString()} (the "Maximum Fee").`
             : "",
       });
       if (equityPercentage) values.__signerEquityPercentage = equityPercentage.toString();

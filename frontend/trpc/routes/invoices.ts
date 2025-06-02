@@ -36,7 +36,7 @@ const getNextAdminInvoiceNumber = async (companyId: bigint, userId: bigint) => {
   });
   if (!lastAdminInvoice) return INITIAL_ADMIN_INVOICE_NUMBER;
 
-  const digits = lastAdminInvoice.invoiceNumber.match(/\d+/gu)?.at(-1); // may include leading zeros
+  const digits = lastAdminInvoice.invoiceNumber.match(/\d+/g)?.at(-1); // may include leading zeros
   if (!digits || parseInt(digits, 10) === 0) return INITIAL_ADMIN_INVOICE_NUMBER;
 
   const nextInvoiceId = parseInt(digits, 10) + 1;
@@ -393,6 +393,7 @@ export const invoicesRouter = createRouter({
                 },
               },
             },
+            payRates: true,
           },
         },
         rejector: { columns: simpleUser.columns },
@@ -458,7 +459,11 @@ export const invoicesRouter = createRouter({
       })),
       rejector: invoice.rejector && simpleUser(invoice.rejector),
       contractor: {
-        ...pick(invoice.contractor, "payRateType"),
+        payRates: invoice.contractor.payRates.map((rate) => ({
+          type: rate.type,
+          amount: rate.amount,
+          currency: rate.currency,
+        })),
         user: { complianceInfo: invoice.contractor.user.userComplianceInfos[0] },
       },
     };

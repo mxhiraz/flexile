@@ -41,7 +41,7 @@ RSpec.describe "Main navigation" do
       expect(page).to have_link("Analytics")
       Flipper.disable(:company_updates, company)
 
-      company_worker.update_column(:pay_rate_type, "project_based")
+      company_worker.pay_rates.first.update!(type: :project_based)
       visit root_path
       expect(page).to_not have_link("Tracking")
       expect(page).to_not have_link("Equity")
@@ -56,7 +56,7 @@ RSpec.describe "Main navigation" do
     end
 
     context "when the contractor can change equity settings" do
-      let(:company_worker) { create(:company_worker, company:, pay_rate_type: :hourly) }
+      let(:company_worker) { create(:company_worker, :hourly, company:) }
 
       before do
         company.update!(equity_compensation_enabled: true)
@@ -88,7 +88,7 @@ RSpec.describe "Main navigation" do
         expect(page).to_not have_link("Roles")
         expect(page).to_not have_link("Updates")
 
-        company_worker.update_column(:pay_rate_type, "project_based")
+        company_worker.pay_rates.first.update!(type: :project_based)
         visit root_path
         expect(page).to have_link("Invoices")
         expect(page).to_not have_link("Expenses")

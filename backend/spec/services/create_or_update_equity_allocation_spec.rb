@@ -28,7 +28,7 @@ RSpec.describe CreateOrUpdateEquityAllocation do
 
   context "when the contractor is project-based" do
     before do
-      company_worker.update_column(:pay_rate_type, "project_based")
+      company_worker.pay_rates.first.update!(type: :project_based)
     end
 
     it "raises an error" do

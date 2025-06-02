@@ -36,6 +36,7 @@ export default inngest.createFunction(
             where: eq(companyContractors.id, BigInt(workerId)),
             with: {
               user: { with: { userComplianceInfos: latestUserComplianceInfo } },
+              payRates: true,
             },
           });
 
@@ -84,7 +85,7 @@ export default inngest.createFunction(
               Address: worker.user.email,
             },
             ...billingAddress,
-            BillRate: worker.payRateInSubunits / 100,
+            BillRate: (worker.payRates[0]?.amount ?? 0) / 100,
             Vendor1099: false,
             Active: true,
           });
