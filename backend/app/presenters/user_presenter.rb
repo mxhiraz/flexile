@@ -78,9 +78,8 @@ class UserPresenter
         id: worker.external_id,
         hasDocuments: has_documents,
         endedAt: worker.ended_at,
-        payRateType: worker.pay_rates.first&.type || 0,
+        payRates: worker.pay_rates.map { |rate| { type: rate.type, amount: rate.amount, currency: rate.currency } },
         role: worker.role,
-        payRateInSubunits: worker.pay_rates.first&.amount || 0,
         hoursPerWeek: worker.hours_per_week,
       }
     end

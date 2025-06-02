@@ -35,6 +35,13 @@ FactoryBot.define do
       end
     end
 
+    trait :salary do
+      after(:build) do |company_worker|
+        company_worker.pay_rates.clear
+        company_worker.pay_rates.build(amount: 60_000_00, type: :salary, currency: "usd")
+      end
+    end
+
     transient do
       without_contract { false }
       with_unsigned_contract { false }

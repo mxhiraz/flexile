@@ -580,13 +580,13 @@ class SeedDataGeneratorFromTemplate
               email: generate_user_email(user_attributes),
               started_at:,
               pay_rates_attributes: [{
-                amount: company_worker_attributes.fetch("pay_rate_in_subunits", 5000),
-                type: case company_worker_attributes.fetch("pay_rate_type", "hourly")
+                amount: company_worker_attributes.fetch("amount", 5000),
+                type: case company_worker_attributes.fetch("pay_rate_type", company_worker_attributes.fetch("type", "hourly"))
                       when "hourly" then :hourly
                       when "project_based" then :project_based
                       else :salary
                       end,
-                currency: "usd"
+                currency: company_worker_attributes.fetch("currency", "usd")
               }],
               role: company_worker_attributes.fetch("role"),
               hours_per_week: company_worker_attributes.fetch("hours_per_week", nil),

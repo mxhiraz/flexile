@@ -483,12 +483,12 @@ const QuickInvoicesSection = () => {
   const date = form.watch("date");
   const duration = form.watch("duration");
   const amountUsd = form.watch("amountUsd");
-  const totalAmountInCents = isProjectBased ? amountUsd * 100 : Math.ceil((duration / 60) * (payRateInSubunits ?? 0));
+  const totalAmountInCents = isProjectBased ? amountUsd * 100 : Math.ceil((duration / 60) * payRateInSubunits);
   const invoiceEquityPercent = form.watch("invoiceEquityPercent");
   const hourlyEquityRateCents =
-    totalAmountInCents > 0 ? Math.ceil((payRateInSubunits ?? 0) * (invoiceEquityPercent / 100)) : 0;
+    totalAmountInCents > 0 ? Math.ceil(payRateInSubunits * (invoiceEquityPercent / 100)) : 0;
   const hourlyRateCashCents =
-    totalAmountInCents > 0 ? Math.ceil((payRateInSubunits ?? 0) * (1 - invoiceEquityPercent / 100)) : 0;
+    totalAmountInCents > 0 ? Math.ceil(payRateInSubunits * (1 - invoiceEquityPercent / 100)) : 0;
   const newCompanyInvoiceRoute = () => {
     const params = new URLSearchParams({ date: date.toString(), split: String(invoiceEquityPercent) });
     if (isProjectBased) params.set("amount", String(amountUsd));

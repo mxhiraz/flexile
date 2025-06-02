@@ -36,7 +36,7 @@ const getNextAdminInvoiceNumber = async (companyId: bigint, userId: bigint) => {
   });
   if (!lastAdminInvoice) return INITIAL_ADMIN_INVOICE_NUMBER;
 
-  const digits = lastAdminInvoice.invoiceNumber.match(/\d+/g)?.at(-1); // may include leading zeros
+  const digits = lastAdminInvoice.invoiceNumber.match(/\d+/gu)?.at(-1); // may include leading zeros
   if (!digits || parseInt(digits, 10) === 0) return INITIAL_ADMIN_INVOICE_NUMBER;
 
   const nextInvoiceId = parseInt(digits, 10) + 1;

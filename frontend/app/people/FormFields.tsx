@@ -93,7 +93,7 @@ export default function FormFields() {
         </div>
 
         {fields.map((field, index) => {
-          const payRateType = PayRateType.Hourly;
+          const payRateType = form.watch(`payRates.${index}.type`) || PayRateType.Hourly;
           return (
             <div key={field.id} className="space-y-4 rounded-lg border p-4">
               <div className="flex items-center justify-between">
