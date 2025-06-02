@@ -1,4 +1,4 @@
-class CreatePayRates < ActiveRecord::Migration[7.0]
+class CreatePayRates < ActiveRecord::Migration[8.0]
   def up
     create_table :pay_rates do |t|
       t.references :company_contractor, null: false, foreign_key: { to_table: :company_contractors }
