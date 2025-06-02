@@ -23,14 +23,13 @@ import { formatDate } from "@/utils/time";
 import { UserPlus, Users } from "lucide-react";
 import TemplateSelector from "@/app/document_templates/TemplateSelector";
 import FormFields from "./FormFields";
-import { DEFAULT_WORKING_HOURS_PER_WEEK } from "@/models";
+
 import { Switch } from "@/components/ui/switch";
 
 const schema = z.object({
   email: z.string().email(),
   payRateType: z.nativeEnum(PayRateType),
   payRateInSubunits: z.number(),
-  hoursPerWeek: z.number().nullable(),
   role: z.string(),
   startDate: z.string(),
   documentTemplateId: z.string(),
@@ -48,7 +47,6 @@ export default function PeoplePage() {
     defaultValues: {
       ...(lastContractor ? { payRateInSubunits: lastContractor.payRateInSubunits, role: lastContractor.role } : {}),
       payRateType: lastContractor?.payRateType ?? PayRateType.Hourly,
-      hoursPerWeek: lastContractor?.hoursPerWeek ?? DEFAULT_WORKING_HOURS_PER_WEEK,
       startDate: formatISO(new Date(), { representation: "date" }),
       contractSignedElsewhere: false,
     },

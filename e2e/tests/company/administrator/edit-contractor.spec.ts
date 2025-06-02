@@ -77,7 +77,7 @@ test.describe("Edit contractor", () => {
 
     await page.getByLabel("Role").fill("Stuff-doer");
     await page.getByLabel("Rate").fill("107");
-    await page.getByLabel("Average hours").fill("24");
+
     await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByRole("button", { name: "Sign now" })).toBeVisible();
 
@@ -86,7 +86,7 @@ test.describe("Edit contractor", () => {
     });
     assert(updatedContractor !== undefined);
     expect(updatedContractor.role).toBe("Stuff-doer");
-    expect(updatedContractor.hoursPerWeek).toBe(24);
+
     expect(updatedContractor.payRateInSubunits).toBe(10700);
 
     expect(sentEmails).toEqual([

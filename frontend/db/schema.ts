@@ -1762,7 +1762,6 @@ export const companyContractors = pgTable(
     userId: bigint("user_id", { mode: "bigint" }).notNull(),
     companyId: bigint("company_id", { mode: "bigint" }).notNull(),
     startedAt: timestamp("started_at", { precision: 6, mode: "date" }).notNull(),
-    hoursPerWeek: integer("hours_per_week"),
     createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { precision: 6, mode: "date" })
       .notNull()

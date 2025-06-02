@@ -78,51 +78,32 @@ export default function FormFields() {
         )}
       />
 
-      <div
-        className={`grid items-start gap-3 ${payRateType === PayRateType.ProjectBased ? "md:grid-cols-1" : "md:grid-cols-2"}`}
-      >
-        <FormField
-          control={form.control}
-          name="payRateInSubunits"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Rate</FormLabel>
-              <FormControl>
-                <NumberInput
-                  value={field.value == null ? null : field.value / 100}
-                  onChange={(value) => field.onChange(value == null ? null : value * 100)}
-                  placeholder="0"
-                  prefix="$"
-                  suffix={
-                    payRateType === PayRateType.ProjectBased
-                      ? "/ project"
-                      : payRateType === PayRateType.Salary
-                        ? "/ year"
-                        : "/ hour"
-                  }
-                  decimal
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {payRateType !== PayRateType.ProjectBased && (
-          <FormField
-            control={form.control}
-            name="hoursPerWeek"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Average hours</FormLabel>
-                <FormControl>
-                  <NumberInput {...field} suffix="/ week" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <FormField
+        control={form.control}
+        name="payRateInSubunits"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Rate</FormLabel>
+            <FormControl>
+              <NumberInput
+                value={field.value == null ? null : field.value / 100}
+                onChange={(value) => field.onChange(value == null ? null : value * 100)}
+                placeholder="0"
+                prefix="$"
+                suffix={
+                  payRateType === PayRateType.ProjectBased
+                    ? "/ project"
+                    : payRateType === PayRateType.Salary
+                      ? "/ year"
+                      : "/ hour"
+                }
+                decimal
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
     </>
   );
 }

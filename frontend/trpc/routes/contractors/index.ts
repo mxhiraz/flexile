@@ -49,7 +49,7 @@ export const contractorsRouter = createRouter({
         limit: input.limit,
       });
       const workers = rows.map((worker) => ({
-        ...pick(worker, ["startedAt", "payRateInSubunits", "hoursPerWeek", "endedAt", "role", "payRateType"]),
+        ...pick(worker, ["startedAt", "payRateInSubunits", "endedAt", "role", "payRateType"]),
         id: worker.externalId,
         user: {
           ...simpleUser(worker.user),
@@ -72,7 +72,7 @@ export const contractorsRouter = createRouter({
     });
     if (!contractor) throw new TRPCError({ code: "NOT_FOUND" });
     return {
-      ...pick(contractor, ["payRateInSubunits", "hoursPerWeek", "endedAt", "role"]),
+      ...pick(contractor, ["payRateInSubunits", "endedAt", "role"]),
       id: contractor.externalId,
       payRateType: contractor.payRateType,
       equityPercentage: contractor.equityAllocations[0]?.equityPercentage ?? 0,
@@ -85,7 +85,6 @@ export const contractorsRouter = createRouter({
         startedAt: z.string(),
         payRateInSubunits: z.number(),
         payRateType: z.nativeEnum(PayRateType),
-        hoursPerWeek: z.number().nullable(),
         role: z.string(),
         documentTemplateId: z.string(),
         contractSignedElsewhere: z.boolean().default(false),
@@ -122,7 +121,6 @@ export const contractorsRouter = createRouter({
                   : "salary",
             role: input.role,
             contract_signed_elsewhere: input.contractSignedElsewhere,
-            ...(input.payRateType === PayRateType.Hourly && { hours_per_week: input.hoursPerWeek }),
           },
         }),
       });
@@ -146,7 +144,7 @@ export const contractorsRouter = createRouter({
   update: companyProcedure
     .input(
       createUpdateSchema(companyContractors)
-        .pick({ payRateInSubunits: true, payRateType: true, hoursPerWeek: true, role: true })
+        .pick({ payRateInSubunits: true, payRateType: true, role: true })
         .extend({ id: z.string(), payRateType: z.nativeEnum(PayRateType).optional() }),
     )
     .mutation(async ({ ctx, input }) =>
@@ -159,7 +157,7 @@ export const contractorsRouter = createRouter({
         if (!contractor) throw new TRPCError({ code: "NOT_FOUND" });
         await tx
           .update(companyContractors)
-          .set(pick(input, ["payRateInSubunits", "payRateType", "hoursPerWeek", "role"]))
+          .set(pick(input, ["payRateInSubunits", "payRateType", "role"]))
           .where(eq(companyContractors.id, contractor.id));
         let documentId: bigint | null = null;
         if (input.payRateInSubunits != null && input.payRateInSubunits !== contractor.payRateInSubunits) {

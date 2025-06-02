@@ -378,7 +378,6 @@ export default function ContractorPage() {
 
 const detailsFormSchema = z.object({
   payRateInSubunits: z.number(),
-  hoursPerWeek: z.number().nullable(),
   payRateType: z.nativeEnum(PayRateType),
   role: z.string(),
 });

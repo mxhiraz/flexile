@@ -11,7 +11,7 @@ import { db } from "@/db";
 import { DocumentTemplateType, DocumentType, PayRateType } from "@/db/enums";
 import { companyContractors, documents, documentTemplates, equityAllocations, users } from "@/db/schema";
 import env from "@/env";
-import { countries, MAX_WORKING_HOURS_PER_WEEK, WORKING_WEEKS_PER_YEAR } from "@/models/constants";
+import { countries } from "@/models/constants";
 import { companyProcedure, createRouter, type ProtectedContext, protectedProcedure } from "@/trpc";
 import { assertDefined } from "@/utils/assert";
 docuseal.configure({ key: env.DOCUSEAL_TOKEN });
@@ -166,14 +166,8 @@ export const templatesRouter = createRouter({
               ? "per project"
               : "per year"
         }`,
-        __targetAnnualHours:
-          contractor.payRateType === PayRateType.Hourly && contractor.hoursPerWeek
-            ? `Target Annual Hours: ${(contractor.hoursPerWeek * WORKING_WEEKS_PER_YEAR).toLocaleString()}`
-            : "",
-        __maximumFee:
-          contractor.payRateType === PayRateType.Hourly && contractor.hoursPerWeek
-            ? `Maximum fee payable to Contractor on this Project Assignment, including all items in the first two paragraphs above is $${((contractor.payRateInSubunits / 100) * MAX_WORKING_HOURS_PER_WEEK * WORKING_WEEKS_PER_YEAR).toLocaleString()} (the "Maximum Fee").`
-            : "",
+        __targetAnnualHours: "",
+        __maximumFee: "",
       });
       if (equityPercentage) values.__signerEquityPercentage = equityPercentage.toString();
     } else if (document.type === DocumentType.EquityPlanContract) {
