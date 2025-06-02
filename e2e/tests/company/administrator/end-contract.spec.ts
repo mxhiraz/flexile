@@ -50,7 +50,6 @@ test.describe("End contract", () => {
     });
     await mockForm(page);
     await page.getByLabel("Email").fill(contractor.email);
-    await page.getByLabel("Average hours").fill("25");
     const startDate = addYears(new Date(), 1);
     await page.getByLabel("Start date").fill(formatISO(startDate, { representation: "date" }));
     await page.getByRole("button", { name: "Send invite" }).click();

@@ -79,13 +79,11 @@ test.describe("New Contractor", () => {
     const { mockForm } = mockDocuseal(next, {
       __payRate: "99 per hour",
       __role: "Hourly Role 1",
-      __targetAnnualHours: "Target Annual Hours: 1,100",
-      __maximumFee:
-        'Maximum fee payable to Contractor on this Project Assignment, including all items in the first two paragraphs above is $152,460 (the "Maximum Fee").',
+      __targetAnnualHours: "",
+      __maximumFee: "",
     });
     const { email } = await fillForm(page);
     await page.getByLabel("Role").fill("Hourly Role 1");
-    await page.getByLabel("Average hours").fill("25");
     await page.getByLabel("Rate").fill("99");
 
     await mockForm(page);
