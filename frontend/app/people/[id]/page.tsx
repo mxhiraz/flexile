@@ -377,11 +377,15 @@ export default function ContractorPage() {
 }
 
 const detailsFormSchema = z.object({
-  payRates: z.array(z.object({
-    type: z.nativeEnum(PayRateType),
-    amount: z.number().min(1, "Amount must be greater than 0"),
-    currency: z.string().default("usd"),
-  })).min(1, "At least one pay rate is required"),
+  payRates: z
+    .array(
+      z.object({
+        type: z.nativeEnum(PayRateType),
+        amount: z.number().min(1, "Amount must be greater than 0"),
+        currency: z.string().default("usd"),
+      }),
+    )
+    .min(1, "At least one pay rate is required"),
   hoursPerWeek: z.number().nullable(),
   role: z.string(),
 });
@@ -401,15 +405,19 @@ const DetailsTab = ({
     resolver: zodResolver(detailsFormSchema),
     defaultValues: {
       ...contractor,
-      payRates: contractor.payRates?.length ? contractor.payRates : [{
-        type: PayRateType.Hourly,
-        amount: 0,
-        currency: "usd",
-      }],
+      payRates: contractor.payRates.length
+        ? contractor.payRates
+        : [
+            {
+              type: PayRateType.Hourly,
+              amount: 0,
+              currency: "usd",
+            },
+          ],
     },
     disabled: !!contractor.endedAt,
   });
-  const payRates = form.watch("payRates");
+  const _payRates = form.watch("payRates");
   const trpcUtils = trpc.useUtils();
   const updateContractor = trpc.contractors.update.useMutation({
     onSuccess: async (data) => {
@@ -449,35 +457,36 @@ const DetailsTab = ({
           ) : null}
 
           <FormFields />
-          {contractor.payRates?.[0]?.type !== PayRateType.ProjectBased && company.flags.includes("equity_compensation") && (
-            <div>
-              <span>Equity split</span>
-              <div className="my-2 flex h-2 overflow-hidden rounded-xs bg-gray-200">
-                <div
-                  style={{ width: `${contractor.equityPercentage}%` }}
-                  className="flex flex-col justify-center bg-blue-600 whitespace-nowrap"
-                ></div>
-                <div
-                  style={{ width: `${100 - contractor.equityPercentage}%` }}
-                  className="flex flex-col justify-center"
-                ></div>
-              </div>
-              <div className="flex justify-between">
-                <span>
-                  {(contractor.equityPercentage / 100).toLocaleString(undefined, { style: "percent" })} Equity{" "}
-                  <span className="text-gray-600">
-                    ({formatMoneyFromCents((contractor.equityPercentage * payRateInSubunits) / 100)})
+          {contractor.payRates[0]?.type !== PayRateType.ProjectBased &&
+            company.flags.includes("equity_compensation") && (
+              <div>
+                <span>Equity split</span>
+                <div className="my-2 flex h-2 overflow-hidden rounded-xs bg-gray-200">
+                  <div
+                    style={{ width: `${contractor.equityPercentage}%` }}
+                    className="flex flex-col justify-center bg-blue-600 whitespace-nowrap"
+                  ></div>
+                  <div
+                    style={{ width: `${100 - contractor.equityPercentage}%` }}
+                    className="flex flex-col justify-center"
+                  ></div>
+                </div>
+                <div className="flex justify-between">
+                  <span>
+                    {(contractor.equityPercentage / 100).toLocaleString(undefined, { style: "percent" })} Equity{" "}
+                    <span className="text-gray-600">
+                      ({formatMoneyFromCents((contractor.equityPercentage * payRateInSubunits) / 100)})
+                    </span>
                   </span>
-                </span>
-                <span>
-                  {((100 - contractor.equityPercentage) / 100).toLocaleString(undefined, { style: "percent" })} Cash{" "}
-                  <span className="text-gray-600">
-                    ({formatMoneyFromCents(((100 - contractor.equityPercentage) * payRateInSubunits) / 100)})
+                  <span>
+                    {((100 - contractor.equityPercentage) / 100).toLocaleString(undefined, { style: "percent" })} Cash{" "}
+                    <span className="text-gray-600">
+                      ({formatMoneyFromCents(((100 - contractor.equityPercentage) * payRateInSubunits) / 100)})
+                    </span>
                   </span>
-                </span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           {!contractor.endedAt && (
             <MutationStatusButton
               type="submit"

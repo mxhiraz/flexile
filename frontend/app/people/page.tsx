@@ -28,11 +28,15 @@ import { Switch } from "@/components/ui/switch";
 
 const schema = z.object({
   email: z.string().email(),
-  payRates: z.array(z.object({
-    type: z.nativeEnum(PayRateType),
-    amount: z.number().min(1, "Amount must be greater than 0"),
-    currency: z.string().default("usd"),
-  })).min(1, "At least one pay rate is required"),
+  payRates: z
+    .array(
+      z.object({
+        type: z.nativeEnum(PayRateType),
+        amount: z.number().min(1, "Amount must be greater than 0"),
+        currency: z.string().default("usd"),
+      }),
+    )
+    .min(1, "At least one pay rate is required"),
   hoursPerWeek: z.number().nullable(),
   role: z.string(),
   startDate: z.string(),
@@ -50,11 +54,15 @@ export default function PeoplePage() {
   const form = useForm({
     defaultValues: {
       role: lastContractor?.role ?? "",
-      payRates: lastContractor?.payRates?.length ? lastContractor.payRates : [{
-        type: PayRateType.Hourly,
-        amount: 0,
-        currency: "usd",
-      }],
+      payRates: lastContractor?.payRates.length
+        ? lastContractor.payRates
+        : [
+            {
+              type: PayRateType.Hourly,
+              amount: 0,
+              currency: "usd",
+            },
+          ],
       hoursPerWeek: lastContractor?.hoursPerWeek ?? DEFAULT_WORKING_HOURS_PER_WEEK,
       startDate: formatISO(new Date(), { representation: "date" }),
       contractSignedElsewhere: false,

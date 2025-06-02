@@ -87,24 +87,19 @@ export default function FormFields() {
         <div className="flex items-center justify-between">
           <FormLabel>Pay rates</FormLabel>
           <Button type="button" variant="outline" size="small" onClick={addPayRate}>
-            <Plus className="size-4 mr-2" />
+            <Plus className="mr-2 size-4" />
             Add pay rate
           </Button>
         </div>
 
         {fields.map((field, index) => {
-          const payRateType = form.watch(`payRates.${index}.type`);
+          const payRateType = PayRateType.Hourly;
           return (
-            <div key={field.id} className="border rounded-lg p-4 space-y-4">
+            <div key={field.id} className="space-y-4 rounded-lg border p-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium">Pay rate {index + 1}</h4>
                 {fields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="small"
-                    onClick={() => remove(index)}
-                  >
+                  <Button type="button" variant="outline" size="small" onClick={() => remove(index)}>
                     <Trash2 className="size-4" />
                   </Button>
                 )}
