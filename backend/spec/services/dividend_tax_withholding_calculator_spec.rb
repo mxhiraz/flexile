@@ -3,7 +3,7 @@
 RSpec.describe DividendTaxWithholdingCalculator do
   let(:tax_id) { nil }
   let(:tax_id_status) { nil }
-  let(:country_code) { nil }
+  let(:country_code) { "US" }
   let(:user) do
     create(:user, country_code:).tap do |user|
       create(:user_compliance_info, tax_id_status:, user:, country_code:, tax_id:,
@@ -81,6 +81,7 @@ RSpec.describe DividendTaxWithholdingCalculator do
     end
 
     context "when the dividend passed was not present in the dividends list" do
+      let(:country_code) { "US" }
       let(:dividend2) { create(:dividend, company_investor:, total_amount_in_cents: 123_45) }
 
       it "raises an error" do

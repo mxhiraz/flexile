@@ -706,6 +706,7 @@ class SeedDataGeneratorFromTemplate
             company:,
             invoice_ids: invoices.map(&:external_id),
           ).perform
+          next unless consolidated_invoice # Skip if no payable invoices
           perform_with_retries do
             consolidated_invoice.consolidated_payments.each do |consolidated_payment|
               ProcessPaymentIntentForConsolidatedPaymentJob.perform_inline(consolidated_payment.id)
@@ -716,6 +717,7 @@ class SeedDataGeneratorFromTemplate
               end
             end
           end
+          next unless consolidated_invoice # Skip if no consolidated invoice
           consolidated_invoice.reload.invoices.each do |invoice|
             invoice.payments.each do |payment|
               # Simulates WiseTransferUpdateJob
@@ -731,6 +733,7 @@ class SeedDataGeneratorFromTemplate
               invoice.mark_as_paid!(timestamp: (date.end_of_month + rand(1..5).days), payment_id: payment.id)
             end
           end
+          next unless consolidated_invoice # Skip if no consolidated invoice
           consolidated_invoice.reload.consolidated_payments.each do |consolidated_payment|
             next unless consolidated_payment.status == ConsolidatedPayment::SUCCEEDED
 
