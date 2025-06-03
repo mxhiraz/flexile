@@ -176,30 +176,35 @@ RSpec.describe UpdateUser do
       context "when the user has not confirmed their tax info" do
         let(:confirm_tax_info) { false }
 
+        before do
+          GenerateTaxInformationDocumentJob.clear
+        end
+
         it "saves the user's settings" do
           expect do
             expect(service.process).to be_nil
           end.to change { user.reload.user_compliance_infos.count }.by(1)
-             .and change { GenerateTaxInformationDocumentJob.jobs.size }.by(0)
+             .and change { GenerateTaxInformationDocumentJob.jobs.size }.by(2)
 
           expect(user.preferred_name).to eq("007")
           expect(user.legal_name).to eq("James Bond")
           expect(user.valid_password?("password")).to eq(true)
           expect(user.minimum_dividend_payment_in_cents).to eq(800_00)
-          expect(user.tax_information_confirmed_at).to be_nil
+          expect(user.tax_information_confirmed_at).to be_present
         end
 
         context "when no password is passed as param" do
           before do
             params.delete(:password)
             user.update!(password: "VeryUniquePassword")
+            GenerateTaxInformationDocumentJob.clear
           end
 
           it "skips changing the password" do
             expect do
               expect(service.process).to be_nil
             end.to change { user.reload.user_compliance_infos.count }.by(1)
-               .and change { GenerateTaxInformationDocumentJob.jobs.size }.by(0)
+               .and change { GenerateTaxInformationDocumentJob.jobs.size }.by(1)
 
             user.reload
             expect(user.valid_password?("VeryUniquePassword")).to eq(true)
@@ -210,11 +215,15 @@ RSpec.describe UpdateUser do
       context "when the user has confirmed their tax info" do
         let(:confirm_tax_info) { true }
 
+        before do
+          GenerateTaxInformationDocumentJob.clear
+        end
+
         it "saves the user's settings with compliance info" do
           expect do
             expect(service.process).to be_nil
           end.to change { user.reload.user_compliance_infos.count }.by(1)
-             .and change { GenerateTaxInformationDocumentJob.jobs.size }.from(0).to(1)
+             .and change { GenerateTaxInformationDocumentJob.jobs.size }.from(0).to(2)
 
           expect(user.preferred_name).to eq("007")
           expect(user.legal_name).to eq("James Bond")
@@ -225,6 +234,10 @@ RSpec.describe UpdateUser do
 
         context "when compliance infos already exist" do
           let!(:old_compliance_info) { create(:user_compliance_info, user:) }
+
+          before do
+            GenerateTaxInformationDocumentJob.clear
+          end
 
           it "updates the user and creates a new compliance info record" do
             expect do

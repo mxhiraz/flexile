@@ -36,7 +36,7 @@ RSpec.describe PayInvestorDividends, :vcr do
   end
 
   context "if the company investor has not completed onboarding" do
-    let(:company_investor) { create(:company_investor, user: create(:user, legal_name: nil), company:) }
+    let(:company_investor) { create(:company_investor, user: create(:user, legal_name: "Test User"), company:) }
     let(:user_compliance_info) { nil }
 
     it "returns early" do

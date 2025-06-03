@@ -26,6 +26,10 @@ RSpec.describe GenerateTaxFormService do
       let(:user_compliance_info) { user.compliance_info }
       let(:form_name) { TaxDocument::ALL_SUPPORTED_TAX_FORM_NAMES.sample }
 
+      before do
+        user_compliance_info.update!(tax_information_confirmed_at: nil)
+      end
+
       it "does not create a new tax document" do
         expect do
           expect(generate_tax_form_service.process).to be_nil
@@ -37,6 +41,10 @@ RSpec.describe GenerateTaxFormService do
       let(:user) { create(:user, :company_lawyer) }
       let(:user_compliance_info) { user.compliance_info }
       let(:form_name) { TaxDocument::ALL_SUPPORTED_TAX_FORM_NAMES.sample }
+
+      before do
+        user_compliance_info.update!(tax_information_confirmed_at: nil)
+      end
 
       it "does not create a new tax document" do
         expect do
