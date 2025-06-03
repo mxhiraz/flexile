@@ -685,8 +685,6 @@ RSpec.describe Invoice do
         end
       end
     end
-
-
   end
 
   describe "#company_charged?" do
