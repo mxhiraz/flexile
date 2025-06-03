@@ -243,7 +243,7 @@ RSpec.describe UpdateUser do
             expect do
               expect(service.process).to be_nil
             end.to change { user.reload.user_compliance_infos.count }.from(2).to(3)
-               .and change { GenerateTaxInformationDocumentJob.jobs.size }.from(0).to(2)
+               .and change { GenerateTaxInformationDocumentJob.jobs.size }.from(0).to(1)
 
             expect(user.compliance_info).to_not eq(old_compliance_info)
             expect(user.preferred_name).to eq("007")
