@@ -25,7 +25,7 @@ class UserComplianceInfo < ApplicationRecord
 
   after_create_commit :delete_outdated_compliance_infos!, unless: :deleted?
   after_commit :generate_tax_information_document, if: -> { alive? && tax_information_confirmed_at? }
-  after_commit :generate_irs_tax_forms, if: -> { alive? && tax_information_confirmed_at? }
+
   after_commit :sync_with_quickbooks, if: -> { alive? && worker? }
   before_save :update_tax_id_status
 
@@ -77,9 +77,7 @@ class UserComplianceInfo < ApplicationRecord
       GenerateTaxInformationDocumentJob.perform_async(id)
     end
 
-    def generate_irs_tax_forms
-      GenerateIrsTaxFormsJob.perform_async(id)
-    end
+
 
     def sync_with_quickbooks
       return unless OnboardingState::Worker.new(user:, company: user.company_workers.first!.company).complete?

@@ -287,8 +287,6 @@ end; nil
 
 Enable tax document generation:
 
-```ruby
-Company.find(1823).update(irs_tax_forms: true)
-```
+Tax document generation is now enabled by default for all companies.
 
 This is automated, so nothing more needs to be done.
