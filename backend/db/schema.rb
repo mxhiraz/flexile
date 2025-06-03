@@ -119,7 +119,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_30_184215) do
     t.boolean "is_gumroad", default: false, null: false
     t.boolean "dividends_allowed", default: false, null: false
     t.boolean "is_trusted", default: false, null: false
-    t.boolean "irs_tax_forms", default: false, null: false
+
     t.boolean "equity_grants_enabled", default: false, null: false
     t.boolean "show_analytics_to_contractors", default: false, null: false
     t.boolean "company_updates_enabled", default: false, null: false

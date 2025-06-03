@@ -5,7 +5,7 @@ class MakeFlagColumnsNotNull < ActiveRecord::Migration[7.2]
     change_column_null :companies, :is_trusted, false
     change_column_null :companies, :show_contractor_list_to_contractors, false
     change_column_null :companies, :show_stats_in_job_descriptions, false
-    change_column_null :companies, :irs_tax_forms, false
+
     change_column_null :companies, :equity_grants_enabled, false
     change_column_null :companies, :company_updates_enabled, false
     change_column_null :companies, :show_analytics_to_contractors, false

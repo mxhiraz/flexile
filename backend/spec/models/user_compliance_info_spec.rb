@@ -217,9 +217,7 @@ RSpec.describe UserComplianceInfo do
       it_behaves_like "generating tax documents", GenerateTaxInformationDocumentJob
     end
 
-    describe "#generate_irs_tax_forms" do
-      it_behaves_like "generating tax documents", GenerateIrsTaxFormsJob
-    end
+
 
     describe "#requires_w9?" do
       context "when the user is a US resident" do
