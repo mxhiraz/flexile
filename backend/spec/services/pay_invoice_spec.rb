@@ -2,7 +2,7 @@
 
 RSpec.describe PayInvoice, :vcr do
   let(:company) { create(:company) }
-  let(:user) { create(:company_worker, company:, user: create(:user, without_bank_account: true)).user }
+  let(:user) { create(:company_worker, company:, user: create(:user, without_bank_account: true)).user.tap { |u| u.compliance_info.update!(tax_information_confirmed_at: Time.current) } }
   let(:recipient_params) do
     {
       currency: "GBP",
