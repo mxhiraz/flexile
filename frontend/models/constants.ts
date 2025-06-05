@@ -183,7 +183,6 @@ export const currencyByCountryCode = new Map<string, Currency>([
   ["ZW", "USD"],
 ]);
 
-export const WORKING_WEEKS_PER_YEAR = 44;
 export const WEEKS_PER_YEAR = 52;
 export const DAY_MS = 86400_000;
 

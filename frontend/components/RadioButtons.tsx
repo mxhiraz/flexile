@@ -18,7 +18,7 @@ function RadioButtons<T extends string | number>({
   "aria-invalid"?: boolean;
 }) {
   return (
-    <div role="radiogroup" className={cn("grid auto-cols-fr gap-3 md:grid-flow-col", className)}>
+    <div role="radiogroup" className={cn("grid gap-3", className)}>
       {options.map((option) => (
         <Label
           key={option.label}
