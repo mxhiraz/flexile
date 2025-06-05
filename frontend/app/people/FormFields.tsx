@@ -78,32 +78,34 @@ export default function FormFields() {
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="payRateInSubunits"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Rate</FormLabel>
-            <FormControl>
-              <NumberInput
-                value={field.value == null ? null : field.value / 100}
-                onChange={(value) => field.onChange(value == null ? null : value * 100)}
-                placeholder="0"
-                prefix="$"
-                suffix={
-                  payRateType === PayRateType.ProjectBased
-                    ? "/ project"
-                    : payRateType === PayRateType.Salary
-                      ? "/ year"
-                      : "/ hour"
-                }
-                decimal
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="grid items-start gap-3 md:grid-cols-1">
+        <FormField
+          control={form.control}
+          name="payRateInSubunits"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rate</FormLabel>
+              <FormControl>
+                <NumberInput
+                  value={field.value == null ? null : field.value / 100}
+                  onChange={(value) => field.onChange(value == null ? null : value * 100)}
+                  placeholder="0"
+                  prefix="$"
+                  suffix={
+                    payRateType === PayRateType.ProjectBased
+                      ? "/ project"
+                      : payRateType === PayRateType.Salary
+                        ? "/ year"
+                        : "/ hour"
+                  }
+                  decimal
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </>
   );
 }
