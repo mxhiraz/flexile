@@ -89,7 +89,7 @@ export default function PeoplePage() {
       columnHelper.accessor("role", {
         header: "Role",
         cell: (info) => info.getValue() || "N/A",
-        meta: { filterOptions: [...new Set(workers.map((worker) => worker.role))] },
+        meta: { filterOptions: Array.from(new Set(workers.map((worker) => worker.role))) },
       }),
       columnHelper.simple("user.countryCode", "Country", (v) => v && countries.get(v)),
       columnHelper.accessor((row) => (row.endedAt ? "Alumni" : row.startedAt > new Date() ? "Onboarding" : "Active"), {
@@ -149,7 +149,7 @@ export default function PeoplePage() {
         <Placeholder icon={Users}>Contractors will show up here.</Placeholder>
       )}
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Who's joining?</DialogTitle>
           </DialogHeader>
