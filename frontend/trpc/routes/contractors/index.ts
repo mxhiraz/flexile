@@ -121,6 +121,7 @@ export const contractorsRouter = createRouter({
                   : "salary",
             role: input.role,
             contract_signed_elsewhere: input.contractSignedElsewhere,
+            ...(input.payRateType === PayRateType.Hourly && { hours_per_week: 40 }),
           },
         }),
       });
