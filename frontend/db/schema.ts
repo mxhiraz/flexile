@@ -114,8 +114,6 @@ export const balances = pgTable(
   (table) => [index("index_balances_on_company_id").using("btree", table.companyId.asc().nullsLast().op("int8_ops"))],
 );
 
-
-
 export const companyAdministrators = pgTable(
   "company_administrators",
   {
