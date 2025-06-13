@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createRouter, publicProcedure } from "@/trpc";
+import { createRouter, protectedProcedure } from "@/trpc";
 import { TRPCError } from "@trpc/server";
 
 const invoiceSubmissionSchema = z.object({
@@ -11,7 +11,7 @@ const invoiceSubmissionSchema = z.object({
 });
 
 export const slackRouter = createRouter({
-  submitInvoice: publicProcedure
+  submitInvoice: protectedProcedure
     .input(invoiceSubmissionSchema)
     .mutation(async ({ input, ctx }) => {
       try {
@@ -23,9 +23,21 @@ export const slackRouter = createRouter({
         
         if (hoursOrAmount.startsWith('$')) {
           const amount = parseFloat(hoursOrAmount.substring(1));
+          if (isNaN(amount)) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'Please enter a valid number for the dollar amount',
+            });
+          }
           lineItem.total_amount_cents = Math.round(amount * 100);
         } else {
           const hours = parseFloat(hoursOrAmount);
+          if (isNaN(hours)) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'Please enter a valid number for hours',
+            });
+          }
           lineItem.minutes = Math.round(hours * 60);
         }
 

@@ -99,7 +99,11 @@ export async function POST(request: NextRequest) {
       notes: values.notes?.notes_input?.value,
     };
 
-    await handleInvoiceSubmission(submissionData);
+    try {
+      await handleInvoiceSubmission(submissionData);
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to process invoice submission' }, { status: 500 });
+    }
 
     return NextResponse.json({});
   }
