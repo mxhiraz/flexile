@@ -20,6 +20,9 @@ export const verifySlackRequest = (body: string, headers: Headers): Promise<bool
   const hmac = crypto.createHmac("sha256", slackSigningSecret);
   const computedSignature = `v0=${hmac.update(baseString).digest("hex")}`;
 
+  if (Buffer.from(computedSignature).length !== Buffer.from(slackSignature).length) {
+    return Promise.resolve(false);
+  }
   return Promise.resolve(crypto.timingSafeEqual(Buffer.from(computedSignature), Buffer.from(slackSignature)));
 };
 
