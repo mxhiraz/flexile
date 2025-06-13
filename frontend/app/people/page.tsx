@@ -79,22 +79,25 @@ export default function PeoplePage() {
   const columnHelper = createColumnHelper<(typeof workers)[number]>();
   const columns = useMemo(
     () => [
-      columnHelper.accessor((row) => {
-        const firstName = row.user.legalName || "";
-        const lastName = row.user.preferredName || "";
-        return `${firstName} ${lastName}`.trim() || row.user.name || "—";
-      }, {
-        id: "user_name",
-        header: "Name",
-        cell: (info) => {
-          const content = info.getValue();
-          return (
-            <Link href={`/people/${info.row.original.user.id}`} className="after:absolute after:inset-0">
-              {content}
-            </Link>
-          );
+      columnHelper.accessor(
+        (row) => {
+          const firstName = row.user.legalName || "";
+          const lastName = row.user.preferredName || "";
+          return `${firstName} ${lastName}`.trim() || row.user.name || "—";
         },
-      }),
+        {
+          id: "user_name",
+          header: "Name",
+          cell: (info) => {
+            const content = info.getValue();
+            return (
+              <Link href={`/people/${info.row.original.user.id}`} className="after:absolute after:inset-0">
+                {content}
+              </Link>
+            );
+          },
+        },
+      ),
       columnHelper.accessor("role", {
         header: "Role",
         cell: (info) => info.getValue() || "N/A",
