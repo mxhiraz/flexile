@@ -79,10 +79,21 @@ export default function PeoplePage() {
   const columnHelper = createColumnHelper<(typeof workers)[number]>();
   const columns = useMemo(
     () => [
-      columnHelper.accessor("user.name", {
-        header: "Name",
+      columnHelper.accessor("user.legalName", {
+        header: "First name",
         cell: (info) => {
-          const content = info.getValue();
+          const content = info.getValue() || "—";
+          return (
+            <Link href={`/people/${info.row.original.user.id}`} className="after:absolute after:inset-0">
+              {content}
+            </Link>
+          );
+        },
+      }),
+      columnHelper.accessor("user.preferredName", {
+        header: "Last name",
+        cell: (info) => {
+          const content = info.getValue() || "—";
           return (
             <Link href={`/people/${info.row.original.user.id}`} className="after:absolute after:inset-0">
               {content}
@@ -93,7 +104,7 @@ export default function PeoplePage() {
       columnHelper.accessor("role", {
         header: "Role",
         cell: (info) => info.getValue() || "N/A",
-        meta: { filterOptions: [...new Set(workers.map((worker) => worker.role))] },
+        meta: { filterOptions: Array.from(new Set(workers.map((worker) => worker.role))) },
       }),
       columnHelper.simple("user.countryCode", "Country", (v) => v && countries.get(v)),
       columnHelper.accessor((row) => (row.endedAt ? "Alumni" : row.startedAt > new Date() ? "Onboarding" : "Active"), {
@@ -141,7 +152,7 @@ export default function PeoplePage() {
       {workers.length > 0 ? (
         <DataTable
           table={table}
-          searchColumn="user_name"
+          searchColumn="user_legalName"
           actions={
             <Button size="small" variant="outline" onClick={() => setShowInviteModal(true)}>
               <UserPlus className="size-4" />
