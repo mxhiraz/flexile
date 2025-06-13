@@ -79,21 +79,15 @@ export default function PeoplePage() {
   const columnHelper = createColumnHelper<(typeof workers)[number]>();
   const columns = useMemo(
     () => [
-      columnHelper.accessor("user.legalName", {
-        header: "First name",
+      columnHelper.accessor((row) => {
+        const firstName = row.user.legalName || "";
+        const lastName = row.user.preferredName || "";
+        return `${firstName} ${lastName}`.trim() || row.user.name || "—";
+      }, {
+        id: "user_name",
+        header: "Name",
         cell: (info) => {
-          const content = info.getValue() || "—";
-          return (
-            <Link href={`/people/${info.row.original.user.id}`} className="after:absolute after:inset-0">
-              {content}
-            </Link>
-          );
-        },
-      }),
-      columnHelper.accessor("user.preferredName", {
-        header: "Last name",
-        cell: (info) => {
-          const content = info.getValue() || "—";
+          const content = info.getValue();
           return (
             <Link href={`/people/${info.row.original.user.id}`} className="after:absolute after:inset-0">
               {content}
@@ -152,7 +146,7 @@ export default function PeoplePage() {
       {workers.length > 0 ? (
         <DataTable
           table={table}
-          searchColumn="user_legalName"
+          searchColumn="user_name"
           actions={
             <Button size="small" variant="outline" onClick={() => setShowInviteModal(true)}>
               <UserPlus className="size-4" />
