@@ -73,7 +73,7 @@ test.describe("Edit contractor", () => {
 
     const expectedFullName = `${contractor.legalName} ${contractor.preferredName}`;
     await expect(page.getByRole("row").filter({ hasText: expectedFullName })).toBeVisible();
-    
+
     await expect(page.getByRole("columnheader", { name: "First name" })).not.toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Last name" })).not.toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Name" })).toBeVisible();
@@ -155,7 +155,8 @@ test.describe("Edit contractor", () => {
 
     await login(page, admin);
     await page.getByRole("link", { name: "People" }).click();
-    const projectBasedUserFullName = `${projectBasedUser.legalName || ""} ${projectBasedUser.preferredName || ""}`.trim();
+    const projectBasedUserFullName =
+      `${projectBasedUser.legalName || ""} ${projectBasedUser.preferredName || ""}`.trim();
     await page.getByRole("link", { name: projectBasedUserFullName }).click();
 
     await page.getByRole("heading", { name: projectBasedUser.preferredName }).click();
