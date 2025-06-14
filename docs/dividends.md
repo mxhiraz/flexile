@@ -56,7 +56,7 @@ service.process
 
 See example Google Sheet here: [Dividend Import Template](https://docs.google.com/spreadsheets/d/1WLvHQaNx6PcofKChWhtD_4JDoTqy2y_bYxNgwNYZKBw/edit?usp=sharing)
 
-You can export this file as an .xlsx and put it within `frontend/public` and use ngrok to get a URL to access it:
+You can export this file as a CSV and use it directly with the service:
 
 ```
 ngrok http https://flexile.dev

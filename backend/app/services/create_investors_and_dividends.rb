@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "csv"
-
 class CreateInvestorsAndDividends
   attr_reader :errors
 
