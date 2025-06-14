@@ -25,7 +25,7 @@ class CreateInvestorsAndDividends
     def process_sheet
       @data = {}
       puts "Processing CSV data"
-      
+
       CSV.parse(csv_data, headers: true).each do |row|
         next if row["email"].blank?
 
