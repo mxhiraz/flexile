@@ -75,7 +75,7 @@ RSpec.describe CreateInvestorsAndDividends do
 
       it "parses user data correctly" do
         service.process
-        
+
         user = User.find_by(email: "john@example.com")
         expect(user.preferred_name).to eq("John Doe")
         expect(user.legal_name).to eq("John Michael Doe")
@@ -89,7 +89,7 @@ RSpec.describe CreateInvestorsAndDividends do
 
       it "parses business entity data correctly" do
         service.process
-        
+
         user = User.find_by(email: "business@example.com")
         expect(user.business_entity).to be_truthy
         expect(user.business_name).to eq("Business Corp LLC")
@@ -97,14 +97,14 @@ RSpec.describe CreateInvestorsAndDividends do
 
       it "creates investments with correct amounts" do
         service.process
-        
+
         investment = Investment.joins(:user).find_by(users: { email: "john@example.com" })
         expect(investment.amount_in_cents).to eq(1_000_000) # $10,000.00
       end
 
       it "creates dividends with correct amounts" do
         service.process
-        
+
         dividend = Dividend.joins(:user).find_by(users: { email: "jane@example.com" })
         expect(dividend.amount_in_cents).to eq(125_000) # $1,250.00
       end
@@ -150,7 +150,7 @@ RSpec.describe CreateInvestorsAndDividends do
 
     context "with malformed CSV" do
       let(:malformed_csv) { "invalid,csv\ndata" }
-      
+
       let(:service) do
         described_class.new(
           company_id: company.id,
