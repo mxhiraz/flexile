@@ -106,7 +106,7 @@ RSpec.describe CreateInvestorsAndDividends do
         user = User.find_by("email LIKE 'sharang.d+12345%@gmail.com'")
         company_investor = user.company_investors.find_by(company: company)
         expect(company_investor.investment_amount_in_cents).to eq(1_000_000) # $10,000.00
-        
+
         # Verify dividend round attributes
         dividend_round = company.dividend_rounds.first
         expect(dividend_round.total_amount_in_cents).to eq(425_000) # $4,250.00 total
@@ -154,11 +154,11 @@ RSpec.describe CreateInvestorsAndDividends do
         expect(business_user.street_address).to eq("789 Corporate Blvd")
         expect(business_user.city).to eq("Austin")
         expect(business_user.state).to eq("TX")
-        
+
         # Verify investment amount for business entity
         company_investor = business_user.company_investors.find_by(company: company)
         expect(company_investor.investment_amount_in_cents).to eq(5_000_000) # $50,000.00
-        
+
         # Verify dividend amount for business entity
         dividend = company_investor.dividends.first
         expect(dividend.total_amount_in_cents).to eq(250_000) # $2,500.00
