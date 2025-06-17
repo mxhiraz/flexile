@@ -20,7 +20,7 @@ RSpec.describe ImportShareHoldings do
   describe "Environment is in an unexpected state" do
     it "raises an exception if user mapping CSV is malformed" do
       create(:company, is_gumroad: true)
-      
+
       expect do
         described_class.new(user_mapping_csv: "invalid,csv", share_data_csv: share_data_csv).process
       end.to change(ShareHolding, :count).by(0)

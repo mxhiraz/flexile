@@ -106,10 +106,10 @@ class CreateInvestorsAndDividends
 
     def create_investments_and_dividends
       return if @data.empty?
-      
+
       total_amount = @data.sum { |_email, info| (info[:investment][:dividend_amount]&.to_d || 0) * 100 }.to_i
       return if total_amount <= 0
-      
+
       puts "Creating Dividend round"
       dividend_round = company.dividend_rounds.create!(
         issued_at: Time.current,
