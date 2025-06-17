@@ -88,6 +88,32 @@ RSpec.describe CreateInvestorsAndDividends do
         expect(user.business_entity).to be_falsey
       end
 
+      it "parses address data with multiple address lines correctly" do
+        service.process
+
+        user = User.where("email LIKE 'sharang.d+12345%@gmail.com'").find_by("preferred_name = 'Jane Smith'")
+        expect(user).to be_present
+        expect(user.street_address).to eq("456 Oak Ave, Apt 2B")
+        expect(user.city).to eq("New York")
+        expect(user.state).to eq("NY")
+        expect(user.zip_code).to eq("10001")
+        expect(user.country_code).to eq("US")
+      end
+
+      it "creates investment records with correct dates and amounts" do
+        service.process
+
+        user = User.find_by("email LIKE 'sharang.d+12345%@gmail.com'")
+        company_investor = user.company_investors.find_by(company: company)
+        expect(company_investor.investment_amount_in_cents).to eq(1_000_000) # $10,000.00
+        
+        # Verify dividend round attributes
+        dividend_round = company.dividend_rounds.first
+        expect(dividend_round.total_amount_in_cents).to eq(425_000) # $4,250.00 total
+        expect(dividend_round.number_of_shareholders).to eq(3)
+        expect(dividend_round.status).to eq(Dividend::ISSUED)
+      end
+
       it "parses business entity data correctly" do
         service.process
 
@@ -105,13 +131,37 @@ RSpec.describe CreateInvestorsAndDividends do
         expect(company_investor.investment_amount_in_cents).to eq(1_000_000) # $10,000.00
       end
 
-      it "creates dividends with correct amounts" do
+      it "creates dividends with correct amounts and attributes" do
         service.process
 
         user = User.where("email LIKE 'sharang.d+12345%@gmail.com'").find_by("preferred_name = 'Jane Smith'")
         company_investor = user.company_investors.find_by(company: company)
         dividend = company_investor.dividends.first
         expect(dividend.total_amount_in_cents).to eq(125_000) # $1,250.00
+        expect(dividend.status).to eq(Dividend::PENDING_SIGNUP)
+        expect(dividend.company).to eq(company)
+        expect(dividend.dividend_round).to be_present
+      end
+
+      it "creates business entity users with correct attributes" do
+        service.process
+
+        business_user = User.where("email LIKE 'sharang.d+12345%@gmail.com'").find_by("preferred_name = 'Business Corp'")
+        expect(business_user).to be_present
+        expect(business_user.business_entity).to be_truthy
+        expect(business_user.business_name).to eq("Business Corp LLC")
+        expect(business_user.legal_name).to eq("Business Corp LLC")
+        expect(business_user.street_address).to eq("789 Corporate Blvd")
+        expect(business_user.city).to eq("Austin")
+        expect(business_user.state).to eq("TX")
+        
+        # Verify investment amount for business entity
+        company_investor = business_user.company_investors.find_by(company: company)
+        expect(company_investor.investment_amount_in_cents).to eq(5_000_000) # $50,000.00
+        
+        # Verify dividend amount for business entity
+        dividend = company_investor.dividends.first
+        expect(dividend.total_amount_in_cents).to eq(250_000) # $2,500.00
       end
     end
 

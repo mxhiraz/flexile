@@ -71,12 +71,32 @@ RSpec.describe ImportShareHoldings do
       expect(common_share.share_price_usd).to eq(1.0)
       expect(common_share.total_amount_in_cents).to eq(100_000)
       expect(common_share.share_holder_name).to eq("John Doe")
+      expect(common_share.share_class).to eq(common_share_class)
+      expect(common_share.issued_at).to eq("2024-01-01")
+      expect(common_share.originally_acquired_at).to eq("2024-01-01")
 
       preferred_share = ShareHolding.find_by(name: "Preferred Stock")
       expect(preferred_share.number_of_shares).to eq(500)
       expect(preferred_share.share_price_usd).to eq(2.0)
       expect(preferred_share.total_amount_in_cents).to eq(100_000)
       expect(preferred_share.share_holder_name).to eq("Jane Smith")
+      expect(preferred_share.share_class).to eq(preferred_share_class)
+      expect(preferred_share.issued_at).to eq("2024-01-15")
+      expect(preferred_share.originally_acquired_at).to eq("2024-01-15")
+    end
+
+    it "validates share holder associations correctly" do
+      described_class.new(user_mapping_csv: user_mapping_csv, share_data_csv: share_data_csv).process
+
+      common_share = ShareHolding.find_by(name: "Common Stock")
+      expect(common_share.company_investor).to eq(company_investor1)
+      expect(common_share.company_investor.user).to eq(user1)
+      expect(common_share.company_investor.company).to eq(company)
+
+      preferred_share = ShareHolding.find_by(name: "Preferred Stock")
+      expect(preferred_share.company_investor).to eq(company_investor2)
+      expect(preferred_share.company_investor.user).to eq(user2)
+      expect(preferred_share.company_investor.company).to eq(company)
     end
 
     it "does not create share holdings if the company investor does not exist" do

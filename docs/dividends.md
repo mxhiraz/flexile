@@ -58,9 +58,7 @@ See example Google Sheet here: [Dividend Import Template](https://docs.google.co
 
 You can export this file as a CSV and use it directly with the service:
 
-```
-ngrok http https://flexile.dev
-```
+The CSV data can be directly copy-pasted into the service without needing external file hosting.
 
 Note: Make sure to Send Dividend-Issued Emails manually, see below.
 
