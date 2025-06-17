@@ -27,9 +27,15 @@ class ImportShareHoldings
     CSV.parse(@share_data_csv, headers: true).each do |row|
       next if row["Security"].blank? || row["Security"] == "Security"
 
+      share_class = ShareClass.find_by(name: row["Share Class"], company: gumroad_company!)
+      if share_class.nil?
+        @errors << { name: row["Security"], error_message: "Could not find share class: #{row["Share Class"]}" }
+        next
+      end
+
       attrs = {
         name: row["Security"],
-        share_class_id: ShareClass.find_by(name: row["Share Class"], company: gumroad_company!).id,
+        share_class_id: share_class.id,
         issued_at: row["Issue Date"],
         originally_acquired_at: row["Issue Date"],
         number_of_shares: row["Shares"].to_i,

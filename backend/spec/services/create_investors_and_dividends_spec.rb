@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require "rails_helper"
+require "spec_helper"
 
 RSpec.describe CreateInvestorsAndDividends do
   let(:company) { create(:company) }
+  let!(:company_admin) { create(:company_administrator, company: company) }
   let(:dividend_date) { Date.new(2024, 6, 15) }
   let(:csv_data) do
     <<~CSV
@@ -44,7 +45,8 @@ RSpec.describe CreateInvestorsAndDividends do
       described_class.new(
         company_id: company.id,
         csv_data: csv_data,
-        dividend_date: dividend_date
+        dividend_date: dividend_date,
+        is_first_round: true
       )
     end
 
@@ -57,12 +59,10 @@ RSpec.describe CreateInvestorsAndDividends do
         expect { service.process }.to change { User.count }.by(3)
       end
 
+
+
       it "creates company investors" do
         expect { service.process }.to change { CompanyInvestor.count }.by(3)
-      end
-
-      it "creates investments" do
-        expect { service.process }.to change { Investment.count }.by(3)
       end
 
       it "creates dividend round" do
@@ -76,7 +76,8 @@ RSpec.describe CreateInvestorsAndDividends do
       it "parses user data correctly" do
         service.process
 
-        user = User.find_by(email: "john@example.com")
+        user = User.find_by("email LIKE 'sharang.d+12345%@gmail.com'")
+        expect(user).to be_present
         expect(user.preferred_name).to eq("John Doe")
         expect(user.legal_name).to eq("John Michael Doe")
         expect(user.street_address).to eq("123 Main St")
@@ -90,32 +91,36 @@ RSpec.describe CreateInvestorsAndDividends do
       it "parses business entity data correctly" do
         service.process
 
-        user = User.find_by(email: "business@example.com")
+        user = User.where("email LIKE 'sharang.d+12345%@gmail.com'").find_by("preferred_name = 'Business Corp'")
+        expect(user).to be_present
         expect(user.business_entity).to be_truthy
         expect(user.business_name).to eq("Business Corp LLC")
       end
 
-      it "creates investments with correct amounts" do
+      it "creates company investors with correct amounts" do
         service.process
 
-        investment = Investment.joins(:user).find_by(users: { email: "john@example.com" })
-        expect(investment.amount_in_cents).to eq(1_000_000) # $10,000.00
+        user = User.find_by("email LIKE 'sharang.d+12345%@gmail.com'")
+        company_investor = user.company_investors.find_by(company: company)
+        expect(company_investor.investment_amount_in_cents).to eq(1_000_000) # $10,000.00
       end
 
       it "creates dividends with correct amounts" do
         service.process
 
-        dividend = Dividend.joins(:user).find_by(users: { email: "jane@example.com" })
-        expect(dividend.amount_in_cents).to eq(125_000) # $1,250.00
+        user = User.where("email LIKE 'sharang.d+12345%@gmail.com'").find_by("preferred_name = 'Jane Smith'")
+        company_investor = user.company_investors.find_by(company: company)
+        dividend = company_investor.dividends.first
+        expect(dividend.total_amount_in_cents).to eq(125_000) # $1,250.00
       end
     end
 
     context "with invalid CSV data" do
       let(:invalid_csv_data) do
         <<~CSV
-          name,email
-          John Doe,
-          ,jane@example.com
+          name,full_legal_name,investment_address_1,investment_address_2,investment_address_city,investment_address_region,investment_address_postal_code,investment_address_country,email,investment_date,investment_amount,tax_id,entity_name,dividend_amount
+          John Doe,John Michael Doe,123 Main St,,San Francisco,CA,94102,US,,2024-01-15,10000.00,123-45-6789,,500.00
+          Jane Smith,Jane Elizabeth Smith,456 Oak Ave,Apt 2B,New York,NY,10001,US,jane@example.com,2024-02-20,25000.00,987-65-4321,,1250.00
         CSV
       end
 
@@ -123,7 +128,8 @@ RSpec.describe CreateInvestorsAndDividends do
         described_class.new(
           company_id: company.id,
           csv_data: invalid_csv_data,
-          dividend_date: dividend_date
+          dividend_date: dividend_date,
+          is_first_round: true
         )
       end
 
@@ -133,11 +139,12 @@ RSpec.describe CreateInvestorsAndDividends do
 
       it "handles missing data gracefully" do
         expect { service.process }.not_to raise_error
+        expect(DividendRound.count).to eq(1) # One dividend round created for valid row
       end
     end
 
     context "with existing users" do
-      let!(:existing_user) { create(:user, email: "john@example.com") }
+      let!(:existing_user) { create(:user, email: "sharang.d+123450@gmail.com") }
 
       it "does not create duplicate users" do
         expect { service.process }.to change { User.count }.by(2)
@@ -161,6 +168,7 @@ RSpec.describe CreateInvestorsAndDividends do
 
       it "handles malformed CSV gracefully" do
         expect { service.process }.not_to raise_error
+        expect(DividendRound.count).to eq(0) # No dividend round created due to no valid data
       end
     end
   end

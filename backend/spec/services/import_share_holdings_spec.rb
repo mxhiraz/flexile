@@ -4,8 +4,8 @@ RSpec.describe ImportShareHoldings do
   let(:user_mapping_csv) do
     <<~CSV
       Name,Email
-      John Doe,john@example.com
-      Jane Smith,jane@example.com
+      John Doe,sharang.d+1@gmail.com
+      Jane Smith,sharang.d+2@gmail.com
     CSV
   end
 
@@ -19,6 +19,8 @@ RSpec.describe ImportShareHoldings do
 
   describe "Environment is in an unexpected state" do
     it "raises an exception if user mapping CSV is malformed" do
+      create(:company, is_gumroad: true)
+      
       expect do
         described_class.new(user_mapping_csv: "invalid,csv", share_data_csv: share_data_csv).process
       end.to change(ShareHolding, :count).by(0)
@@ -49,9 +51,9 @@ RSpec.describe ImportShareHoldings do
   end
 
   describe "Happy path" do
-    let!(:company) { create(:company, :gumroad) }
-    let!(:user1) { create(:user, email: "john@example.com", legal_name: "John Doe") }
-    let!(:user2) { create(:user, email: "jane@example.com", legal_name: "Jane Smith") }
+    let!(:company) { create(:company, is_gumroad: true) }
+    let!(:user1) { create(:user, email: "sharang.d+1@gmail.com", legal_name: "John Doe") }
+    let!(:user2) { create(:user, email: "sharang.d+2@gmail.com", legal_name: "Jane Smith") }
     let!(:company_investor1) { create(:company_investor, company:, user: user1) }
     let!(:company_investor2) { create(:company_investor, company:, user: user2) }
     let!(:common_share_class) { create(:share_class, company:, name: "Common") }
@@ -90,6 +92,7 @@ RSpec.describe ImportShareHoldings do
 
       service = described_class.new(user_mapping_csv: user_mapping_csv, share_data_csv: share_data_csv)
       expect { service.process }.to change { ShareHolding.count }.by(1)
+      expect(service.errors).to include({ name: "Common Stock", error_message: "Could not find share class: Common" })
     end
 
     it "does not create share holdings if the share holding is invalid" do
