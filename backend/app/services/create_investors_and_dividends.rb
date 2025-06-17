@@ -105,6 +105,11 @@ class CreateInvestorsAndDividends
     end
 
     def create_investments_and_dividends
+      return if @data.empty?
+      
+      total_amount = @data.sum { |_email, info| (info[:investment][:dividend_amount]&.to_d || 0) * 100 }.to_i
+      return if total_amount <= 0
+      
       puts "Creating Dividend round"
       dividend_round = company.dividend_rounds.create!(
         issued_at: Time.current,
@@ -112,7 +117,7 @@ class CreateInvestorsAndDividends
         number_of_shareholders: @data.keys.count,
         status: Dividend::ISSUED,
         return_of_capital: is_return_of_capital,
-        total_amount_in_cents: @data.sum { |_email, info| (info[:investment][:dividend_amount] * 100.to_d).to_i }
+        total_amount_in_cents: total_amount
       )
       puts "Created Dividend round #{dividend_round.id}: #{dividend_round.total_amount_in_cents} cents"
 
@@ -121,7 +126,7 @@ class CreateInvestorsAndDividends
         company_investor = user.company_investors.find_by!(company:)
         info[:investment].tap do |investment|
           puts "Creating dividend for #{email}"
-          dividend_cents = (investment[:dividend_amount] * 100.to_d).to_i
+          dividend_cents = ((investment[:dividend_amount]&.to_d || 0) * 100).to_i
           company_investor.dividends.create!(
             dividend_round:,
             company:,
