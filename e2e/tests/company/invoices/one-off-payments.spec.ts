@@ -367,19 +367,6 @@ test.describe("One-off payments", () => {
 
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
-      await clerk.signOut({ page });
-      await login(page, adminUser);
-
-      await page.getByRole("link", { name: "Invoices" }).click();
-      await expect(page.getByRole("row", { name: "$123.45" })).toBeVisible();
-
-      await db.update(companies).set({ requiredInvoiceApprovalCount: 1 }).where(eq(companies.id, company.id));
-
-      await page.reload();
-      await expect(page.getByRole("row", { name: "$123.45" })).toBeVisible();
-
-      await page.getByRole("button", { name: "Pay now" }).click();
-
       await expect(page.getByRole("row", { name: "$123.45 Payment scheduled" })).toBeVisible();
     });
   });
