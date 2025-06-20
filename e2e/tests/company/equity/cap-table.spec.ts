@@ -8,6 +8,7 @@ import { expect, test } from "@test/index";
 test.describe("Cap Table", () => {
   const setupCompany = async () => {
     const { company, adminUser } = await companiesFactory.createCompletedOnboarding({
+      capTableEnabled: true,
       jsonData: { flags: ["cap_table"] },
     });
     return { company, adminUser };
