@@ -116,25 +116,57 @@ export default function SupportPage() {
         const response = await fetch("/api/support");
         const result: unknown = await response.json();
 
-        if (result && typeof result === "object") {
-          const resultObj = result as Record<string, unknown>;
-          const tickets = resultObj.tickets;
+        if (result && typeof result === "object" && !Array.isArray(result)) {
+          const resultObj = result;
+          const tickets = "tickets" in resultObj ? resultObj.tickets : undefined;
 
           if (Array.isArray(tickets)) {
             setData(
               tickets.map((ticket: unknown) => {
-                if (ticket && typeof ticket === "object") {
-                  const ticketObj = ticket as Record<string, unknown>;
+                if (ticket && typeof ticket === "object" && !Array.isArray(ticket)) {
+                  const ticketObj = ticket;
+                  const getId = (obj: object): string => ("id" in obj && typeof obj.id === "string" ? obj.id : "");
+                  const getSubject = (obj: object): string =>
+                    "subject" in obj && typeof obj.subject === "string" ? obj.subject : "";
+                  const getStatus = (obj: object): "open" | "in_progress" | "resolved" | "closed" => {
+                    if ("status" in obj && typeof obj.status === "string") {
+                      const validStatuses = ["open", "in_progress", "resolved", "closed"] as const;
+                      const isValidStatus = (s: string): s is "open" | "in_progress" | "resolved" | "closed" =>
+                        validStatuses.some((status) => status === s);
+                      return isValidStatus(obj.status) ? obj.status : "open";
+                    }
+                    return "open";
+                  };
+                  const getPriority = (obj: object): "low" | "medium" | "high" | "urgent" => {
+                    if ("priority" in obj && typeof obj.priority === "string") {
+                      const validPriorities = ["low", "medium", "high", "urgent"] as const;
+                      const isValidPriority = (p: string): p is "low" | "medium" | "high" | "urgent" =>
+                        validPriorities.some((priority) => priority === p);
+                      return isValidPriority(obj.priority) ? obj.priority : "medium";
+                    }
+                    return "medium";
+                  };
+                  const getEmailFrom = (obj: object): string =>
+                    "emailFrom" in obj && typeof obj.emailFrom === "string" ? obj.emailFrom : "";
+                  const getCreatedAt = (obj: object): Date =>
+                    "createdAt" in obj && typeof obj.createdAt === "string" ? new Date(obj.createdAt) : new Date();
+                  const getUpdatedAt = (obj: object): Date =>
+                    "updatedAt" in obj && typeof obj.updatedAt === "string" ? new Date(obj.updatedAt) : new Date();
+                  const getLastMessage = (obj: object): string =>
+                    "lastMessage" in obj && typeof obj.lastMessage === "string" ? obj.lastMessage : "";
+                  const getMessageCount = (obj: object): number =>
+                    "messageCount" in obj && typeof obj.messageCount === "number" ? obj.messageCount : 0;
+
                   return {
-                    id: String(ticketObj.id ?? ""),
-                    subject: String(ticketObj.subject ?? ""),
-                    status: String(ticketObj.status ?? "open") as "open" | "in_progress" | "resolved" | "closed",
-                    priority: String(ticketObj.priority ?? "medium") as "low" | "medium" | "high" | "urgent",
-                    emailFrom: String(ticketObj.emailFrom ?? ""),
-                    createdAt: new Date(String(ticketObj.createdAt ?? "")),
-                    updatedAt: new Date(String(ticketObj.updatedAt ?? "")),
-                    lastMessage: String(ticketObj.lastMessage ?? ""),
-                    messageCount: Number(ticketObj.messageCount ?? 0),
+                    id: getId(ticketObj),
+                    subject: getSubject(ticketObj),
+                    status: getStatus(ticketObj),
+                    priority: getPriority(ticketObj),
+                    emailFrom: getEmailFrom(ticketObj),
+                    createdAt: getCreatedAt(ticketObj),
+                    updatedAt: getUpdatedAt(ticketObj),
+                    lastMessage: getLastMessage(ticketObj),
+                    messageCount: getMessageCount(ticketObj),
                   };
                 }
                 return {

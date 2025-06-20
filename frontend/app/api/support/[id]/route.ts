@@ -4,12 +4,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   try {
     const body: unknown = await req.json();
 
-    if (!body || typeof body !== "object") {
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const requestBody = body as Record<string, unknown>;
-    const message = requestBody.message;
+    const requestBody = body;
+    const message = "message" in requestBody ? requestBody.message : undefined;
     const ticketId = params.id;
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {

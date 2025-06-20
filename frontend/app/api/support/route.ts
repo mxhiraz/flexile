@@ -86,10 +86,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const requestBody = body as Record<string, unknown>;
-    const subject = requestBody.subject;
-    const message = requestBody.message;
-    const priority = requestBody.priority ?? "medium";
+    const requestBody = body;
+    const subject = "subject" in requestBody ? requestBody.subject : undefined;
+    const message = "message" in requestBody ? requestBody.message : undefined;
+    const priority = "priority" in requestBody ? requestBody.priority : "medium";
 
     if (!subject || typeof subject !== "string" || subject.trim().length === 0) {
       return NextResponse.json({ error: "Subject is required" }, { status: 400 });
@@ -99,14 +99,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    if (priority && typeof priority !== "string") {
+    if (priority !== "medium" && priority && typeof priority !== "string") {
       return NextResponse.json({ error: "Priority must be a string" }, { status: 400 });
     }
 
-    const validPriorities: readonly string[] = ["low", "medium", "high", "urgent"];
-    const ticketPriority = validPriorities.includes(String(priority))
-      ? (String(priority) as "low" | "medium" | "high" | "urgent")
-      : "medium";
+    const validPriorities = ["low", "medium", "high", "urgent"] as const;
+    const priorityStr = typeof priority === "string" ? priority : "medium";
+    const isValidPriority = (p: string): p is "low" | "medium" | "high" | "urgent" =>
+      validPriorities.some((priority) => priority === p);
+    const ticketPriority: "low" | "medium" | "high" | "urgent" = isValidPriority(priorityStr) ? priorityStr : "medium";
 
     const newTicket: SupportTicket = {
       id: (placeholderTickets.length + 1).toString(),
