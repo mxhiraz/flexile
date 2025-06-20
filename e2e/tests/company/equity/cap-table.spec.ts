@@ -75,7 +75,7 @@ test.describe("Cap Table", () => {
     });
 
     const { user: preferredInvestorUser } = await usersFactory.create({
-      legalName: `Preferred Investor ${Date.now()}`, 
+      legalName: `Preferred Investor ${Date.now()}`,
       preferredName: `Preferred Investor ${Date.now()}`,
     });
 
