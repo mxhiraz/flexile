@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body: unknown = await req.json();
 
@@ -10,7 +10,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const requestBody = body;
     const message = "message" in requestBody ? requestBody.message : undefined;
-    const ticketId = params.id;
+    const resolvedParams = await params;
+    const ticketId = resolvedParams.id;
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
