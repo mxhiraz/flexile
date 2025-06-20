@@ -296,16 +296,16 @@ export const invoicesRouter = createRouter({
         .where(eq(invoices.id, invoice.id));
 
       if (invoice.createdById !== invoice.userId) {
-        await db.insert(invoiceApprovals).values({
-          invoiceId: invoice.id,
-          approverId: invoice.createdById,
-          approvedAt: new Date(),
-        }).onConflictDoNothing();
-
         await db
-          .update(invoices)
-          .set({ status: "approved" })
-          .where(eq(invoices.id, invoice.id));
+          .insert(invoiceApprovals)
+          .values({
+            invoiceId: invoice.id,
+            approverId: invoice.createdById,
+            approvedAt: new Date(),
+          })
+          .onConflictDoNothing();
+
+        await db.update(invoices).set({ status: "approved" }).where(eq(invoices.id, invoice.id));
       }
     }),
 
