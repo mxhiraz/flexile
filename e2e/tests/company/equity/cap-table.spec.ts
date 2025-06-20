@@ -1,30 +1,24 @@
-import { db } from "@test/db";
 import { companiesFactory } from "@test/factories/companies";
-import { companyAdministratorsFactory } from "@test/factories/companyAdministrators";
 import { companyInvestorsFactory } from "@test/factories/companyInvestors";
 import { shareClassesFactory } from "@test/factories/shareClasses";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
-import { eq } from "drizzle-orm";
-import { users } from "@/db/schema";
-import { assert } from "@/utils/assert";
 
 test.describe("Cap Table", () => {
   const setupCompany = async () => {
-    const { company } = await companiesFactory.create();
-    const { administrator } = await companyAdministratorsFactory.create({ companyId: company.id });
-    const user = await db.query.users.findFirst({ where: eq(users.id, administrator.userId) });
-    assert(user !== undefined);
-    return { company, user };
+    const { company, adminUser } = await companiesFactory.createCompletedOnboarding({
+      capTableEnabled: true,
+    });
+    return { company, adminUser };
   };
 
   test("allows searching investors by name", async ({ page }) => {
-    const { company, user: adminUser } = await setupCompany();
+    const { company, adminUser } = await setupCompany();
 
     const { user: investorUser } = await usersFactory.create({
-      legalName: "SearchTest Investor",
-      preferredName: "SearchTest Investor",
+      legalName: `SearchTest Investor ${Date.now()}`,
+      preferredName: `SearchTest Investor ${Date.now()}`,
     });
 
     await companyInvestorsFactory.create({
@@ -34,8 +28,8 @@ test.describe("Cap Table", () => {
     });
 
     const { user: otherInvestorUser } = await usersFactory.create({
-      legalName: "Other Investor",
-      preferredName: "Other Investor",
+      legalName: `Other Investor ${Date.now()}`,
+      preferredName: `Other Investor ${Date.now()}`,
     });
 
     await companyInvestorsFactory.create({
@@ -63,7 +57,7 @@ test.describe("Cap Table", () => {
   });
 
   test("allows filtering by share class", async ({ page }) => {
-    const { company, user: adminUser } = await setupCompany();
+    const { company, adminUser } = await setupCompany();
 
     await shareClassesFactory.create({
       companyId: company.id,
@@ -76,13 +70,13 @@ test.describe("Cap Table", () => {
     });
 
     const { user: commonInvestorUser } = await usersFactory.create({
-      legalName: "Common Investor",
-      preferredName: "Common Investor",
+      legalName: `Common Investor ${Date.now()}`,
+      preferredName: `Common Investor ${Date.now()}`,
     });
 
     const { user: preferredInvestorUser } = await usersFactory.create({
-      legalName: "Preferred Investor",
-      preferredName: "Preferred Investor",
+      legalName: `Preferred Investor ${Date.now()}`, 
+      preferredName: `Preferred Investor ${Date.now()}`,
     });
 
     await companyInvestorsFactory.create({
@@ -113,11 +107,11 @@ test.describe("Cap Table", () => {
   });
 
   test("displays cap table with correct structure", async ({ page }) => {
-    const { company, user: adminUser } = await setupCompany();
+    const { company, adminUser } = await setupCompany();
 
     const { user: investorUser } = await usersFactory.create({
-      legalName: "Test Investor",
-      preferredName: "Test Investor",
+      legalName: `Test Investor ${Date.now()}`,
+      preferredName: `Test Investor ${Date.now()}`,
     });
 
     await companyInvestorsFactory.create({
@@ -145,12 +139,12 @@ test.describe("Cap Table", () => {
   });
 
   test("allows selecting investors for contact functionality", async ({ page }) => {
-    const { company, user: adminUser } = await setupCompany();
+    const { company, adminUser } = await setupCompany();
 
     const { user: investorUser } = await usersFactory.create({
-      legalName: "Selectable Investor",
-      preferredName: "Selectable Investor",
-      email: "investor@test.com",
+      legalName: `Selectable Investor ${Date.now()}`,
+      preferredName: `Selectable Investor ${Date.now()}`,
+      email: `investor-${Date.now()}@test.com`,
     });
 
     await companyInvestorsFactory.create({
