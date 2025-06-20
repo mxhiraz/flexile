@@ -24,9 +24,9 @@ test.describe("Cap Table", () => {
 
     const { user: investorUser } = await usersFactory.create({
       legalName: "SearchTest Investor",
-      preferredName: "SearchTest Investor"
+      preferredName: "SearchTest Investor",
     });
-    
+
     await companyInvestorsFactory.create({
       companyId: company.id,
       userId: investorUser.id,
@@ -35,9 +35,9 @@ test.describe("Cap Table", () => {
 
     const { user: otherInvestorUser } = await usersFactory.create({
       legalName: "Other Investor",
-      preferredName: "Other Investor"
+      preferredName: "Other Investor",
     });
-    
+
     await companyInvestorsFactory.create({
       companyId: company.id,
       userId: otherInvestorUser.id,
@@ -54,7 +54,7 @@ test.describe("Cap Table", () => {
     await searchInput.fill("SearchTest");
 
     await expect(page.getByRole("row").filter({ hasText: "SearchTest Investor" })).toBeVisible();
-    
+
     await expect(page.getByRole("row").filter({ hasText: "Other Investor" })).not.toBeVisible();
 
     await searchInput.clear();
@@ -67,24 +67,24 @@ test.describe("Cap Table", () => {
 
     await shareClassesFactory.create({
       companyId: company.id,
-      name: "Common"
+      name: "Common",
     });
-    
+
     await shareClassesFactory.create({
       companyId: company.id,
-      name: "Preferred"
+      name: "Preferred",
     });
 
     const { user: commonInvestorUser } = await usersFactory.create({
       legalName: "Common Investor",
-      preferredName: "Common Investor"
+      preferredName: "Common Investor",
     });
-    
+
     const { user: preferredInvestorUser } = await usersFactory.create({
-      legalName: "Preferred Investor", 
-      preferredName: "Preferred Investor"
+      legalName: "Preferred Investor",
+      preferredName: "Preferred Investor",
     });
-    
+
     await companyInvestorsFactory.create({
       companyId: company.id,
       userId: commonInvestorUser.id,
@@ -103,12 +103,12 @@ test.describe("Cap Table", () => {
 
     const filterButton = page.getByRole("button").filter({ hasText: "Name" });
     await expect(filterButton).toBeVisible();
-    
+
     await filterButton.click();
-    
+
     await expect(page.getByText("Common")).toBeVisible();
     await expect(page.getByText("Preferred")).toBeVisible();
-    
+
     await page.getByText("Common").click();
   });
 
@@ -117,9 +117,9 @@ test.describe("Cap Table", () => {
 
     const { user: investorUser } = await usersFactory.create({
       legalName: "Test Investor",
-      preferredName: "Test Investor"
+      preferredName: "Test Investor",
     });
-    
+
     await companyInvestorsFactory.create({
       companyId: company.id,
       userId: investorUser.id,
@@ -136,7 +136,7 @@ test.describe("Cap Table", () => {
 
     const table = page.getByRole("table");
     await expect(table).toBeVisible();
-    
+
     await expect(page.getByText("Investors").first()).not.toBeVisible();
 
     await expect(page.getByRole("row").filter({ hasText: "Test Investor" })).toBeVisible();
@@ -150,9 +150,9 @@ test.describe("Cap Table", () => {
     const { user: investorUser } = await usersFactory.create({
       legalName: "Selectable Investor",
       preferredName: "Selectable Investor",
-      email: "investor@test.com"
+      email: "investor@test.com",
     });
-    
+
     await companyInvestorsFactory.create({
       companyId: company.id,
       userId: investorUser.id,
