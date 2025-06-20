@@ -37,6 +37,7 @@ const getNextAdminInvoiceNumber = async (companyId: bigint, userId: bigint) => {
   });
   if (!lastAdminInvoice) return INITIAL_ADMIN_INVOICE_NUMBER;
 
+  // eslint-disable-next-line require-unicode-regexp
   const digits = lastAdminInvoice.invoiceNumber.match(/\d+/g)?.at(-1); // may include leading zeros
   if (!digits || parseInt(digits, 10) === 0) return INITIAL_ADMIN_INVOICE_NUMBER;
 
@@ -214,11 +215,13 @@ export const invoicesRouter = createRouter({
         approverId: ctx.user.id,
         approvedAt: new Date(),
       }).onConflictDoNothing();
+      console.log('Auto-approval record created for invoice:', invoice.id);
 
       await tx
         .update(invoices)
         .set({ status: "approved" })
         .where(eq(invoices.id, invoice.id));
+      console.log('Invoice status set to approved:', invoice.id);
 
       return { invoice, paymentDescriptions: lineItems.map((item) => item.description) };
     });
