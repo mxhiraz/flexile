@@ -166,30 +166,39 @@ function InvoicesContent() {
   const selectedApprovableInvoices = selectedInvoices.filter(isActionable);
   const selectedPayableInvoices = selectedApprovableInvoices.filter(isPayable);
 
-  const workerNotice = !user.roles.worker ? null : !hasLegalDetails ? (
-    <>
-      Please{" "}
-      <Link className={linkClasses} href="/settings/tax">
-        provide your legal details
-      </Link>{" "}
-      before creating new invoices.
-    </>
-  ) : unsignedContractId ? (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div>You have an unsigned contract. Please sign it before creating new invoices.</div>
-      <Button asChild variant="outline" size="small">
-        <Link href="/documents">Review & sign</Link>
-      </Button>
-    </div>
-  ) : !user.hasPayoutMethod ? (
-    <>
-      Please{" "}
-      <Link className={linkClasses} href="/settings/payouts">
-        provide a payout method
-      </Link>{" "}
-      for your invoices.
-    </>
-  ) : null;
+  let workerNotice = null;
+  if (user.roles.worker) {
+    if (!hasLegalDetails) {
+      workerNotice = (
+        <>
+          Please{" "}
+          <Link className={linkClasses} href="/settings/tax">
+            provide your legal details
+          </Link>{" "}
+          before creating new invoices.
+        </>
+      );
+    } else if (unsignedContractId) {
+      workerNotice = (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>You have an unsigned contract. Please sign it before creating new invoices.</div>
+          <Button asChild variant="outline" size="small">
+            <Link href="/documents">Review & sign</Link>
+          </Button>
+        </div>
+      );
+    } else if (!user.hasPayoutMethod) {
+      workerNotice = (
+        <>
+          Please{" "}
+          <Link className={linkClasses} href="/settings/payouts">
+            provide a payout method
+          </Link>{" "}
+          for your invoices.
+        </>
+      );
+    }
+  }
 
   return (
     <MainLayout
