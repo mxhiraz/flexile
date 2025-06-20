@@ -1,6 +1,6 @@
 "use client";
 import { CircleCheck } from "lucide-react";
-import { getFilteredRowModel } from "@tanstack/react-table";
+import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
 import React, { useMemo } from "react";
 import CopyButton from "@/components/CopyButton";
@@ -121,6 +121,8 @@ export default function CapTable() {
     columns: investorsColumns,
     enableRowSelection: canViewInvestor ? (row) => isInvestor(row.original) : false,
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    enableGlobalFilter: true,
   });
 
   const selectedInvestors = investorsTable.getSelectedRowModel().rows.map((row) => row.original);
