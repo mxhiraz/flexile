@@ -8,7 +8,7 @@ import { expect, test } from "@test/index";
 test.describe("Cap Table", () => {
   const setupCompany = async () => {
     const { company, adminUser } = await companiesFactory.createCompletedOnboarding({
-      capTableEnabled: true,
+      jsonData: { flags: ["cap_table"] },
     });
     return { company, adminUser };
   };
@@ -16,9 +16,11 @@ test.describe("Cap Table", () => {
   test("allows searching investors by name", async ({ page }) => {
     const { company, adminUser } = await setupCompany();
 
+    const timestamp = Date.now();
     const { user: investorUser } = await usersFactory.create({
-      legalName: `SearchTest Investor ${Date.now()}`,
-      preferredName: `SearchTest Investor ${Date.now()}`,
+      legalName: `SearchTest Investor ${timestamp}`,
+      preferredName: `SearchTest Investor ${timestamp}`,
+      email: `search-investor-${timestamp}@test.com`,
     });
 
     await companyInvestorsFactory.create({
@@ -27,9 +29,11 @@ test.describe("Cap Table", () => {
       investmentAmountInCents: BigInt(100000),
     });
 
+    const otherTimestamp = Date.now() + 1;
     const { user: otherInvestorUser } = await usersFactory.create({
-      legalName: `Other Investor ${Date.now()}`,
-      preferredName: `Other Investor ${Date.now()}`,
+      legalName: `Other Investor ${otherTimestamp}`,
+      preferredName: `Other Investor ${otherTimestamp}`,
+      email: `other-investor-${otherTimestamp}@test.com`,
     });
 
     await companyInvestorsFactory.create({
@@ -69,14 +73,18 @@ test.describe("Cap Table", () => {
       name: "Preferred",
     });
 
+    const commonTimestamp = Date.now();
     const { user: commonInvestorUser } = await usersFactory.create({
-      legalName: `Common Investor ${Date.now()}`,
-      preferredName: `Common Investor ${Date.now()}`,
+      legalName: `Common Investor ${commonTimestamp}`,
+      preferredName: `Common Investor ${commonTimestamp}`,
+      email: `common-investor-${commonTimestamp}@test.com`,
     });
 
+    const preferredTimestamp = Date.now() + 1;
     const { user: preferredInvestorUser } = await usersFactory.create({
-      legalName: `Preferred Investor ${Date.now()}`,
-      preferredName: `Preferred Investor ${Date.now()}`,
+      legalName: `Preferred Investor ${preferredTimestamp}`, 
+      preferredName: `Preferred Investor ${preferredTimestamp}`,
+      email: `preferred-investor-${preferredTimestamp}@test.com`,
     });
 
     await companyInvestorsFactory.create({
@@ -109,9 +117,11 @@ test.describe("Cap Table", () => {
   test("displays cap table with correct structure", async ({ page }) => {
     const { company, adminUser } = await setupCompany();
 
+    const timestamp = Date.now();
     const { user: investorUser } = await usersFactory.create({
-      legalName: `Test Investor ${Date.now()}`,
-      preferredName: `Test Investor ${Date.now()}`,
+      legalName: `Test Investor ${timestamp}`,
+      preferredName: `Test Investor ${timestamp}`,
+      email: `test-investor-${timestamp}@test.com`,
     });
 
     await companyInvestorsFactory.create({
@@ -141,10 +151,11 @@ test.describe("Cap Table", () => {
   test("allows selecting investors for contact functionality", async ({ page }) => {
     const { company, adminUser } = await setupCompany();
 
+    const timestamp = Date.now();
     const { user: investorUser } = await usersFactory.create({
-      legalName: `Selectable Investor ${Date.now()}`,
-      preferredName: `Selectable Investor ${Date.now()}`,
-      email: `investor-${Date.now()}@test.com`,
+      legalName: `Selectable Investor ${timestamp}`,
+      preferredName: `Selectable Investor ${timestamp}`,
+      email: `selectable-investor-${timestamp}@test.com`,
     });
 
     await companyInvestorsFactory.create({
