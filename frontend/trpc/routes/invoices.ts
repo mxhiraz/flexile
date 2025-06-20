@@ -210,16 +210,16 @@ export const invoicesRouter = createRouter({
         })
         .returning();
 
-      await tx.insert(invoiceApprovals).values({
-        invoiceId: invoice.id,
-        approverId: ctx.user.id,
-        approvedAt: new Date(),
-      }).onConflictDoNothing();
-
       await tx
-        .update(invoices)
-        .set({ status: "approved" })
-        .where(eq(invoices.id, invoice.id));
+        .insert(invoiceApprovals)
+        .values({
+          invoiceId: invoice.id,
+          approverId: ctx.user.id,
+          approvedAt: new Date(),
+        })
+        .onConflictDoNothing();
+
+      await tx.update(invoices).set({ status: "approved" }).where(eq(invoices.id, invoice.id));
 
       return { invoice, paymentDescriptions: lineItems.map((item) => item.description) };
     });
