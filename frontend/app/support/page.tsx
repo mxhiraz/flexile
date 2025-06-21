@@ -2,11 +2,15 @@
 
 import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
-import Link from "next/link";
 import React, { useMemo, useState, useEffect } from "react";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import MainLayout from "@/components/layouts/Main";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
 import Placeholder from "@/components/Placeholder";
 import { formatDate } from "@/utils/time";
 
@@ -106,91 +110,204 @@ const StatusIcon = ({ status }: { status: SupportTicket["status"] }) => {
   }
 };
 
+const NewTicketModal = ({
+  open,
+  onClose,
+  onSuccess,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) => {
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [priority, setPriority] = useState<"low" | "medium" | "high" | "urgent">("medium");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!subject.trim() || !message.trim()) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/support", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject: subject.trim(),
+          message: message.trim(),
+          priority,
+        }),
+      });
+
+      if (response.ok) {
+        setSubject("");
+        setMessage("");
+        setPriority("medium");
+        onClose();
+        onSuccess();
+      }
+    } catch (_error) {
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>New support ticket</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={(e) => void handleSubmit(e)} className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="subject">Subject</Label>
+            <Input
+              id="subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Brief description of your issue"
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="priority">Priority</Label>
+            <select
+              id="priority"
+              value={priority}
+              onChange={(e) => {
+                const value = e.target.value;
+                const validPriorities = ["low", "medium", "high", "urgent"] as const;
+                const isValidPriority = (p: string): p is "low" | "medium" | "high" | "urgent" =>
+                  validPriorities.some((priority) => priority === p);
+                if (isValidPriority(value)) {
+                  setPriority(value);
+                }
+              }}
+              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="message">Message</Label>
+            <Textarea
+              id="message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Describe your issue in detail"
+              rows={4}
+              required
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting || !subject.trim() || !message.trim()}>
+              {submitting ? "Creating..." : "Create ticket"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function SupportPage() {
   const [data, setData] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+
+  const fetchTickets = async () => {
+    try {
+      const response = await fetch("/api/support");
+      const result: unknown = await response.json();
+
+      if (result && typeof result === "object" && !Array.isArray(result)) {
+        const resultObj = result;
+        const tickets = "tickets" in resultObj ? resultObj.tickets : undefined;
+
+        if (Array.isArray(tickets)) {
+          setData(
+            tickets.map((ticket: unknown) => {
+              if (ticket && typeof ticket === "object" && !Array.isArray(ticket)) {
+                const ticketObj = ticket;
+                const getId = (obj: object): string => ("id" in obj && typeof obj.id === "string" ? obj.id : "");
+                const getSubject = (obj: object): string =>
+                  "subject" in obj && typeof obj.subject === "string" ? obj.subject : "";
+                const getStatus = (obj: object): "open" | "in_progress" | "resolved" | "closed" => {
+                  if ("status" in obj && typeof obj.status === "string") {
+                    const validStatuses = ["open", "in_progress", "resolved", "closed"] as const;
+                    const isValidStatus = (s: string): s is "open" | "in_progress" | "resolved" | "closed" =>
+                      validStatuses.some((status) => status === s);
+                    return isValidStatus(obj.status) ? obj.status : "open";
+                  }
+                  return "open";
+                };
+                const getPriority = (obj: object): "low" | "medium" | "high" | "urgent" => {
+                  if ("priority" in obj && typeof obj.priority === "string") {
+                    const validPriorities = ["low", "medium", "high", "urgent"] as const;
+                    const isValidPriority = (p: string): p is "low" | "medium" | "high" | "urgent" =>
+                      validPriorities.some((priority) => priority === p);
+                    return isValidPriority(obj.priority) ? obj.priority : "medium";
+                  }
+                  return "medium";
+                };
+                const getEmailFrom = (obj: object): string =>
+                  "emailFrom" in obj && typeof obj.emailFrom === "string" ? obj.emailFrom : "";
+                const getCreatedAt = (obj: object): Date =>
+                  "createdAt" in obj && typeof obj.createdAt === "string" ? new Date(obj.createdAt) : new Date();
+                const getUpdatedAt = (obj: object): Date =>
+                  "updatedAt" in obj && typeof obj.updatedAt === "string" ? new Date(obj.updatedAt) : new Date();
+                const getLastMessage = (obj: object): string =>
+                  "lastMessage" in obj && typeof obj.lastMessage === "string" ? obj.lastMessage : "";
+                const getMessageCount = (obj: object): number =>
+                  "messageCount" in obj && typeof obj.messageCount === "number" ? obj.messageCount : 0;
+
+                return {
+                  id: getId(ticketObj),
+                  subject: getSubject(ticketObj),
+                  status: getStatus(ticketObj),
+                  priority: getPriority(ticketObj),
+                  emailFrom: getEmailFrom(ticketObj),
+                  createdAt: getCreatedAt(ticketObj),
+                  updatedAt: getUpdatedAt(ticketObj),
+                  lastMessage: getLastMessage(ticketObj),
+                  messageCount: getMessageCount(ticketObj),
+                };
+              }
+              return {
+                id: "",
+                subject: "",
+                status: "open" as const,
+                priority: "medium" as const,
+                emailFrom: "",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                lastMessage: "",
+                messageCount: 0,
+              };
+            }),
+          );
+        }
+      }
+    } catch (_error) {
+      setData(placeholderTickets);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const response = await fetch("/api/support");
-        const result: unknown = await response.json();
-
-        if (result && typeof result === "object" && !Array.isArray(result)) {
-          const resultObj = result;
-          const tickets = "tickets" in resultObj ? resultObj.tickets : undefined;
-
-          if (Array.isArray(tickets)) {
-            setData(
-              tickets.map((ticket: unknown) => {
-                if (ticket && typeof ticket === "object" && !Array.isArray(ticket)) {
-                  const ticketObj = ticket;
-                  const getId = (obj: object): string => ("id" in obj && typeof obj.id === "string" ? obj.id : "");
-                  const getSubject = (obj: object): string =>
-                    "subject" in obj && typeof obj.subject === "string" ? obj.subject : "";
-                  const getStatus = (obj: object): "open" | "in_progress" | "resolved" | "closed" => {
-                    if ("status" in obj && typeof obj.status === "string") {
-                      const validStatuses = ["open", "in_progress", "resolved", "closed"] as const;
-                      const isValidStatus = (s: string): s is "open" | "in_progress" | "resolved" | "closed" =>
-                        validStatuses.some((status) => status === s);
-                      return isValidStatus(obj.status) ? obj.status : "open";
-                    }
-                    return "open";
-                  };
-                  const getPriority = (obj: object): "low" | "medium" | "high" | "urgent" => {
-                    if ("priority" in obj && typeof obj.priority === "string") {
-                      const validPriorities = ["low", "medium", "high", "urgent"] as const;
-                      const isValidPriority = (p: string): p is "low" | "medium" | "high" | "urgent" =>
-                        validPriorities.some((priority) => priority === p);
-                      return isValidPriority(obj.priority) ? obj.priority : "medium";
-                    }
-                    return "medium";
-                  };
-                  const getEmailFrom = (obj: object): string =>
-                    "emailFrom" in obj && typeof obj.emailFrom === "string" ? obj.emailFrom : "";
-                  const getCreatedAt = (obj: object): Date =>
-                    "createdAt" in obj && typeof obj.createdAt === "string" ? new Date(obj.createdAt) : new Date();
-                  const getUpdatedAt = (obj: object): Date =>
-                    "updatedAt" in obj && typeof obj.updatedAt === "string" ? new Date(obj.updatedAt) : new Date();
-                  const getLastMessage = (obj: object): string =>
-                    "lastMessage" in obj && typeof obj.lastMessage === "string" ? obj.lastMessage : "";
-                  const getMessageCount = (obj: object): number =>
-                    "messageCount" in obj && typeof obj.messageCount === "number" ? obj.messageCount : 0;
-
-                  return {
-                    id: getId(ticketObj),
-                    subject: getSubject(ticketObj),
-                    status: getStatus(ticketObj),
-                    priority: getPriority(ticketObj),
-                    emailFrom: getEmailFrom(ticketObj),
-                    createdAt: getCreatedAt(ticketObj),
-                    updatedAt: getUpdatedAt(ticketObj),
-                    lastMessage: getLastMessage(ticketObj),
-                    messageCount: getMessageCount(ticketObj),
-                  };
-                }
-                return {
-                  id: "",
-                  subject: "",
-                  status: "open" as const,
-                  priority: "medium" as const,
-                  emailFrom: "",
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  lastMessage: "",
-                  messageCount: 0,
-                };
-              }),
-            );
-          }
-        }
-      } catch (_error) {
-        setData(placeholderTickets);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     void fetchTickets();
   }, []);
 
@@ -262,15 +379,17 @@ export default function SupportPage() {
     enableGlobalFilter: true,
   });
 
+  const handleTicketCreated = () => {
+    void fetchTickets();
+  };
+
   return (
     <MainLayout
       title="Support"
       headerActions={
-        <Button asChild variant="outline" size="small">
-          <Link href="/support/new">
-            <Plus className="size-4" />
-            New ticket
-          </Link>
+        <Button variant="outline" size="small" onClick={() => setShowNewTicketModal(true)}>
+          <Plus className="size-4" />
+          New ticket
         </Button>
       }
     >
@@ -283,6 +402,11 @@ export default function SupportPage() {
           <Placeholder icon={MessageSquare}>No support tickets to display.</Placeholder>
         )}
       </div>
+      <NewTicketModal
+        open={showNewTicketModal}
+        onClose={() => setShowNewTicketModal(false)}
+        onSuccess={handleTicketCreated}
+      />
     </MainLayout>
   );
 }
