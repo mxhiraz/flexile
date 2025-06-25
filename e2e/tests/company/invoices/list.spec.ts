@@ -338,7 +338,7 @@ test.describe("Invoices admin flow", () => {
       await login(page, user);
       
       await expect(page.locator("tbody tr")).toHaveCount(4);
-      await expect(page.getByText("Awaiting approval")).toBeVisible();
+      await expect(page.getByText("Awaiting approval").first()).toBeVisible();
       await expect(page.getByText("Payment scheduled")).toBeVisible();
       await expect(page.getByText("Rejected")).toBeVisible();
       
@@ -386,7 +386,7 @@ test.describe("Invoices admin flow", () => {
       
       const storedFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter");
-        return stored ? JSON.parse(stored) : null;
+        return stored ? JSON.parse(stored) as { status: string[] } : null;
       });
       expect(storedFilter).toEqual({ status: [] });
       
@@ -399,9 +399,9 @@ test.describe("Invoices admin flow", () => {
       
       const newStoredFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter");
-        return stored ? JSON.parse(stored) : null;
+        return stored ? JSON.parse(stored) as { status: string[] } : null;
       });
-      expect(newStoredFilter.status).toEqual(["received", "approved", "payment_pending", "rejected"]);
+      expect(newStoredFilter?.status).toEqual(["received", "approved", "payment_pending", "rejected"]);
       
       await page.reload();
       await expect(page.locator("tbody tr")).toHaveCount(1);
@@ -409,14 +409,14 @@ test.describe("Invoices admin flow", () => {
     });
 
     test("toggle button only visible for administrators", async ({ page }) => {
-      const { company } = await setupCompany();
+      const { company: contractorCompany } = await companiesFactory.create();
       const contractorUser = (await usersFactory.create()).user;
       await companyContractorsFactory.create({
-        companyId: company.id,
+        companyId: contractorCompany.id,
         userId: contractorUser.id,
       });
       
-      await invoicesFactory.create({ companyId: company.id, userId: contractorUser.id });
+      await invoicesFactory.create({ companyId: contractorCompany.id, userId: contractorUser.id });
       
       await login(page, contractorUser);
       
