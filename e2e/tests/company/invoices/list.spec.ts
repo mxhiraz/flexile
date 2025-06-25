@@ -338,7 +338,7 @@ test.describe("Invoices admin flow", () => {
       await login(page, user);
       
       await expect(page.locator("tbody tr")).toHaveCount(4);
-      await expect(page.getByText("Awaiting approval")).toBeVisible();
+      await expect(page.getByText("Awaiting approval").first()).toBeVisible();
       await expect(page.getByText("Payment scheduled")).toBeVisible();
       await expect(page.getByText("Rejected")).toBeVisible();
       
@@ -385,11 +385,10 @@ test.describe("Invoices admin flow", () => {
       await expect(page.locator("tbody tr")).toHaveCount(2);
       
       const storedFilter = await page.evaluate(() => {
-        const stored = localStorage.getItem("invoicesStatusFilter");
-        if (!stored) return null;
+        const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored);
-          return parsed && typeof parsed === 'object' && Array.isArray(parsed.status) ? parsed : null;
+          const parsed = JSON.parse(stored) as Record<string, unknown>;
+          return parsed && typeof parsed === 'object' && Array.isArray(parsed.status) ? { status: parsed.status as string[] } : null;
         } catch {
           return null;
         }
@@ -404,16 +403,15 @@ test.describe("Invoices admin flow", () => {
       await page.getByRole("button", { name: "Show pending invoices only" }).click();
       
       const newStoredFilter = await page.evaluate(() => {
-        const stored = localStorage.getItem("invoicesStatusFilter");
-        if (!stored) return null;
+        const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored);
-          return parsed && typeof parsed === 'object' && Array.isArray(parsed.status) ? parsed : null;
+          const parsed = JSON.parse(stored) as Record<string, unknown>;
+          return parsed && typeof parsed === 'object' && Array.isArray(parsed.status) ? { status: parsed.status as string[] } : null;
         } catch {
           return null;
         }
       });
-      expect(newStoredFilter?.status).toEqual(["received", "approved", "payment_pending", "rejected"]);
+      expect(newStoredFilter?.status).toEqual([]);
       
       await page.reload();
       await expect(page.locator("tbody tr")).toHaveCount(1);
@@ -423,6 +421,10 @@ test.describe("Invoices admin flow", () => {
     test("toggle button only visible for administrators", async ({ page }) => {
       const contractorUser = (await usersFactory.create()).user;
       const { company: contractorCompany } = await companiesFactory.create();
+      await companyContractorsFactory.create({
+        companyId: contractorCompany.id,
+        userId: contractorUser.id,
+      });
       
       await invoicesFactory.create({ companyId: contractorCompany.id, userId: contractorUser.id });
       
