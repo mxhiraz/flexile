@@ -72,7 +72,12 @@ export default function InvoicesPage() {
   const isActionable = useIsActionable();
   const isPayable = useIsPayable();
 
-  const getDefaultStatusFilter = (): (typeof invoiceStatuses)[number][] => ["received", "approved", "payment_pending"];
+  const getDefaultStatusFilter = (): (typeof invoiceStatuses)[number][] => [
+    "received",
+    "approved",
+    "payment_pending",
+    "rejected",
+  ];
 
   const getStoredStatusFilter = () => {
     try {
@@ -114,7 +119,7 @@ export default function InvoicesPage() {
 
   const toggleFilter = () => {
     if (statusFilter.length === 0) {
-      setStatusFilter(["received", "approved", "payment_pending"]);
+      setStatusFilter(["received", "approved", "payment_pending", "rejected"]);
     } else {
       setStatusFilter([]);
     }
