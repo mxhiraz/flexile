@@ -72,11 +72,23 @@ export default function InvoicesPage() {
   const isActionable = useIsActionable();
   const isPayable = useIsPayable();
 
-  const storedStatusFilter = invoiceStatusFilterSchema.safeParse(
-    JSON.parse(localStorage.getItem("invoicesStatusFilter") ?? "{}"),
-  );
+  const getDefaultStatusFilter = (): (typeof invoiceStatuses)[number][] => ["received", "approved"];
+
+  const getStoredStatusFilter = () => {
+    try {
+      const stored = localStorage.getItem("invoicesStatusFilter");
+      if (!stored) return { success: true, data: { status: getDefaultStatusFilter() } };
+      return invoiceStatusFilterSchema.safeParse(JSON.parse(stored));
+    } catch (_error) {
+      return { success: false, data: undefined };
+    }
+  };
+
+  const storedStatusFilter = getStoredStatusFilter();
   const [statusFilter, setStatusFilter] = useState<(typeof invoiceStatuses)[number][]>(
-    storedStatusFilter.data?.status ?? ["received", "approved"],
+    storedStatusFilter.success
+      ? (storedStatusFilter.data?.status ?? getDefaultStatusFilter())
+      : getDefaultStatusFilter(),
   );
 
   const [data] = trpc.invoices.list.useSuspenseQuery({
@@ -86,7 +98,11 @@ export default function InvoicesPage() {
   });
 
   useEffect(() => {
-    localStorage.setItem("invoicesStatusFilter", JSON.stringify({ status: statusFilter }));
+    try {
+      localStorage.setItem("invoicesStatusFilter", JSON.stringify({ status: statusFilter }));
+    } catch (_error) {
+      // localStorage not available (e.g., in test environments) - silently ignore
+    }
   }, [statusFilter]);
 
   const { canSubmitInvoices, hasLegalDetails, unsignedContractId } = useCanSubmitInvoices();
