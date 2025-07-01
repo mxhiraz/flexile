@@ -417,7 +417,7 @@ test.describe("Invoices admin flow", () => {
           return null;
         }
       });
-      expect(newStoredFilter?.status).toEqual([]);
+      expect(newStoredFilter?.status).toEqual(["received", "approved", "payment_pending", "rejected"]);
       
       await page.reload();
       await expect(page.locator("tbody tr")).toHaveCount(1);
@@ -425,7 +425,7 @@ test.describe("Invoices admin flow", () => {
     });
 
     test("toggle button only visible for administrators", async ({ page }) => {
-      const contractorUser = (await usersFactory.create()).user;
+      const { user: contractorUser } = await usersFactory.create();
       const { company: contractorCompany } = await companiesFactory.create();
       await companyContractorsFactory.create({
         companyId: contractorCompany.id,
