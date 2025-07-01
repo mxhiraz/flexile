@@ -387,9 +387,9 @@ test.describe("Invoices admin flow", () => {
       const storedFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored) as Record<string, unknown>;
-          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
-            return { status: parsed.status };
+          const parsed = JSON.parse(stored) as unknown;
+          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray((parsed as { status: unknown }).status)) {
+            return { status: (parsed as { status: string[] }).status };
           }
           return null;
         } catch {
@@ -408,9 +408,9 @@ test.describe("Invoices admin flow", () => {
       const newStoredFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored) as Record<string, unknown>;
-          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
-            return { status: parsed.status };
+          const parsed = JSON.parse(stored) as unknown;
+          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray((parsed as { status: unknown }).status)) {
+            return { status: (parsed as { status: string[] }).status };
           }
           return null;
         } catch {
@@ -427,12 +427,11 @@ test.describe("Invoices admin flow", () => {
     test("toggle button only visible for administrators", async ({ page }) => {
       const { user: contractorUser } = await usersFactory.create();
       const { company: contractorCompany } = await companiesFactory.create();
-      await companyContractorsFactory.create({
-        companyId: contractorCompany.id,
-        userId: contractorUser.id,
-      });
       
-      await invoicesFactory.create({ companyId: contractorCompany.id, userId: contractorUser.id });
+      await invoicesFactory.create({ 
+        companyId: contractorCompany.id, 
+        userId: contractorUser.id 
+      });
       
       await login(page, contractorUser);
       
