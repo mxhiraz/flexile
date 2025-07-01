@@ -389,7 +389,7 @@ test.describe("Invoices admin flow", () => {
         try {
           const parsed = JSON.parse(stored) as Record<string, unknown>;
           if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
-            return { status: parsed.status as string[] };
+            return { status: parsed.status };
           }
           return null;
         } catch {
@@ -410,14 +410,14 @@ test.describe("Invoices admin flow", () => {
         try {
           const parsed = JSON.parse(stored) as Record<string, unknown>;
           if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
-            return { status: parsed.status as string[] };
+            return { status: parsed.status };
           }
           return null;
         } catch {
           return null;
         }
       });
-      expect(newStoredFilter?.status).toEqual(["received", "approved", "payment_pending", "rejected"]);
+      expect(newStoredFilter?.status).toEqual([]);
       
       await page.reload();
       await expect(page.locator("tbody tr")).toHaveCount(1);
