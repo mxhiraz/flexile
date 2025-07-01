@@ -72,12 +72,7 @@ export default function InvoicesPage() {
   const isActionable = useIsActionable();
   const isPayable = useIsPayable();
 
-  const getDefaultStatusFilter = (): (typeof invoiceStatuses)[number][] => [
-    "received",
-    "approved",
-    "payment_pending",
-    "rejected",
-  ];
+  const getDefaultStatusFilter = (): (typeof invoiceStatuses)[number][] => ["received", "approved"];
 
   const getStoredStatusFilter = () => {
     try {
@@ -328,7 +323,7 @@ export default function InvoicesPage() {
                 user.roles.administrator ? (
                   <>
                     <Button variant="outline" size="small" onClick={toggleFilter} className="mr-2">
-                      {statusFilter.length === 0 ? "Show pending invoices only" : "Show all invoices"}
+                      {statusFilter.length > 0 ? "Show all invoices" : "Show actionable invoices only"}
                     </Button>
                     <Button variant="outline" size="small" asChild>
                       <a href={export_company_invoices_path(company.id)}>

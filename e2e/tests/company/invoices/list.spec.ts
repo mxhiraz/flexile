@@ -325,7 +325,7 @@ test.describe("Invoices admin flow", () => {
   });
 
   test.describe("invoice filtering functionality", () => {
-    test("shows default filtered invoices (received, approved, payment_pending, rejected) by default", async ({ page }) => {
+    test("shows default filtered invoices (received, approved) by default", async ({ page }) => {
       const { company, user } = await setupCompany();
       
       await invoicesFactory.create({ companyId: company.id, status: "received" });
@@ -337,11 +337,11 @@ test.describe("Invoices admin flow", () => {
       
       await login(page, user);
       
-      await expect(page.locator("tbody tr")).toHaveCount(4);
+      await expect(page.locator("tbody tr")).toHaveCount(2);
       await expect(page.getByText("Awaiting approval").first()).toBeVisible();
-      await expect(page.getByText("Payment scheduled")).toBeVisible();
-      await expect(page.getByText("Rejected")).toBeVisible();
       
+      await expect(page.getByText("Payment scheduled")).not.toBeVisible();
+      await expect(page.getByText("Rejected")).not.toBeVisible();
       await expect(page.getByText("Paid")).not.toBeVisible();
       await expect(page.getByText("Failed")).not.toBeVisible();
     });
@@ -361,11 +361,11 @@ test.describe("Invoices admin flow", () => {
       await page.getByRole("button", { name: "Show all invoices" }).click();
       
       await expect(page.locator("tbody tr")).toHaveCount(3);
-      await expect(page.getByRole("button", { name: "Show pending invoices only" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Show actionable invoices only" })).toBeVisible();
       await expect(page.getByText("Paid")).toBeVisible();
       await expect(page.getByText("Failed")).toBeVisible();
       
-      await page.getByRole("button", { name: "Show pending invoices only" }).click();
+      await page.getByRole("button", { name: "Show actionable invoices only" }).click();
       
       await expect(page.locator("tbody tr")).toHaveCount(1);
       await expect(page.getByRole("button", { name: "Show all invoices" })).toBeVisible();
@@ -389,7 +389,7 @@ test.describe("Invoices admin flow", () => {
         try {
           const parsed = JSON.parse(stored);
           if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed) {
-            const statusValue = (parsed as Record<string, unknown>).status;
+            const statusValue = parsed.status;
             if (Array.isArray(statusValue)) {
               return { status: statusValue };
             }
@@ -404,16 +404,16 @@ test.describe("Invoices admin flow", () => {
       await page.reload();
       
       await expect(page.locator("tbody tr")).toHaveCount(2);
-      await expect(page.getByRole("button", { name: "Show pending invoices only" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Show actionable invoices only" })).toBeVisible();
       
-      await page.getByRole("button", { name: "Show pending invoices only" }).click();
+      await page.getByRole("button", { name: "Show actionable invoices only" }).click();
       
       const newStoredFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
           const parsed = JSON.parse(stored);
           if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed) {
-            const statusValue = (parsed as Record<string, unknown>).status;
+            const statusValue = parsed.status;
             if (Array.isArray(statusValue)) {
               return { status: statusValue };
             }
@@ -423,7 +423,7 @@ test.describe("Invoices admin flow", () => {
           return null;
         }
       });
-      expect(newStoredFilter?.status).toEqual(["received", "approved", "payment_pending", "rejected"]);
+      expect(newStoredFilter?.status).toEqual(["received", "approved"]);
       
       await page.reload();
       await expect(page.locator("tbody tr")).toHaveCount(1);
@@ -448,7 +448,7 @@ test.describe("Invoices admin flow", () => {
       await page.goto(`/companies/${contractorCompany.id}/invoices`);
       
       await expect(page.getByRole("button", { name: "Show all invoices" })).not.toBeVisible();
-      await expect(page.getByRole("button", { name: "Show pending invoices only" })).not.toBeVisible();
+      await expect(page.getByRole("button", { name: "Show actionable invoices only" })).not.toBeVisible();
     });
   });
 });
