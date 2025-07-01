@@ -387,9 +387,12 @@ test.describe("Invoices admin flow", () => {
       const storedFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored) as unknown;
-          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray((parsed as { status: unknown }).status)) {
-            return { status: (parsed as { status: string[] }).status };
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed) {
+            const statusValue = (parsed as Record<string, unknown>).status;
+            if (Array.isArray(statusValue)) {
+              return { status: statusValue };
+            }
           }
           return null;
         } catch {
@@ -408,9 +411,12 @@ test.describe("Invoices admin flow", () => {
       const newStoredFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored) as unknown;
-          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray((parsed as { status: unknown }).status)) {
-            return { status: (parsed as { status: string[] }).status };
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed) {
+            const statusValue = (parsed as Record<string, unknown>).status;
+            if (Array.isArray(statusValue)) {
+              return { status: statusValue };
+            }
           }
           return null;
         } catch {
@@ -428,12 +434,18 @@ test.describe("Invoices admin flow", () => {
       const { user: contractorUser } = await usersFactory.create();
       const { company: contractorCompany } = await companiesFactory.create();
       
+      await companyContractorsFactory.create({
+        companyId: contractorCompany.id,
+        userId: contractorUser.id,
+      });
+      
       await invoicesFactory.create({ 
         companyId: contractorCompany.id, 
         userId: contractorUser.id 
       });
       
       await login(page, contractorUser);
+      await page.goto(`/companies/${contractorCompany.id}/invoices`);
       
       await expect(page.getByRole("button", { name: "Show all invoices" })).not.toBeVisible();
       await expect(page.getByRole("button", { name: "Show pending invoices only" })).not.toBeVisible();
