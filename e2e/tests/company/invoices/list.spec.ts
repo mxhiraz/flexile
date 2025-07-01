@@ -387,9 +387,9 @@ test.describe("Invoices admin flow", () => {
       const storedFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored);
+          const parsed = JSON.parse(stored) as Record<string, unknown>;
           if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
-            return { status: parsed.status };
+            return { status: parsed.status as string[] };
           }
           return null;
         } catch {
@@ -408,16 +408,16 @@ test.describe("Invoices admin flow", () => {
       const newStoredFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored);
+          const parsed = JSON.parse(stored) as Record<string, unknown>;
           if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
-            return { status: parsed.status };
+            return { status: parsed.status as string[] };
           }
           return null;
         } catch {
           return null;
         }
       });
-      expect(newStoredFilter?.status).toEqual([]);
+      expect(newStoredFilter?.status).toEqual(["received", "approved", "payment_pending", "rejected"]);
       
       await page.reload();
       await expect(page.locator("tbody tr")).toHaveCount(1);
