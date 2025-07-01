@@ -387,8 +387,11 @@ test.describe("Invoices admin flow", () => {
       const storedFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored) as Record<string, unknown>;
-          return parsed && typeof parsed === 'object' && Array.isArray(parsed.status) ? { status: parsed.status as string[] } : null;
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
+            return { status: parsed.status };
+          }
+          return null;
         } catch {
           return null;
         }
@@ -405,8 +408,11 @@ test.describe("Invoices admin flow", () => {
       const newStoredFilter = await page.evaluate(() => {
         const stored = localStorage.getItem("invoicesStatusFilter") ?? "{}";
         try {
-          const parsed = JSON.parse(stored) as Record<string, unknown>;
-          return parsed && typeof parsed === 'object' && Array.isArray(parsed.status) ? { status: parsed.status as string[] } : null;
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object' && parsed !== null && 'status' in parsed && Array.isArray(parsed.status)) {
+            return { status: parsed.status };
+          }
+          return null;
         } catch {
           return null;
         }
