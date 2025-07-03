@@ -1,6 +1,6 @@
 "use client";
 import { CircleCheck } from "lucide-react";
-import { getFilteredRowModel, getSortedRowModel, getColumnFiltersRowModel } from "@tanstack/react-table";
+import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
 import React, { useMemo } from "react";
 import CopyButton from "@/components/CopyButton";
