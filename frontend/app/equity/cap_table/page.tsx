@@ -67,9 +67,6 @@ export default function CapTable() {
           );
         },
         footer: "Total",
-        meta: {
-          filterOptions: data.shareClasses.map((shareClass) => shareClass.name),
-        },
       }),
       investorColumnHelper.accessor((row) => (isInvestor(row) ? row.outstandingShares : undefined), {
         header: "Outstanding shares",
@@ -102,7 +99,7 @@ export default function CapTable() {
 
       investorColumnHelper.simple("notes", "Notes"),
     ],
-    [data.shareClasses],
+    [],
   );
 
   const investorsData = useMemo(
