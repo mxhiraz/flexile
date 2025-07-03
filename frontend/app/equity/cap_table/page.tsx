@@ -116,7 +116,7 @@ export default function CapTable() {
   const investorsTable = useTable({
     data: investorsData,
     columns: investorsColumns,
-    enableRowSelection: canViewInvestor ? (row) => isInvestor(row.original) : false,
+    enableRowSelection: canViewInvestor,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     enableGlobalFilter: true,
