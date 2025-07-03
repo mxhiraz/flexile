@@ -1,6 +1,6 @@
 "use client";
 import { CircleCheck } from "lucide-react";
-import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
+import { getFilteredRowModel, getSortedRowModel, getColumnFiltersRowModel } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
 import React, { useMemo } from "react";
 import CopyButton from "@/components/CopyButton";
@@ -68,6 +68,22 @@ export default function CapTable() {
         },
         footer: "Total",
       }),
+      investorColumnHelper.accessor(
+        (row) => {
+          if (isInvestor(row)) {
+            return data.shareClasses.map((sc) => sc.name).join(", ");
+          }
+          return "";
+        },
+        {
+          id: "shareClasses",
+          header: "Share Classes",
+          cell: (info) => info.getValue(),
+          meta: {
+            filterOptions: data.shareClasses.map((shareClass) => shareClass.name),
+          },
+        },
+      ),
       investorColumnHelper.accessor((row) => (isInvestor(row) ? row.outstandingShares : undefined), {
         header: "Outstanding shares",
         cell: (info) => info.getValue()?.toLocaleString() ?? "—",
@@ -99,7 +115,7 @@ export default function CapTable() {
 
       investorColumnHelper.simple("notes", "Notes"),
     ],
-    [],
+    [data],
   );
 
   const investorsData = useMemo(
@@ -120,6 +136,13 @@ export default function CapTable() {
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     enableGlobalFilter: true,
+    enableColumnFilters: true,
+    enableHiding: true,
+    initialState: {
+      columnVisibility: {
+        shareClasses: false,
+      },
+    },
   });
 
   const selectedInvestors = investorsTable.getSelectedRowModel().rows.map((row) => row.original);
