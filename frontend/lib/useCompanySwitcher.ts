@@ -10,13 +10,16 @@ export const useCompanySwitcher = () => {
 
   const switchCompany = async (companyId: string) => {
     useUserStore.setState((state) => ({ ...state, pending: true }));
-    await request({
-      method: "POST",
-      url: company_switch_path(companyId),
-      accept: "json",
-    });
-    await queryClient.resetQueries({ queryKey: ["currentUser"] });
-    useUserStore.setState((state) => ({ ...state, pending: false }));
+    try {
+      await request({
+        method: "POST",
+        url: company_switch_path(companyId),
+        accept: "json",
+      });
+      await queryClient.resetQueries({ queryKey: ["currentUser"] });
+    } finally {
+      useUserStore.setState((state) => ({ ...state, pending: false }));
+    }
   };
 
   return { switchCompany };
