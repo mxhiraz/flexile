@@ -3,6 +3,7 @@ import { companyAdministratorsFactory } from "@test/factories/companyAdministrat
 import { companyContractorsFactory } from "@test/factories/companyContractors";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
+import { fillDatePicker } from "@test/helpers";
 import { expect, test } from "@test/index";
 
 test.describe("Role field conditional rendering", () => {
@@ -81,7 +82,7 @@ test.describe("Role field conditional rendering", () => {
 
     await dialog.getByLabel("Email").fill("test@example.com");
     await roleField.fill("Developer");
-    await dialog.getByLabel("Start date").fill("2025-01-01");
+    await fillDatePicker(page, "Start date", "01/01/2025");
     await dialog.getByRole("button", { name: "Send invite" }).click();
 
     await expect(page.getByText("Invite sent")).toBeVisible();
