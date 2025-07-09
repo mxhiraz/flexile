@@ -108,8 +108,6 @@ const OverflowMenu = ({ items }: { items: NavItem[] }) => {
   const pathname = usePathname();
   const user = useCurrentUser();
 
-  if (items.length === 0 && user.companies.length === 0) return null;
-
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -237,11 +235,9 @@ export function MobileBottomNav() {
             {hasSubItems(item) ? <NavItemWithSubmenu item={item} /> : <SimpleNavItem item={item} />}
           </li>
         ))}
-        {overflowItems.length > 0 && (
-          <li className="flex-1">
-            <OverflowMenu items={overflowItems} />
-          </li>
-        )}
+        <li className="flex-1">
+          <OverflowMenu items={overflowItems} />
+        </li>
       </ul>
     </nav>
   );
