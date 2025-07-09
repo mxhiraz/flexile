@@ -35,30 +35,36 @@ export default function FormFields() {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Role</FormLabel>
-            <Command shouldFilter={false} value={uniqueRoles.find((role) => roleRegex.test(role)) ?? ""}>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Input {...field} type="text" />
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                  className="p-0"
-                  style={{ width: "var(--radix-popover-trigger-width)" }}
-                >
-                  <CommandList>
-                    <CommandGroup>
-                      {uniqueRoles.map((option) => (
-                        <CommandItem key={option} value={option} onSelect={(e) => field.onChange(e)}>
-                          {option}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </PopoverContent>
-              </Popover>
-            </Command>
+            {uniqueRoles.length > 0 ? (
+              <Command shouldFilter={false} value={uniqueRoles.find((role) => roleRegex.test(role)) ?? ""}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Input {...field} type="text" />
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    className="p-0"
+                    style={{ width: "var(--radix-popover-trigger-width)" }}
+                  >
+                    <CommandList>
+                      <CommandGroup>
+                        {uniqueRoles.map((option) => (
+                          <CommandItem key={option} value={option} onSelect={(e) => field.onChange(e)}>
+                            {option}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </PopoverContent>
+                </Popover>
+              </Command>
+            ) : (
+              <FormControl>
+                <Input {...field} type="text" />
+              </FormControl>
+            )}
             <FormMessage />
           </FormItem>
         )}
