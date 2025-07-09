@@ -1,13 +1,17 @@
 "use client";
 
 import { cn } from "@/utils/index";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { useNavLinks, type NavLinkInfo, hasSubItems } from "@/lib/useNavLinks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import React, { useMemo } from "react";
+import { useCurrentUser } from "@/global";
+import { SignOutButton } from "@clerk/nextjs";
+import { Separator } from "@/components/ui/separator";
+import { CompanySwitcherList } from "@/components/navigation/CompanySwitcher";
 
 const NAV_PRIORITIES: Record<string, number> = {
   Invoices: 1,
@@ -102,8 +106,9 @@ const NavItemWithSubmenu = ({ item }: { item: NavItem & { subItems: NonNullable<
 
 const OverflowMenu = ({ items }: { items: NavItem[] }) => {
   const pathname = usePathname();
+  const user = useCurrentUser();
 
-  if (items.length === 0) return null;
+  if (items.length === 0 && user.companies.length === 0) return null;
 
   return (
     <Sheet>
@@ -120,7 +125,16 @@ const OverflowMenu = ({ items }: { items: NavItem[] }) => {
         <SheetHeader>
           <SheetTitle>More Options</SheetTitle>
         </SheetHeader>
-        <div className="space-y-2">
+        <div>
+          {/* Company section */}
+          {user.companies.length > 0 && (
+            <>
+              <CompanySwitcherList itemClassName="px-6 py-3 font-medium" />
+              {items.length > 0 && <Separator className="my-0" />}
+            </>
+          )}
+
+          {/* Navigation items */}
           {items.map((item) => (
             <React.Fragment key={item.label}>
               {item.subItems ? (
@@ -130,6 +144,18 @@ const OverflowMenu = ({ items }: { items: NavItem[] }) => {
               ) : null}
             </React.Fragment>
           ))}
+
+          {/* Log out section */}
+          <Separator className="my-0" />
+          <SignOutButton>
+            <button
+              className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
+              aria-label="Log out"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="font-medium">Log out</span>
+            </button>
+          </SignOutButton>
         </div>
       </SheetContent>
     </Sheet>
