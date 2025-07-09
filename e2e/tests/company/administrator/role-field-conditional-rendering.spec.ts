@@ -73,20 +73,25 @@ test.describe("Role field conditional rendering", () => {
     await page.getByRole("link", { name: "People" }).click();
 
     await page.getByRole("button", { name: "Invite contractor" }).click();
-    const roleField = page.getByLabel("Role");
+    
+    const dialog = page.getByRole("dialog", { name: "Who's joining?" });
+    const roleField = dialog.getByLabel("Role");
     await roleField.click();
     await expect(page.getByRole("option")).toHaveCount(0);
-
-    await page.getByLabel("Email").fill("test@example.com");
+    
+    await dialog.getByLabel("Email").fill("test@example.com");
     await roleField.fill("Developer");
-    await page.getByLabel("Start date").fill("2025-01-01");
-    await page.getByRole("button", { name: "Send invite" }).click();
-
+    await dialog.getByLabel("Start date").fill("2025-01-01");
+    await dialog.getByRole("button", { name: "Send invite" }).click();
+    
     await expect(page.getByText("Invite sent")).toBeVisible();
     await page.getByRole("button", { name: "Close" }).click();
-
+    
+    await expect(dialog).not.toBeVisible();
+    
     await page.getByRole("button", { name: "Invite contractor" }).click();
-    const newRoleField = page.getByLabel("Role");
+    const newDialog = page.getByRole("dialog", { name: "Who's joining?" });
+    const newRoleField = newDialog.getByLabel("Role");
     await newRoleField.click();
     await expect(page.getByRole("option", { name: "Developer" })).toBeVisible();
   });
