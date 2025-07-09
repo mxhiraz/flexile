@@ -20,10 +20,10 @@ test.describe("Role field conditional rendering", () => {
 
     const roleField = page.getByLabel("Role");
     await expect(roleField).toBeVisible();
-    
+
     await roleField.fill("New Role");
     await expect(roleField).toHaveValue("New Role");
-    
+
     await roleField.click();
     await expect(page.getByRole("option")).toHaveCount(0);
   });
@@ -52,11 +52,11 @@ test.describe("Role field conditional rendering", () => {
 
     const roleField = page.getByLabel("Role");
     await expect(roleField).toBeVisible();
-    
+
     await roleField.click();
     await expect(page.getByRole("option", { name: "Developer" })).toBeVisible();
     await expect(page.getByRole("option", { name: "Designer" })).toBeVisible();
-    
+
     await page.getByRole("option", { name: "Developer" }).click();
     await expect(roleField).toHaveValue("Developer");
   });
@@ -71,20 +71,20 @@ test.describe("Role field conditional rendering", () => {
 
     await login(page, admin);
     await page.getByRole("link", { name: "People" }).click();
-    
+
     await page.getByRole("button", { name: "Invite contractor" }).click();
     const roleField = page.getByLabel("Role");
     await roleField.click();
     await expect(page.getByRole("option")).toHaveCount(0);
-    
+
     await page.getByLabel("Email").fill("test@example.com");
     await roleField.fill("Developer");
     await page.getByLabel("Start date").fill("2025-01-01");
     await page.getByRole("button", { name: "Send invite" }).click();
-    
+
     await expect(page.getByText("Invite sent")).toBeVisible();
     await page.getByRole("button", { name: "Close" }).click();
-    
+
     await page.getByRole("button", { name: "Invite contractor" }).click();
     const newRoleField = page.getByLabel("Role");
     await newRoleField.click();
