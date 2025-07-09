@@ -69,75 +69,79 @@ export default function MainLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="offcanvas" className={isMobile ? "hidden" : ""}>
-        <SidebarHeader>
-          {user.companies.length > 1 ? (
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton size="lg" className="text-base" aria-label="Switch company">
-                      <CompanyName />
-                      <ChevronsUpDown className="ml-auto" />
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-(radix-dropdown-menu-trigger-width)" align="start">
-                    {user.companies.map((company) => (
-                      <DropdownMenuItem
-                        key={company.id}
-                        onSelect={() => {
-                          if (user.currentCompanyId !== company.id) void switchCompany(company.id);
-                        }}
-                        className="flex items-center gap-2"
-                      >
-                        <Image
-                          src={company.logo_url || defaultCompanyLogo}
-                          width={20}
-                          height={20}
-                          className="rounded-xs"
-                          alt=""
-                        />
-                        <span className="line-clamp-1">{company.name}</span>
-                        {company.id === user.currentCompanyId && (
-                          <div className="ml-auto size-2 rounded-full bg-blue-500"></div>
-                        )}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          ) : (
-            <div className="flex items-center gap-2 p-2">
-              <CompanyName />
-            </div>
-          )}
-        </SidebarHeader>
-        <SidebarContent>
-          {user.currentCompanyId ? (
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <NavLinks />
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ) : null}
-
-          <SidebarGroup className="mt-auto">
-            <SidebarGroupContent>
+      {isMobile ? (
+        <MobileBottomNav />
+      ) : (
+        <Sidebar collapsible="offcanvas">
+          <SidebarHeader>
+            {user.companies.length > 1 ? (
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SignOutButton>
-                    <SidebarMenuButton className="cursor-pointer">
-                      <LogOut className="size-6" />
-                      <span>Log out</span>
-                    </SidebarMenuButton>
-                  </SignOutButton>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuButton size="lg" className="text-base" aria-label="Switch company">
+                        <CompanyName />
+                        <ChevronsUpDown className="ml-auto" />
+                      </SidebarMenuButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-(radix-dropdown-menu-trigger-width)" align="start">
+                      {user.companies.map((company) => (
+                        <DropdownMenuItem
+                          key={company.id}
+                          onSelect={() => {
+                            if (user.currentCompanyId !== company.id) void switchCompany(company.id);
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <Image
+                            src={company.logo_url || defaultCompanyLogo}
+                            width={20}
+                            height={20}
+                            className="rounded-xs"
+                            alt=""
+                          />
+                          <span className="line-clamp-1">{company.name}</span>
+                          {company.id === user.currentCompanyId && (
+                            <div className="ml-auto size-2 rounded-full bg-blue-500"></div>
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </SidebarMenuItem>
               </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
+            ) : (
+              <div className="flex items-center gap-2 p-2">
+                <CompanyName />
+              </div>
+            )}
+          </SidebarHeader>
+          <SidebarContent>
+            {user.currentCompanyId ? (
+              <SidebarGroup>
+                <SidebarGroupContent>
+                  <NavLinks />
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ) : null}
+
+            <SidebarGroup className="mt-auto">
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SignOutButton>
+                      <SidebarMenuButton className="cursor-pointer">
+                        <LogOut className="size-6" />
+                        <span>Log out</span>
+                      </SidebarMenuButton>
+                    </SignOutButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+      )}
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
           <main className={`flex flex-1 flex-col pb-4 not-print:overflow-y-auto ${isMobile ? "pb-20" : ""}`}>
@@ -163,7 +167,6 @@ export default function MainLayout({
           {footer ? <div className="mt-auto">{footer}</div> : null}
         </div>
       </SidebarInset>
-      {isMobile ? <MobileBottomNav /> : null}
     </SidebarProvider>
   );
 }
