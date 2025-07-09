@@ -1,18 +1,6 @@
 import { SignOutButton } from "@clerk/nextjs";
-import {
-  Rss,
-  ChevronsUpDown,
-  ReceiptIcon,
-  Files,
-  Users,
-  BookUser,
-  Settings,
-  ChartPie,
-  CircleDollarSign,
-  LogOut,
-  ChevronRight,
-} from "lucide-react";
-import { skipToken, useQueryClient } from "@tanstack/react-query";
+import { ChevronsUpDown, LogOut, ChevronRight } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -42,13 +30,12 @@ import {
 } from "@/components/ui/sidebar";
 import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
-import { trpc } from "@/trpc/client";
 import { request } from "@/utils/request";
 import { company_switch_path } from "@/utils/routes";
-import type { Route } from "next";
-import { useIsActionable } from "@/app/invoices";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { navLinks as equityNavLinks } from "@/app/equity";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { useIsMobile } from "@/utils/use-mobile";
+import { useNavLinks } from "@/lib/useNavLinks";
 
 export default function MainLayout({
   children,
@@ -66,6 +53,7 @@ export default function MainLayout({
   footer?: React.ReactNode;
 }) {
   const user = useCurrentUser();
+  const isMobile = useIsMobile();
 
   const queryClient = useQueryClient();
   const switchCompany = async (companyId: string) => {
@@ -81,7 +69,7 @@ export default function MainLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="offcanvas">
+      <Sidebar collapsible="offcanvas" className={isMobile ? "hidden" : ""}>
         <SidebarHeader>
           {user.companies.length > 1 ? (
             <SidebarMenu>
@@ -152,14 +140,14 @@ export default function MainLayout({
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
-          <main className="flex flex-1 flex-col pb-4 not-print:overflow-y-auto">
+          <main className={`flex flex-1 flex-col pb-4 not-print:overflow-y-auto ${isMobile ? "pb-20" : ""}`}>
             <div>
               <header className="px-3 py-2 md:px-4 md:py-4">
                 <div className="grid gap-y-8">
                   <div className="grid items-center justify-between gap-3 md:flex">
                     <div>
                       <div className="flex items-center justify-between gap-2">
-                        <SidebarTrigger className="md:hidden" />
+                        {!isMobile && <SidebarTrigger className="md:hidden" />}
                         <h1 className="text-sm font-bold">{title}</h1>
                       </div>
                       {subtitle}
@@ -175,6 +163,7 @@ export default function MainLayout({
           {footer ? <div className="mt-auto">{footer}</div> : null}
         </div>
       </SidebarInset>
+      {isMobile ? <MobileBottomNav /> : null}
     </SidebarProvider>
   );
 }
@@ -196,119 +185,67 @@ const CompanyName = () => {
 };
 
 const NavLinks = () => {
-  const user = useCurrentUser();
-  const company = useCurrentCompany();
   const pathname = usePathname();
-  const routes = new Set(
-    company.routes.flatMap((route) => [route.label, ...(route.subLinks?.map((subLink) => subLink.label) || [])]),
-  );
-  const { data: invoicesData } = trpc.invoices.list.useQuery(
-    user.currentCompanyId && user.roles.administrator
-      ? { companyId: user.currentCompanyId, status: ["received", "approved", "failed"] }
-      : skipToken,
-    { refetchInterval: 30_000 },
-  );
-  const isInvoiceActionable = useIsActionable();
-  const { data: documentsData } = trpc.documents.list.useQuery(
-    user.currentCompanyId && user.id
-      ? { companyId: user.currentCompanyId, userId: user.id, signable: true }
-      : skipToken,
-    { refetchInterval: 30_000 },
-  );
-  const updatesPath = company.routes.find((route) => route.label === "Updates")?.name;
-  const equityLinks = equityNavLinks(user, company);
+  const navLinks = useNavLinks();
 
-  const [isOpen, setIsOpen] = React.useState(() => localStorage.getItem("equity-menu-state") === "open");
+  const [isOpen, setIsOpen] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("equity-menu-state") === "open";
+  });
 
   return (
     <SidebarMenu>
-      {updatesPath ? (
-        <NavLink href="/updates/company" icon={Rss} filledIcon={Rss} active={pathname.startsWith("/updates")}>
-          Updates
-        </NavLink>
-      ) : null}
-      {routes.has("Invoices") && (
-        <NavLink
-          href="/invoices"
-          icon={ReceiptIcon}
-          active={pathname.startsWith("/invoices")}
-          badge={invoicesData?.filter(isInvoiceActionable).length}
-        >
-          Invoices
-        </NavLink>
-      )}
-      {routes.has("Expenses") && (
-        <NavLink
-          href={`/companies/${company.id}/expenses`}
-          icon={CircleDollarSign}
-          active={pathname.startsWith(`/companies/${company.id}/expenses`)}
-        >
-          Expenses
-        </NavLink>
-      )}
-      {routes.has("Documents") && (
-        <NavLink
-          href="/documents"
-          icon={Files}
-          active={pathname.startsWith("/documents") || pathname.startsWith("/document_templates")}
-          badge={documentsData?.length}
-        >
-          Documents
-        </NavLink>
-      )}
-      {routes.has("People") && (
-        <NavLink
-          href="/people"
-          icon={Users}
-          active={pathname.startsWith("/people") || pathname.includes("/investor_entities/")}
-        >
-          People
-        </NavLink>
-      )}
-      {routes.has("Roles") && (
-        <NavLink href="/roles" icon={BookUser} active={pathname.startsWith("/roles")}>
-          Roles
-        </NavLink>
-      )}
-      {routes.has("Equity") && equityLinks.length > 0 && (
-        <Collapsible
-          open={isOpen}
-          onOpenChange={(state) => {
-            setIsOpen(state);
-            localStorage.setItem("equity-menu-state", state ? "open" : "closed");
-          }}
-          className="group/collapsible"
-        >
-          <SidebarMenuItem>
-            <CollapsibleTrigger asChild>
-              <SidebarMenuButton>
-                <ChartPie />
-                <span>Equity</span>
-                <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarMenuSub>
-                {equityLinks.map((link) => (
-                  <SidebarMenuSubItem key={link.route}>
-                    <SidebarMenuSubButton asChild isActive={pathname === link.route}>
-                      <Link href={link.route}>{link.label}</Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                ))}
-              </SidebarMenuSub>
-            </CollapsibleContent>
-          </SidebarMenuItem>
-        </Collapsible>
-      )}
-      <NavLink href="/settings" active={pathname.startsWith("/settings")} icon={Settings}>
-        Settings
-      </NavLink>
+      {navLinks.map((link) => {
+        if (link.subItems) {
+          return (
+            <Collapsible
+              key={link.label}
+              open={isOpen}
+              onOpenChange={(state) => {
+                setIsOpen(state);
+                localStorage.setItem("equity-menu-state", state ? "open" : "closed");
+              }}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton>
+                    <link.icon />
+                    <span>{link.label}</span>
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {link.subItems.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.route}>
+                        <SidebarMenuSubButton asChild isActive={pathname === subItem.route}>
+                          <Link href={{ pathname: subItem.route }}>{subItem.label}</Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        }
+
+        if (link.href) {
+          return (
+            <NavLink key={link.label} href={link.href} icon={link.icon} active={link.isActive} badge={link.badge}>
+              {link.label}
+            </NavLink>
+          );
+        }
+
+        return null;
+      })}
     </SidebarMenu>
   );
 };
 
-const NavLink = <T extends string>({
+const NavLink = ({
   icon,
   filledIcon,
   children,
@@ -319,7 +256,7 @@ const NavLink = <T extends string>({
 }: {
   children: React.ReactNode;
   className?: string;
-  href: Route<T>;
+  href: string | { pathname: string };
   active?: boolean;
   icon: React.ComponentType;
   filledIcon?: React.ComponentType;
@@ -329,7 +266,7 @@ const NavLink = <T extends string>({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active ?? false} className={className}>
-        <Link href={href}>
+        <Link href={typeof href === "string" ? { pathname: href } : href}>
           <Icon />
           <span>{children}</span>
           {badge && badge > 0 ? (
