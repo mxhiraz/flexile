@@ -196,6 +196,7 @@ const NavLinks = () => {
   return (
     <SidebarMenu>
       {navLinks.map((link) => {
+        const Icon = link.icon;
         if (link.subItems) {
           return (
             <Collapsible
@@ -210,7 +211,7 @@ const NavLinks = () => {
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton>
-                    <link.icon />
+                    <Icon />
                     <span>{link.label}</span>
                     <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
