@@ -27,6 +27,11 @@ export interface NavLinkInfo {
   subItems?: { label: string; route: string }[];
 }
 
+export const hasSubItems = (
+  item: NavLinkInfo,
+): item is NavLinkInfo & { subItems: NonNullable<NavLinkInfo["subItems"]> } =>
+  !!item.subItems && item.subItems.length > 0;
+
 export const useNavLinks = (): NavLinkInfo[] => {
   const pathname = usePathname();
   const user = useCurrentUser();

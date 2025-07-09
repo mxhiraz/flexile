@@ -5,7 +5,7 @@ import { MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { useNavLinks, type NavLinkInfo } from "@/lib/useNavLinks";
+import { useNavLinks, type NavLinkInfo, hasSubItems } from "@/lib/useNavLinks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import React, { useMemo } from "react";
 
@@ -26,9 +26,6 @@ const MAX_VISIBLE_ITEMS = 4;
 interface NavItem extends NavLinkInfo {
   priority: number;
 }
-
-const hasSubItems = (item: NavItem): item is NavItem & { subItems: NonNullable<NavItem["subItems"]> } =>
-  !!item.subItems && item.subItems.length > 0;
 
 const NavIconButton = ({ icon: Icon, label, isActive, badge, className }: NavItem & { className?: string }) => (
   <div

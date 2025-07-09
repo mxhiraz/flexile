@@ -35,7 +35,7 @@ import { company_switch_path } from "@/utils/routes";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { useIsMobile } from "@/utils/use-mobile";
-import { useNavLinks } from "@/lib/useNavLinks";
+import { hasSubItems, useNavLinks, type NavLinkInfo } from "@/lib/useNavLinks";
 
 export default function MainLayout({
   children,
@@ -191,48 +191,11 @@ const NavLinks = () => {
   const pathname = usePathname();
   const navLinks = useNavLinks();
 
-  const [isOpen, setIsOpen] = React.useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("equity-menu-state") === "open";
-  });
-
   return (
     <SidebarMenu>
       {navLinks.map((link) => {
-        const Icon = link.icon;
-        if (link.subItems) {
-          return (
-            <Collapsible
-              key={link.label}
-              open={isOpen}
-              onOpenChange={(state) => {
-                setIsOpen(state);
-                localStorage.setItem("equity-menu-state", state ? "open" : "closed");
-              }}
-              className="group/collapsible"
-            >
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton>
-                    <Icon />
-                    <span>{link.label}</span>
-                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {link.subItems.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.route}>
-                        <SidebarMenuSubButton asChild isActive={pathname === subItem.route}>
-                          <Link href={{ pathname: subItem.route }}>{subItem.label}</Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
-          );
+        if (hasSubItems(link)) {
+          return <CollapsibleNavLink key={link.label} link={link} pathname={pathname} />;
         }
 
         if (link.href) {
@@ -246,6 +209,53 @@ const NavLinks = () => {
         return null;
       })}
     </SidebarMenu>
+  );
+};
+
+interface CollapsibleNavLinkProps {
+  link: NavLinkInfo & { subItems: NonNullable<NavLinkInfo["subItems"]> };
+  pathname: string;
+}
+
+const CollapsibleNavLink = ({ link, pathname }: CollapsibleNavLinkProps) => {
+  const Icon = link.icon;
+  const storageKey = `${link.label.toLowerCase().replace(/\s+/gu, "-")}-menu-state`;
+
+  const [isOpen, setIsOpen] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(storageKey) === "open";
+  });
+
+  return (
+    <Collapsible
+      open={isOpen}
+      onOpenChange={(state) => {
+        setIsOpen(state);
+        localStorage.setItem(storageKey, state ? "open" : "closed");
+      }}
+      className="group/collapsible"
+    >
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton>
+            <Icon />
+            <span>{link.label}</span>
+            <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {link.subItems.map((subItem) => (
+              <SidebarMenuSubItem key={subItem.route}>
+                <SidebarMenuSubButton asChild isActive={pathname === subItem.route}>
+                  <Link href={{ pathname: subItem.route }}>{subItem.label}</Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
   );
 };
 
