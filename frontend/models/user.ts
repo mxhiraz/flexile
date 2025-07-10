@@ -31,20 +31,30 @@ const companySchema = z.object({
   investorCount: z.number().nullable(),
   primaryAdminName: z.string().nullable(),
   isTrusted: z.boolean(),
+  checklistItems: z.array(
+    z.object({
+      key: z.string(),
+      title: z.string(),
+      description: z.string(),
+      completed: z.boolean(),
+    }),
+  ),
+  checklistCompletionPercentage: z.number(),
 });
 
 export const currentUserSchema = z.object({
   id: z.string(),
   name: z.string(),
   address: addressSchema,
-  currentCompanyId: z.string().nullable(),
+  currentCompanyId: z.string(),
   onboardingPath: z.string().nullable(),
   companies: z.array(companySchema),
   email: z.string(),
   preferredName: z.string().nullable(),
   legalName: z.string().nullable(),
   billingEntityName: z.string().nullable(),
-  hasPayoutMethod: z.boolean(),
+  hasPayoutMethodForInvoices: z.boolean(),
+  hasPayoutMethodForDividends: z.boolean(),
   taxInformationConfirmedAt: z.string().nullable(),
   roles: z.object({
     administrator: z.object({ id: z.string(), isInvited: z.boolean() }).optional(),
@@ -64,9 +74,8 @@ export const currentUserSchema = z.object({
         id: z.string(),
         hasDocuments: z.boolean(),
         endedAt: z.string().nullable(),
-        payRateType: z.enum(["hourly", "project_based", "salary"]),
+        payRateType: z.enum(["hourly", "project_based"]),
         role: z.string(),
-        hoursPerWeek: z.number().nullable(),
         payRateInSubunits: z.number().nullable(),
       })
       .optional(),

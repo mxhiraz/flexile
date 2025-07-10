@@ -1,10 +1,12 @@
-name: CI
-on: push
-permissions:
-  contents: read
+name: Tests
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 concurrency:
-  group: ${{ github.ref }}-rspec
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -74,6 +76,8 @@ jobs:
 
       - name: Build setup
         uses: ./.github/common/
+
+      - run: pnpm puppeteer browsers install chrome
 
       - run: node docker/createCertificate.js
 

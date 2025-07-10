@@ -6,12 +6,6 @@
 heroku run rails console -a flexile
 ```
 
-### Enable features
-
-```ruby
-Company.find(123).update!(dividends: true, irs_tax_forms: true)
-```
-
 ## Payments
 
 ### Check recent payments
@@ -45,9 +39,9 @@ File.write("company_#{company.id}.json", {
 Company.find_by(name: "Keepers, LLC").update!(is_trusted: true)
 ```
 
-### Investor dividend rounds quick check
+### Investor dividends check
 
 ```ruby
 u = User.find_by(email: "investor@example.com")
-u.company_investors.first.investor_dividend_rounds.pluck(:dividend_round_id)
+u.dividends
 ```

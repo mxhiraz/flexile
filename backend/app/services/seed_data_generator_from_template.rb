@@ -72,7 +72,6 @@ class SeedDataGeneratorFromTemplate
         create_dividend_rounds!(company, company_data)
         create_tender_offer!(company, company_data.fetch("tender_offer"))
         create_equity_buyback_rounds!(company, company_data)
-
         create_expense_categories!(company, company_data.fetch("expense_categories"))
         create_other_administrators!(company, company_data.fetch("other_administrators"))
         create_lawyers!(company, company_data.fetch("lawyers"))
@@ -167,12 +166,12 @@ class SeedDataGeneratorFromTemplate
           )
         end
       end
-      print_message("Created company #{company.name}#{company.completed_onboarding? ? " (completed onboarding)" : nil}")
+      print_message("Created company #{company.name}")
       company
     end
 
     def create_bank_account!(company)
-      stripe_setup_intent = company.fetch_stripe_setup_intent
+      stripe_setup_intent = company.create_stripe_setup_intent
       # https://docs.stripe.com/testing#test-account-numbers
       test_bank_account = Stripe::PaymentMethod.create(
         {
@@ -215,7 +214,7 @@ class SeedDataGeneratorFromTemplate
       Stripe::PaymentMethod.attach(
         test_bank_account.id, { customer: stripe_setup_intent.customer }
       )
-      company.bank_account.update!(
+      company.create_bank_account!(
         status: CompanyStripeAccount::READY,
         setup_intent_id: stripe_setup_intent.id,
         bank_account_last_four: test_bank_account.us_bank_account.last4,
@@ -328,8 +327,6 @@ class SeedDataGeneratorFromTemplate
         end
       end
     end
-
-
 
     def create_company_updates!(company, company_updates_data)
       print_message("Creating company updates")
@@ -570,7 +567,6 @@ class SeedDataGeneratorFromTemplate
               pay_rate_in_subunits: company_worker_attributes.fetch("pay_rate_in_subunits"),
               pay_rate_type: company_worker_attributes.fetch("pay_rate_type"),
               role: company_worker_attributes.fetch("role"),
-              hours_per_week: company_worker_attributes.fetch("hours_per_week", nil),
             }
             result = InviteWorker.new(
               current_user: company_administrator.user,
@@ -639,25 +635,13 @@ class SeedDataGeneratorFromTemplate
       invoice_count = 0
       while invoice_datetime < current_time - 1.month
         break if ended_at && invoice_datetime >= ended_at
-
-        invoice_line_item = if company_worker.project_based?
-          {
-            description: "Project work",
-            total_amount_cents: company_worker.pay_rate_in_subunits,
-          }
-        else
-          {
-            description: "Consulting",
-            minutes: company_worker.hours_per_week * 60 * 4 + rand(-30..30),
-          }
-        end
         params = ActionController::Parameters.new(
           {
             invoice: {
               invoice_number: Invoice.new(user:, company:).recommended_invoice_number,
               invoice_date: invoice_datetime.end_of_month.to_date,
             },
-            invoice_line_items: [invoice_line_item],
+            invoice_line_items: [{ description: "Consulting", quantity: 10 * 60 * 4 + rand(-30..30), pay_rate_in_subunits: company_worker.pay_rate_in_subunits, hourly: true }],
           },
         )
         Timecop.travel(invoice_datetime) do
@@ -684,7 +668,7 @@ class SeedDataGeneratorFromTemplate
     end
 
     def create_consolidated_invoices!(company)
-      company.invoices.group_by { |invoice| invoice.invoice_date.beginning_of_month }.each do |date, invoices|
+      company.invoices.alive.group_by { |invoice| invoice.invoice_date.beginning_of_month }.each do |date, invoices|
         next unless date < current_time - 2.months
 
         date = date + rand(1..3).days
@@ -706,7 +690,7 @@ class SeedDataGeneratorFromTemplate
               end
             end
           end
-          consolidated_invoice.reload.invoices.each do |invoice|
+          consolidated_invoice.reload.invoices.alive.each do |invoice|
             invoice.payments.each do |payment|
               # Simulates WiseTransferUpdateJob
               transfer_id = payment.wise_transfer_id

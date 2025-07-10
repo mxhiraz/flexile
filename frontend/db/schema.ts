@@ -451,6 +451,7 @@ export const dividendRounds = pgTable(
     externalId: varchar("external_id").$default(nanoid).notNull(),
     returnOfCapital: boolean("return_of_capital").notNull(),
     readyForPayment: boolean("ready_for_payment").notNull().default(false),
+    releaseDocument: text("release_document"),
   },
   (table) => [
     index("index_dividend_rounds_on_company_id").using("btree", table.companyId.asc().nullsLast().op("int8_ops")),
@@ -482,6 +483,7 @@ export const dividends = pgTable(
     withholdingPercentage: integer("withholding_percentage"),
     userComplianceInfoId: bigint("user_compliance_info_id", { mode: "bigint" }),
     qualifiedAmountCents: bigint("qualified_amount_cents", { mode: "bigint" }).notNull(),
+    signedReleaseAt: timestamp("signed_release_at", { precision: 6, mode: "date" }),
   },
   (table) => [
     index("index_dividends_on_company_id").using("btree", table.companyId.asc().nullsLast().op("int8_ops")),
@@ -807,13 +809,13 @@ export const invoiceLineItems = pgTable(
     id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
     invoiceId: bigint("invoice_id", { mode: "bigint" }).notNull(),
     description: varchar().notNull(),
-    minutes: integer(),
+    quantity: integer().notNull(),
+    hourly: boolean().default(false).notNull(),
     createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { precision: 6, mode: "date" })
       .notNull()
       .$onUpdate(() => new Date()),
-    totalAmountCents: bigint("total_amount_cents", { mode: "bigint" }).notNull(),
-    payRateInSubunits: integer("pay_rate_in_subunits"),
+    payRateInSubunits: integer("pay_rate_in_subunits").notNull(),
     payRateCurrency: varchar("pay_rate_currency").default("usd").notNull(),
   },
   (table) => [
@@ -830,7 +832,6 @@ export const invoices = pgTable(
     createdById: bigint("created_by_id", { mode: "bigint" }).notNull(),
     invoiceType: invoicesInvoiceType("invoice_type").default("services").notNull(),
     invoiceDate: date("invoice_date", { mode: "string" }).notNull(),
-    totalMinutes: integer("total_minutes"),
     totalAmountInUsdCents: bigint("total_amount_in_usd_cents", { mode: "bigint" }).notNull(),
     status: varchar({ enum: invoiceStatuses }).notNull(),
     createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
@@ -851,7 +852,6 @@ export const invoices = pgTable(
     equityAmountInCents: bigint("equity_amount_in_cents", { mode: "bigint" }).notNull(),
     equityAmountInOptions: integer("equity_amount_in_options").notNull(),
     cashAmountInCents: bigint("cash_amount_in_cents", { mode: "bigint" }).notNull(),
-
     companyContractorId: bigint("company_contractor_id", { mode: "bigint" }).notNull(),
     equityGrantId: bigint("equity_grant_id", { mode: "bigint" }),
     rejectedById: bigint("rejected_by_id", { mode: "bigint" }),
@@ -865,6 +865,7 @@ export const invoices = pgTable(
     flexileFeeCents: bigint("flexile_fee_cents", { mode: "bigint" }),
     countryCode: varchar("country_code"),
     acceptedAt: timestamp("accepted_at", { precision: 6, mode: "date" }),
+    deletedAt: timestamp("deleted_at", { precision: 6, mode: "date" }),
   },
   (table) => [
     index("index_invoices_on_company_contractor_id").using(
@@ -1710,18 +1711,16 @@ export const companyContractors = pgTable(
     userId: bigint("user_id", { mode: "bigint" }).notNull(),
     companyId: bigint("company_id", { mode: "bigint" }).notNull(),
     startedAt: timestamp("started_at", { precision: 6, mode: "date" }).notNull(),
-    hoursPerWeek: integer("hours_per_week"),
     createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { precision: 6, mode: "date" })
       .notNull()
       .$onUpdate(() => new Date()),
     endedAt: timestamp("ended_at", { precision: 6, mode: "date" }),
     role: varchar("role").notNull(),
-
     externalId: varchar("external_id").$default(nanoid).notNull(),
     payRateType: integer("pay_rate_type").$type<PayRateType>().default(PayRateType.Hourly).notNull(),
     sentEquityPercentSelectionEmail: boolean("sent_equity_percent_selection_email").notNull().default(false),
-    payRateInSubunits: integer("pay_rate_in_subunits").notNull(),
+    payRateInSubunits: integer("pay_rate_in_subunits"),
     payRateCurrency: varchar("pay_rate_currency").default("usd").notNull(),
     contractSignedElsewhere: boolean("contract_signed_elsewhere").notNull().default(false),
   },
@@ -1874,7 +1873,6 @@ export const companies = pgTable(
     countryCode: varchar("country_code"),
     isGumroad: boolean("is_gumroad").notNull().default(false),
     isTrusted: boolean("is_trusted").notNull().default(false),
-    irsTaxForms: boolean("irs_tax_forms").notNull().default(false),
     equityGrantsEnabled: boolean("equity_grants_enabled").notNull().default(false),
     showAnalyticsToContractors: boolean("show_analytics_to_contractors").notNull().default(false),
     companyUpdatesEnabled: boolean("company_updates_enabled").notNull().default(false),
