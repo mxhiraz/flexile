@@ -10,8 +10,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Table as ShadcnTable, TableHeader, TableHead, TableRow } from "@/components/ui/table";
 
 import Placeholder from "@/components/Placeholder";
+import { SupportTableSkeleton } from "@/components/SupportTableSkeleton";
 import { formatDate } from "@/utils/time";
 
 interface SupportTicket {
@@ -395,7 +397,31 @@ export default function SupportPage() {
     >
       <div className="grid gap-4">
         {loading ? (
-          <div className="py-8 text-center">Loading support tickets...</div>
+          <div className="grid gap-4">
+            <div className="grid gap-2 md:flex md:justify-between">
+              <div className="flex gap-2">
+                <div className="relative w-full md:w-60">
+                  <div className="absolute top-2.5 left-2.5 size-4 bg-gray-300 rounded animate-pulse" />
+                  <div className="w-full pl-8 h-10 bg-gray-100 rounded animate-pulse" />
+                </div>
+                <div className="h-10 w-20 bg-gray-100 rounded animate-pulse" />
+              </div>
+            </div>
+            <ShadcnTable className="caption-top">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>From</TableHead>
+                  <TableHead className="text-right">Messages</TableHead>
+                  <TableHead>Last updated</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <SupportTableSkeleton />
+            </ShadcnTable>
+          </div>
         ) : data.length > 0 ? (
           <DataTable table={table} searchColumn="subject" />
         ) : (
