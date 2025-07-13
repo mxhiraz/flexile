@@ -26,6 +26,7 @@ const KEY_CHECKING_ACCOUNT = "CHECKING";
 const KEY_ACCOUNT_TYPE = "accountType";
 const KEY_ACCOUNT_HOLDER_NAME = "accountHolderName";
 const KEY_ACCOUNT_ROUTING_NUMBER = "abartn";
+const KEY_ACCOUNT_NUMBER = "accountNumber";
 const KEY_ADDRESS_PREFIX = "address";
 const KEY_ADDRESS_COUNTRY = "address.country";
 const KEY_ADDRESS_STATE = "address.state";
@@ -389,7 +390,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     });
   };
 
-  const renderField = (field: Field, reserveErrorSpace = false) => {
+  const renderField = (field: Field) => {
     if (field.type === "select" || field.type === "radio") {
       const errorMessage = errors.get(field.key);
       const selectOptions = (field.valuesAllowed ?? []).map(({ key, name }) => ({
@@ -414,9 +415,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
             disabled={isPending}
             className={cn(errors.has(field.key) && "border-red-500 focus-visible:ring-red-500")}
           />
-          <div className="min-h-[20px] text-sm text-red-500">
-            {errorMessage || (reserveErrorSpace ? "\u00A0" : null)}
-          </div>
+          {errorMessage ? <div className="text-sm text-red-500">{errorMessage}</div> : null}
         </div>
       );
     }
@@ -432,14 +431,13 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
         field={field}
         invalid={errors.has(field.key)}
         help={errors.get(field.key)}
-        reserveErrorSpace={reserveErrorSpace}
       />
     );
   };
 
   const groupFields = (fields: Field[]): (Field | Field[])[] => {
     const fieldPairs: [string, string][] = [
-      [KEY_ACCOUNT_ROUTING_NUMBER, "accountNumber"],
+      [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
       [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
     ];
 
@@ -516,11 +514,32 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[90vh] flex-col">
+        <style>{`
+          .thin-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .thin-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .thin-scrollbar::-webkit-scrollbar-thumb {
+            background: #6a6b60;
+            border-radius: 4px;
+          }
+          .thin-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #5a5b52;
+          }
+        `}</style>
         <DialogHeader>
           <DialogTitle>Bank account</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 space-y-4 overflow-y-auto">
+        <div
+          className="thin-scrollbar flex-1 space-y-4 overflow-y-auto"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "#6a6b60 transparent",
+          }}
+        >
           <div className="grid gap-2">
             <Label htmlFor={`currency-${uid}`}>Currency</Label>
             <ComboBox
@@ -566,7 +585,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
                   // Render paired fields side by side
                   return (
                     <div key={`group-${index}`} className="grid grid-cols-2 gap-4">
-                      {fieldOrGroup.map((field) => renderField(field, false))}
+                      {fieldOrGroup.map((field) => renderField(field))}
                     </div>
                   );
                 }
@@ -598,14 +617,12 @@ const BankAccountField = ({
   field,
   invalid,
   help,
-  reserveErrorSpace,
   ...inputProps
 }: {
   field: InputField;
   onChange: (value: string) => void;
   invalid?: boolean;
   help?: string | undefined;
-  reserveErrorSpace?: boolean;
 } & Omit<React.ComponentProps<typeof Input>, "onChange">) => {
   const id = useId();
 
