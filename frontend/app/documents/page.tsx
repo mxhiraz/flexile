@@ -1,4 +1,7 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { skipToken, useQueryClient } from "@tanstack/react-query";
+import { type ColumnFiltersState, getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import {
   BriefcaseBusiness,
   CircleCheck,
@@ -9,34 +12,33 @@ import {
   PercentIcon,
   SendHorizontal,
 } from "lucide-react";
-import { skipToken } from "@tanstack/react-query";
-import { getFilteredRowModel, getSortedRowModel, type ColumnFiltersState } from "@tanstack/react-table";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
 import React, { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import DocusealForm, { customCss } from "@/app/documents/DocusealForm";
 import DataTable, { createColumnHelper, filterValueSchema, useTable } from "@/components/DataTable";
-import { Input } from "@/components/ui/input";
 import MainLayout from "@/components/layouts/Main";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { linkClasses } from "@/components/Link";
 import MutationButton, { MutationStatusButton } from "@/components/MutationButton";
 import Placeholder from "@/components/Placeholder";
 import Status, { type Variant as StatusVariant } from "@/components/Status";
+import TableSkeleton from "@/components/TableSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCurrentCompany, useCurrentUser } from "@/global";
+import { storageKeys } from "@/models/constants";
 import type { RouterOutput } from "@/trpc";
 import { DocumentTemplateType, DocumentType, trpc } from "@/trpc/client";
 import { assertDefined } from "@/utils/assert";
 import { formatDate } from "@/utils/time";
-import { linkClasses } from "@/components/Link";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 type Document = RouterOutput["documents"]["list"][number];
 type SignableDocument = Document & { docusealSubmissionId: number };
@@ -209,7 +211,7 @@ export default function DocumentsPage() {
   const canSign = user.address.street_address || isCompanyRepresentative;
 
   const currentYear = new Date().getFullYear();
-  const [documents] = trpc.documents.list.useSuspenseQuery({ companyId: company.id, userId });
+  const { data: documents = [], isLoading } = trpc.documents.list.useQuery({ companyId: company.id, userId });
 
   const inviteLawyerForm = useForm({ resolver: zodResolver(inviteLawyerSchema) });
   const inviteLawyer = trpc.lawyers.invite.useMutation({
@@ -316,7 +318,7 @@ export default function DocumentsPage() {
     [userId],
   );
   const storedColumnFilters = columnFiltersSchema.safeParse(
-    JSON.parse(localStorage.getItem("documentsColumnFilters") ?? "{}"),
+    JSON.parse(localStorage.getItem(storageKeys.DOCUMENTS_COLUMN_FILTERS) ?? "{}"),
   );
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     storedColumnFilters.data ?? [{ id: "Status", value: ["Signature required"] }],
@@ -331,7 +333,7 @@ export default function DocumentsPage() {
     onColumnFiltersChange: (columnFilters) =>
       setColumnFilters((old) => {
         const value = typeof columnFilters === "function" ? columnFilters(old) : columnFilters;
-        localStorage.setItem("documentsColumnFilters", JSON.stringify(value));
+        localStorage.setItem(storageKeys.DOCUMENTS_COLUMN_FILTERS, JSON.stringify(value));
         return value;
       }),
   });
@@ -375,7 +377,9 @@ export default function DocumentsPage() {
             </AlertDescription>
           </Alert>
         ) : null}
-        {documents.length > 0 ? (
+        {isLoading ? (
+          <TableSkeleton columns={6} />
+        ) : documents.length > 0 ? (
           <>
             <DataTable
               table={table}
@@ -437,11 +441,13 @@ const SignDocumentModal = ({ document, onClose }: { document: SignableDocument; 
     companyId: company.id,
   });
   const trpcUtils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   const signDocument = trpc.documents.sign.useMutation({
     onSuccess: async () => {
       router.replace("/documents");
       await trpcUtils.documents.list.refetch();
+      await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- not ideal, but there's no good way to assert this right now
       if (redirectUrl) router.push(redirectUrl as Route);
       else onClose();

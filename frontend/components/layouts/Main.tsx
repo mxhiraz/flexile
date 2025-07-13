@@ -1,22 +1,27 @@
 import { SignOutButton } from "@clerk/nextjs";
-import {
-  Rss,
-  ChevronsUpDown,
-  ReceiptIcon,
-  Files,
-  Users,
-  BookUser,
-  Settings,
-  ChartPie,
-  CircleDollarSign,
-  LogOut,
-  ChevronRight,
-} from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { skipToken, useQueryClient } from "@tanstack/react-query";
+import {
+  BookUser,
+  ChartPie,
+  ChevronRight,
+  ChevronsUpDown,
+  CircleDollarSign,
+  Files,
+  LogOut,
+  ReceiptIcon,
+  Rss,
+  Settings,
+  Users,
+} from "lucide-react";
+import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { navLinks as equityNavLinks } from "@/app/equity";
+import { useIsActionable } from "@/app/invoices";
+import { GettingStarted } from "@/components/GettingStarted";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -42,13 +47,10 @@ import {
 } from "@/components/ui/sidebar";
 import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
+import { storageKeys } from "@/models/constants";
 import { trpc } from "@/trpc/client";
 import { request } from "@/utils/request";
 import { company_switch_path } from "@/utils/routes";
-import type { Route } from "next";
-import { useIsActionable } from "@/app/invoices";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { navLinks as equityNavLinks } from "@/app/equity";
 
 export default function MainLayout({
   children,
@@ -149,6 +151,15 @@ export default function MainLayout({
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+        {user.currentCompanyId && (user.roles.administrator || user.roles.worker) ? (
+          <SidebarGroup className="mt-auto px-0 py-0">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <GettingStarted />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
@@ -183,9 +194,11 @@ const CompanyName = () => {
   const company = useCurrentCompany();
   return (
     <>
-      <div className="relative size-6">
-        <Image src={company.logo_url || defaultCompanyLogo} fill className="rounded-sm" alt="" />
-      </div>
+      {company.name ? (
+        <Link href="/settings" className="relative size-6">
+          <Image src={company.logo_url || defaultCompanyLogo} fill className="rounded-sm" alt="" />
+        </Link>
+      ) : null}
       <div>
         <span className="line-clamp-1 text-sm font-bold" title={company.name ?? ""}>
           {company.name}
@@ -218,7 +231,7 @@ const NavLinks = () => {
   const updatesPath = company.routes.find((route) => route.label === "Updates")?.name;
   const equityLinks = equityNavLinks(user, company);
 
-  const [isOpen, setIsOpen] = React.useState(() => localStorage.getItem("equity-menu-state") === "open");
+  const [isOpen, setIsOpen] = React.useState(() => localStorage.getItem(storageKeys.EQUITY_MENU_STATE) === "open");
 
   return (
     <SidebarMenu>
@@ -275,13 +288,13 @@ const NavLinks = () => {
           open={isOpen}
           onOpenChange={(state) => {
             setIsOpen(state);
-            localStorage.setItem("equity-menu-state", state ? "open" : "closed");
+            localStorage.setItem(storageKeys.EQUITY_MENU_STATE, state ? "open" : "closed");
           }}
           className="group/collapsible"
         >
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton>
+              <SidebarMenuButton closeOnMobileClick={false}>
                 <ChartPie />
                 <span>Equity</span>
                 <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />

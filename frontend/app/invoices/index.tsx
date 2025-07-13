@@ -1,5 +1,5 @@
 import { CurrencyDollarIcon } from "@heroicons/react/20/solid";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import MutationButton from "@/components/MutationButton";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { useCurrentCompany, useCurrentUser } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { request } from "@/utils/request";
-import { approve_company_invoices_path, reject_company_invoices_path, company_invoice_path } from "@/utils/routes";
+import { approve_company_invoices_path, company_invoice_path, reject_company_invoices_path } from "@/utils/routes";
 
 type Invoice = RouterOutput["invoices"]["list"][number] | RouterOutput["invoices"]["get"];
 export const EDITABLE_INVOICE_STATES: Invoice["status"][] = ["received", "rejected"];
@@ -118,6 +118,7 @@ export function useIsDeletable() {
 export const useApproveInvoices = (onSuccess?: () => void) => {
   const utils = trpc.useUtils();
   const company = useCurrentCompany();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ approve_ids, pay_ids }: { approve_ids?: string[]; pay_ids?: string[] }) => {
@@ -132,6 +133,7 @@ export const useApproveInvoices = (onSuccess?: () => void) => {
     onSuccess: () => {
       setTimeout(() => {
         void utils.invoices.list.invalidate({ companyId: company.id });
+        void queryClient.invalidateQueries({ queryKey: ["currentUser"] });
         onSuccess?.();
       }, 500);
     },
