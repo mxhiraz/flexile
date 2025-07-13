@@ -12,7 +12,6 @@ class Document < ApplicationRecord
 
   has_many_attached :attachments
 
-  # Tax form constants (moved from TaxDocument model)
   FORM_1099_DIV = "1099-DIV" # Dividends and Distributions
   FORM_1099_NEC = "1099-NEC" # Nonemployee Compensation
   FORM_W_9 = "W-9"
