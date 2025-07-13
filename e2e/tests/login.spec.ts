@@ -31,7 +31,7 @@ test("login with redirect_url", async ({ page }) => {
 
   await page.goto("/people");
 
-  await page.waitForURL(/\/login\?.*redirect_url=%2Fpeople/u);
+  await page.waitForURL(/\/login\?.*redirect_url=%2Fpeople/);
 
   await page.getByLabel("Email").fill(email);
   await page.getByRole("button", { name: "Continue", exact: true }).click();

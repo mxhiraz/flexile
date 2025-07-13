@@ -37,7 +37,7 @@ test.describe.serial("Onboarding checklist", () => {
     await expect(page.getByText("Send your first payment")).toBeVisible();
 
     await page.getByText("Add company details").click();
-    await expect(page).toHaveURL(/\/administrator\/settings\/details/u);
+    await expect(page).toHaveURL(/\/administrator\/settings\/details/);
     await page.getByLabel("Company's legal name").fill(faker.company.name());
     await page.getByLabel("EIN").fill(faker.string.numeric(9));
     await page.getByLabel("Phone number").fill(faker.phone.number());
@@ -52,7 +52,7 @@ test.describe.serial("Onboarding checklist", () => {
     await expect(page.getByText("25%")).toBeVisible();
 
     await page.getByText("Add bank account").click();
-    await expect(page).toHaveURL(/\/administrator\/settings\/billing/u);
+    await expect(page).toHaveURL(/\/administrator\/settings\/billing/);
     await companyStripeAccountsFactory.create({
       companyId: company.id,
     });
@@ -61,7 +61,7 @@ test.describe.serial("Onboarding checklist", () => {
     await expect(page.getByText("50%")).toBeVisible();
 
     await page.getByText("Invite a contractor").click();
-    await expect(page).toHaveURL(/\/people/u);
+    await expect(page).toHaveURL(/\/people/);
     await expect(page.getByRole("heading", { name: "People" })).toBeVisible();
     await page.getByRole("button", { name: "Invite contractor" }).click();
 
@@ -82,10 +82,10 @@ test.describe.serial("Onboarding checklist", () => {
     await expect(page.getByText("75%")).toBeVisible();
 
     const checklistItems = page.locator('[class*="space-y-1"] > button');
-    await expect(checklistItems.nth(0).getByText("Add company details")).toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(1).getByText("Add bank account")).toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(2).getByText("Invite a contractor")).toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(3).getByText("Send your first payment")).not.toHaveClass(/line-through/u);
+    await expect(checklistItems.nth(0).getByText("Add company details")).toHaveClass(/line-through/);
+    await expect(checklistItems.nth(1).getByText("Add bank account")).toHaveClass(/line-through/);
+    await expect(checklistItems.nth(2).getByText("Invite a contractor")).toHaveClass(/line-through/);
+    await expect(checklistItems.nth(3).getByText("Send your first payment")).not.toHaveClass(/line-through/);
   });
 
   test("persists admin onboarding checklist progress across sessions", async ({ page }) => {
@@ -94,10 +94,10 @@ test.describe.serial("Onboarding checklist", () => {
     await expect(page.getByText("75%")).toBeVisible();
 
     const checklistItems = page.locator('[class*="space-y-1"] > button');
-    await expect(checklistItems.nth(0).getByText("Add company details")).toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(1).getByText("Add bank account")).toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(2).getByText("Invite a contractor")).toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(3).getByText("Send your first payment")).not.toHaveClass(/line-through/u);
+    await expect(checklistItems.nth(0).getByText("Add company details")).toHaveClass(/line-through/);
+    await expect(checklistItems.nth(1).getByText("Add bank account")).toHaveClass(/line-through/);
+    await expect(checklistItems.nth(2).getByText("Invite a contractor")).toHaveClass(/line-through/);
+    await expect(checklistItems.nth(3).getByText("Send your first payment")).not.toHaveClass(/line-through/);
   });
 
   test("completes worker onboarding checklist by external signed contract, filling tax information and adding payout details", async ({
@@ -110,7 +110,7 @@ test.describe.serial("Onboarding checklist", () => {
     await expect(page.getByText("Sign contract")).toBeVisible();
 
     await page.getByText("Fill tax information").click();
-    await expect(page).toHaveURL(/\/settings\/tax/u);
+    await expect(page).toHaveURL(/\/settings\/tax/);
     await page.getByLabel("Tax ID").fill(faker.string.numeric(9));
     await page.getByRole("button", { name: "Save changes" }).click();
     await withinModal(
@@ -124,12 +124,12 @@ test.describe.serial("Onboarding checklist", () => {
     await expect(page.getByText("67%")).toBeVisible();
 
     const checklistItems = page.locator('[class*="space-y-1"] > button');
-    await expect(checklistItems.nth(0).getByText("Fill tax information")).toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(1).getByText("Add payout information")).not.toHaveClass(/line-through/u);
-    await expect(checklistItems.nth(2).getByText("Sign contract")).toHaveClass(/line-through/u);
+    await expect(checklistItems.nth(0).getByText("Fill tax information")).toHaveClass(/line-through/);
+    await expect(checklistItems.nth(1).getByText("Add payout information")).not.toHaveClass(/line-through/);
+    await expect(checklistItems.nth(2).getByText("Sign contract")).toHaveClass(/line-through/);
 
     await page.getByText("Add payout information").click();
-    await expect(page).toHaveURL(/\/settings\/payouts/u);
+    await expect(page).toHaveURL(/\/settings\/payouts/);
     await page.getByText("Add bank account").click();
     await withinModal(
       async (modal) => {
