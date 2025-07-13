@@ -10,7 +10,6 @@ FactoryBot.define do
     description { Faker::Lorem.sentence }
     status { Invoice::RECEIVED }
     invoice_date { Date.current }
-    total_minutes { 60 }
     total_amount_in_usd_cents { 60_00 }
     cash_amount_in_cents { total_amount_in_usd_cents }
     equity_percentage { 0 }
@@ -23,13 +22,8 @@ FactoryBot.define do
     zip_code { Faker::Address.zip_code }
     country_code { "US" }
 
-    trait :project_based do
-      total_minutes { nil }
-      company_worker { association :company_worker, :project_based }
-    end
-
     after :build do |invoice|
-      invoice.invoice_line_items << build(:invoice_line_item, invoice: nil, minutes: invoice.total_minutes)
+      invoice.invoice_line_items << build(:invoice_line_item, invoice: nil, quantity: 1)
       invoice.flexile_fee_cents ||= invoice.calculate_flexile_fee_cents
     end
 
@@ -107,5 +101,9 @@ FactoryBot.define do
   trait :partially_approved do
     approved
     approvals { company.required_invoice_approval_count - 1 }
+  end
+
+  trait :deleted do
+    deleted_at { 1.day.ago }
   end
 end

@@ -19,10 +19,6 @@ RSpec.describe Invoice do
     it { is_expected.to have_one(:quickbooks_journal_entry) }
   end
 
-  describe "delegations" do
-    it { is_expected.to delegate_method(:hourly?).to(:company_worker).allow_nil }
-  end
-
   describe "validations" do
     it { is_expected.to define_enum_for(:invoice_type).with_values(services: "services", other: "other").backed_by_column_of_type(:enum).with_prefix(:invoice_type) }
     it { is_expected.to validate_presence_of(:status) }
@@ -60,6 +56,20 @@ RSpec.describe Invoice do
         .allow_nil
     end
 
+    describe "allowed equity percentage range" do
+      it "ensures that min allowed equity percentage is less than or equal to max allowed equity percentage" do
+        invoice = build(:invoice, min_allowed_equity_percentage: 81, max_allowed_equity_percentage: 80)
+        expect(invoice).to be_invalid
+        expect(invoice.errors.full_messages).to eq(["Min allowed equity percentage must be less than or equal to maximum allowed equity percentage"])
+
+        invoice.min_allowed_equity_percentage = 80
+        expect(invoice).to be_valid
+
+        invoice.min_allowed_equity_percentage = 0
+        expect(invoice).to be_valid
+      end
+    end
+
     describe "fields that we auto-populate on create" do
       subject { create(:invoice) }
 
@@ -78,76 +88,40 @@ RSpec.describe Invoice do
       invoice.invoice_line_items.build(
         {
           description: "Doing",
-          minutes: 60,
+          quantity: 1,
           pay_rate_in_subunits: 50_00,
-          total_amount_cents: 50_00,
         }
       )
       expect(invoice).to be_valid
     end
+  end
 
-    it "ensures that the total amount is a sum of cash and equity amounts" do
-      invoice = create(:invoice, total_amount_in_usd_cents: 200_00, cash_amount_in_cents: 100_00, equity_amount_in_cents: 100_00)
-      expect(invoice).to be_valid
-
-      invoice.cash_amount_in_cents = 99_99
-      expect(invoice).to be_invalid
-      expect(invoice.errors.full_messages).to eq(["Total amount in USD cents must equal the sum of cash and equity amounts"])
-
-      invoice.cash_amount_in_cents = 100_00
-      invoice.equity_amount_in_cents = 99_99
-      expect(invoice).to be_invalid
-      expect(invoice.errors.full_messages).to eq(["Total amount in USD cents must equal the sum of cash and equity amounts"])
-    end
-
-    describe "total_minutes" do
-      context "for hourly contractor invoices" do
-        it "ensures that total minutes is present for a services invoice type" do
-          invoice = build(:invoice, user: create(:user, :contractor), total_minutes: nil)
-          expect(invoice).to be_invalid
-          expect(invoice.errors.full_messages).to eq(["Invoice line items minutes can't be blank", "Invoice line items minutes is not a number", "Total minutes can't be blank", "Total minutes is not a number"])
-
-          invoice.total_minutes = 0
-          invoice.invoice_line_items.first.minutes = 0
-          expect(invoice).to be_invalid
-          expect(invoice.errors.full_messages).to eq(["Invoice line items minutes must be greater than 0"])
-
-          invoice.total_minutes = Invoice::MAX_MINUTES + 1
-          invoice.invoice_line_items.first.minutes = Invoice::MAX_MINUTES + 1
-          expect(invoice).to be_invalid
-          expect(invoice.errors.full_messages).to eq(["Total minutes must be less than or equal to 9600"])
-
-          invoice.total_minutes = 60
-          expect(invoice).to be_valid
-        end
-
-        it "does not validate total minutes for a non-services invoice type" do
-          invoice = build(:invoice, user: create(:user, :contractor), total_minutes: nil, invoice_type: "other")
-          expect(invoice).to be_valid
-        end
-      end
-
-      it "does not validate total minutes for project-based contractor invoices" do
-        invoice = build(:invoice, company_worker: create(:company_worker, :project_based), total_minutes: nil)
-        expect(invoice).to be_valid
-
-        invoice.total_minutes = 0
-        expect(invoice).to be_valid
+  describe "deletion" do
+    it "allows deletion of invoices with deletable statuses" do
+      [Invoice::RECEIVED, Invoice::APPROVED].each do |status|
+        invoice = create(:invoice, status: status)
+        expect { invoice.mark_deleted! }.not_to raise_error
       end
     end
 
-    describe "allowed equity percentage range" do
-      it "ensures that min allowed equity percentage is less than or equal to max allowed equity percentage" do
-        invoice = build(:invoice, min_allowed_equity_percentage: 81, max_allowed_equity_percentage: 80)
-        expect(invoice).to be_invalid
-        expect(invoice.errors.full_messages).to eq(["Min allowed equity percentage must be less than or equal to maximum allowed equity percentage"])
-
-        invoice.min_allowed_equity_percentage = 80
-        expect(invoice).to be_valid
-
-        invoice.min_allowed_equity_percentage = 0
-        expect(invoice).to be_valid
+    it "prevents deletion of invoices with non-deletable statuses" do
+      [Invoice::PAID, Invoice::PROCESSING, Invoice::REJECTED, Invoice::PAYMENT_PENDING, Invoice::FAILED].each do |status|
+        invoice = create(:invoice, status: status)
+        expect { invoice.mark_deleted! }.to raise_error(ActiveRecord::RecordInvalid, /Status cannot be #{status} for deleted invoices/)
       end
+    end
+
+    it "prevents status updates to active statuses on already-deleted invoices" do
+      invoice = create(:invoice, status: Invoice::APPROVED)
+      invoice.mark_deleted!
+
+      invoice.status = Invoice::PAID
+      expect(invoice).to be_invalid
+      expect(invoice.errors[:status]).to include("cannot be paid for deleted invoices")
+
+      invoice.status = Invoice::PROCESSING
+      expect(invoice).to be_invalid
+      expect(invoice.errors[:status]).to include("cannot be processing for deleted invoices")
     end
   end
 
@@ -314,6 +288,26 @@ RSpec.describe Invoice do
         create(:invoice, user:, created_by: admin) # Created by admin and not accepted
 
         expect(described_class.not_pending_acceptance).to match_array(expected)
+      end
+    end
+
+    describe ".alive" do
+      it "returns only non-deleted invoices" do
+        active_invoice = create(:invoice)
+        deleted_invoice = create(:invoice, :deleted)
+
+        expect(Invoice.alive).to include(active_invoice)
+        expect(Invoice.alive).not_to include(deleted_invoice)
+      end
+    end
+
+    describe ".deleted" do
+      it "returns only deleted invoices" do
+        active_invoice = create(:invoice)
+        deleted_invoice = create(:invoice, :deleted)
+
+        expect(Invoice.deleted).to include(deleted_invoice)
+        expect(Invoice.deleted).not_to include(active_invoice)
       end
     end
   end
@@ -1010,7 +1004,7 @@ RSpec.describe Invoice do
       end
 
       context "when a new invoice line item is added" do
-        let!(:new_invoice_line_item) { create(:invoice_line_item, invoice:, description: "Programming", minutes: 120) }
+        let!(:new_invoice_line_item) { create(:invoice_line_item, invoice:, description: "Programming", quantity: 120, hourly: true) }
         let(:parsed_body) do
           {
             "SyncToken" => "2",
@@ -1070,7 +1064,7 @@ RSpec.describe Invoice do
         end
 
         before do
-          invoice.update!(total_amount_in_usd_cents: 1_180_00, cash_amount_in_cents: 1_180_00, total_minutes: 180)
+          invoice.update!(total_amount_in_usd_cents: 1_180_00, cash_amount_in_cents: 1_180_00)
           invoice.reload
         end
 

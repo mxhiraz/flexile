@@ -21,14 +21,13 @@ import NumberInput from "@/components/NumberInput";
 import Placeholder from "@/components/Placeholder";
 import Status from "@/components/Status";
 import Tabs from "@/components/Tabs";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { MAXIMUM_EQUITY_PERCENTAGE, MINIMUM_EQUITY_PERCENTAGE } from "@/models";
 import type { RouterOutput } from "@/trpc";
-import { PayRateType, trpc } from "@/trpc/client";
+import { trpc } from "@/trpc/client";
 import { formatMoney, formatMoneyFromCents } from "@/utils/formatMoney";
 import { request } from "@/utils/request";
 import { approve_company_invoices_path, company_equity_exercise_payment_path } from "@/utils/routes";
@@ -37,7 +36,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormField, FormLabel, FormControl, FormMessage, FormItem } from "@/components/ui/form";
-import FormFields from "../FormFields";
+import FormFields, { schema as formSchema } from "../FormFields";
 import RadioButtons from "@/components/RadioButtons";
 import CopyButton from "@/components/CopyButton";
 import { Decimal } from "decimal.js";
@@ -159,6 +158,7 @@ export default function ContractorPage() {
         assertOk: true,
       });
       await trpcUtils.invoices.list.invalidate({ companyId: company.id });
+      await trpcUtils.invoices.get.invalidate({ companyId: company.id, id: invoice.externalId });
       closeIssuePaymentModal();
     },
     onError: (error) => {
@@ -379,13 +379,6 @@ export default function ContractorPage() {
   );
 }
 
-const detailsFormSchema = z.object({
-  payRateInSubunits: z.number(),
-  hoursPerWeek: z.number().nullable(),
-  payRateType: z.nativeEnum(PayRateType),
-  role: z.string(),
-});
-
 const DetailsTab = ({
   userId,
   setCancelModalOpen,
@@ -397,8 +390,8 @@ const DetailsTab = ({
   const router = useRouter();
   const [user] = trpc.users.get.useSuspenseQuery({ companyId: company.id, id: userId });
   const [contractor] = trpc.contractors.get.useSuspenseQuery({ companyId: company.id, userId });
-  const form = useForm({
-    resolver: zodResolver(detailsFormSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: contractor,
     disabled: !!contractor.endedAt,
   });
@@ -442,7 +435,7 @@ const DetailsTab = ({
           ) : null}
 
           <FormFields />
-          {contractor.payRateType !== PayRateType.ProjectBased && company.flags.includes("equity_compensation") && (
+          {payRateInSubunits && company.flags.includes("equity_compensation") ? (
             <div>
               <span>Equity split</span>
               <div className="my-2 flex h-2 overflow-hidden rounded-xs bg-gray-200">
@@ -470,7 +463,7 @@ const DetailsTab = ({
                 </span>
               </div>
             </div>
-          )}
+          ) : null}
           {!contractor.endedAt && (
             <MutationStatusButton
               type="submit"
@@ -707,6 +700,13 @@ function ExercisesTab({ investorId }: { investorId: string }) {
       columnHelper.simple("requestedAt", "Request date", formatDate),
       columnHelper.simple("numberOfOptions", "Number of shares", (value) => value.toLocaleString(), "numeric"),
       columnHelper.simple("totalCostCents", "Cost", formatMoneyFromCents, "numeric"),
+      columnHelper.accessor((row) => row.exerciseRequests.map((req) => req.equityGrant.name).join(", ") || "—", {
+        header: "Option grant ID",
+      }),
+      columnHelper.accessor(
+        (row) => row.exerciseRequests.flatMap((req) => req.shareHolding?.name ?? []).join(", ") || "—",
+        { header: "Stock certificate ID" },
+      ),
       columnHelper.accessor("status", {
         header: "Status",
         cell: (info) => <EquityGrantExerciseStatusIndicator status={info.getValue()} />,
@@ -765,22 +765,7 @@ const dividendsColumns = [
   dividendsColumnHelper.simple("totalAmountInCents", "Amount", formatMoneyFromCents, "numeric"),
   dividendsColumnHelper.accessor("status", {
     header: "Status",
-    cell: (info) => (
-      <Tooltip>
-        <TooltipTrigger>
-          <DividendStatusIndicator status={info.getValue()} />
-        </TooltipTrigger>
-        <TooltipContent>
-          {info.row.original.status === "Retained"
-            ? info.row.original.retainedReason === "ofac_sanctioned_country"
-              ? "This dividend is retained due to US sanctions."
-              : info.row.original.retainedReason === "below_minimum_payment_threshold"
-                ? "This dividend didn't meet the payout threshold set."
-                : null
-            : null}
-        </TooltipContent>
-      </Tooltip>
-    ),
+    cell: (info) => <DividendStatusIndicator dividend={info.row.original} />,
   }),
 ];
 function DividendsTab({ investorId }: { investorId: string }) {

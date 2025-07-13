@@ -48,6 +48,8 @@ service = CreateInvestorsAndDividends.new(
   company_id: 1823,
   csv_data: data,
   dividend_date: Date.new(2025, 6, 4),
+  is_first_round: true, # defaults to false
+  is_return_of_capital: true # defaults to false
 )
 service.process
 ```
@@ -181,10 +183,10 @@ AdminMailer.custom(
 company = Company.find(1823)
 dividends = company.dividends
 fees = dividends.map do |dividend|
-  calculated_fee = ((dividend.total_amount_in_cents.to_d * 1.5.to_d/100.to_d) + 50.to_d).round.to_i
-  [15_00, calculated_fee].min
+  calculated_fee = ((dividend.total_amount_in_cents.to_d * 2.9.to_d/100.to_d) + 30.to_d).round.to_i
+  [30_00, calculated_fee].min
 end
-fees.sum / 100.0 # 5490.21
+fees.sum / 100.0
 ```
 
 ### Fund Transfers
@@ -192,14 +194,14 @@ fees.sum / 100.0 # 5490.21
 #### Pull Funds via ACH using Stripe
 
 ```ruby
-company = Company.find(1823)
-stripe_setup_intent = company.fetch_stripe_setup_intent
+company = Company.find(2699)
+stripe_setup_intent = company.bank_account.stripe_setup_intent
 intent = Stripe::PaymentIntent.create({
   payment_method_types: ["us_bank_account"],
   payment_method: stripe_setup_intent.payment_method,
   customer: stripe_setup_intent.customer,
   confirm: true,
-  amount: 292_356_93, # set manually
+  amount: 695_009_30, # set manually
   currency: "USD",
   expand: ["latest_charge"],
   capture_method: "automatic",
@@ -207,6 +209,8 @@ intent = Stripe::PaymentIntent.create({
 ```
 
 #### Move Money from Stripe to Wise
+
+Once the money is in our Stripe account, pull into our Wise account.
 
 ```ruby
 payout = Stripe::Payout.create({
@@ -273,14 +277,6 @@ dividend_round.investor_dividend_rounds.each do |investor_dividend_round|
     investor_dividend_round.send_payout_below_threshold_email
   end
 end; nil
-```
-
-## Tax Documents
-
-Enable tax document generation:
-
-```ruby
-Company.find(1823).update(irs_tax_forms: true)
 ```
 
 This is automated, so nothing more needs to be done.
