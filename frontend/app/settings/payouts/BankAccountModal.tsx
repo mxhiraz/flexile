@@ -584,7 +584,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
                 if (Array.isArray(fieldOrGroup)) {
                   // Render paired fields side by side
                   return (
-                    <div key={`group-${index}`} className="grid grid-cols-2 gap-4">
+                    <div key={`group-${index}`} className="grid grid-cols-2 items-start gap-4">
                       {fieldOrGroup.map((field) => renderField(field))}
                     </div>
                   );
