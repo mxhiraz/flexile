@@ -134,10 +134,10 @@ const validateCPF = (cpf: string): boolean => {
 };
 
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
-  const [showBillingDetails, setShowBillingDetails] = useState(false);
   const defaultCurrency = bankAccount?.currency ?? currencyByCountryCode.get(billingDetails.country_code) ?? "USD";
   const [currency, setCurrency] = useState<Currency>(defaultCurrency);
   useEffect(() => setCurrency(defaultCurrency), [defaultCurrency]);
+
   const [selectedFormIndex, setSelectedFormIndex] = useState(0);
   const [details, setDetails] = useState(ImmutableMap(bankAccount?.details ?? {}));
   const detailsRef = useRef(details);
@@ -157,6 +157,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     }
     return result;
   };
+
   const {
     data: forms,
     refetch,
@@ -222,6 +223,11 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     return { label, defaultOn: currency === "USD" && userCountry === "US" };
   }, [forms, defaultFormIndex, currency, userCountry]);
 
+  // Set default form selection
+  useEffect(() => {
+    setSelectedFormIndex(defaultFormIndex);
+  }, [defaultFormIndex]);
+
   const form = forms[selectedFormIndex];
   const allFields = form?.fields.flatMap((field) => field.group);
 
@@ -232,8 +238,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
           (field) =>
             (field.required || field.key === KEY_ADDRESS_STATE) &&
             !((field.type === "select" || field.type === "radio") && !field.valuesAllowed) &&
-            field.key !== KEY_LEGAL_TYPE &&
-            Number(showBillingDetails) ^ Number(!field.key.startsWith(KEY_ADDRESS_PREFIX)),
+            field.key !== KEY_LEGAL_TYPE,
         )
         .map((field) => {
           switch (field.key) {
@@ -255,12 +260,17 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
               return field;
           }
         }),
-    [allFields, showBillingDetails],
+    [allFields],
   );
 
   const hasVisibleErrors = useMemo(
     () => visibleFields?.some((field) => errors.has(field.key)),
     [visibleFields, errors],
+  );
+
+  const hasRequiredFieldsEmpty = useMemo(
+    () => visibleFields?.some((field) => field.required && !details.get(field.key)?.trim()),
+    [visibleFields, details],
   );
 
   const validateField = async (field: Field) => {
@@ -364,12 +374,6 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
         }
       } finally {
         setErrors(newErrors);
-        if (
-          newErrors.size === 0 ||
-          Array.from(newErrors.keys()).some((field) => !field.startsWith(KEY_ADDRESS_PREFIX))
-        ) {
-          setShowBillingDetails(false);
-        }
       }
     },
   });
@@ -383,6 +387,88 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
       next.delete(field.key);
       return next;
     });
+  };
+
+  const renderField = (field: Field, reserveErrorSpace = false) => {
+    if (field.type === "select" || field.type === "radio") {
+      const errorMessage = errors.get(field.key);
+      const selectOptions = (field.valuesAllowed ?? []).map(({ key, name }) => ({
+        value: key,
+        label: name,
+      }));
+
+      return (
+        <div key={field.key} className="grid gap-2">
+          <Label className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor={field.key}>
+            {field.name}
+          </Label>
+          <ComboBox
+            id={field.key}
+            value={details.get(field.key) ?? ""}
+            onChange={(value) => {
+              setDetails((prev) => prev.set(field.key, value));
+              setTimeout(() => fieldUpdated(field), 0);
+            }}
+            modal
+            options={selectOptions}
+            disabled={isPending}
+            className={cn(errors.has(field.key) && "border-red-500 focus-visible:ring-red-500")}
+          />
+          <div className="min-h-[20px] text-sm text-red-500">
+            {errorMessage || (reserveErrorSpace ? "\u00A0" : null)}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <BankAccountField
+        key={field.key}
+        value={details.get(field.key) ?? ""}
+        onChange={(value) => {
+          setDetails((prev) => prev.set(field.key, value));
+          setTimeout(() => fieldUpdated(field), 0);
+        }}
+        field={field}
+        invalid={errors.has(field.key)}
+        help={errors.get(field.key)}
+        reserveErrorSpace={reserveErrorSpace}
+      />
+    );
+  };
+
+  const groupFields = (fields: Field[]): (Field | Field[])[] => {
+    const fieldPairs: [string, string][] = [
+      [KEY_ACCOUNT_ROUTING_NUMBER, "accountNumber"],
+      [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
+    ];
+
+    const used = new Set<string>();
+    const result: (Field | Field[])[] = [];
+
+    for (const field of fields) {
+      if (used.has(field.key)) continue;
+
+      const pair = fieldPairs.find(([first]) => field.key === first);
+      if (pair) {
+        const secondKey = pair[1];
+        const secondField = fields.find((f) => f.key === secondKey);
+
+        if (secondField && !used.has(secondKey)) {
+          result.push([field, secondField]);
+          used.add(field.key);
+          used.add(secondKey);
+        } else {
+          result.push(field);
+          used.add(field.key);
+        }
+      } else {
+        result.push(field);
+        used.add(field.key);
+      }
+    }
+
+    return result;
   };
 
   useEffect(() => {
@@ -429,102 +515,78 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="flex max-h-[90vh] flex-col">
         <DialogHeader>
           <DialogTitle>Bank account</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-2">
-          <Label htmlFor={`currency-${uid}`}>Currency</Label>
-          <ComboBox
-            id={`currency-${uid}`}
-            value={currency}
-            onChange={(value) => setCurrency(z.enum(currencyCodes).parse(value))}
-            options={CURRENCIES.map(({ value, name }) => ({ value, label: name }))}
-          />
-        </div>
 
-        {formSwitch ? (
-          <Checkbox
-            checked={(selectedFormIndex !== defaultFormIndex) !== formSwitch.defaultOn}
-            role="switch"
-            label={formSwitch.label}
-            disabled={isPending}
-            onCheckedChange={() => setSelectedFormIndex((prev) => (prev + 1) % 2)}
-          />
-        ) : forms.length > 2 ? (
+        <div className="flex-1 space-y-4 overflow-y-auto">
           <div className="grid gap-2">
-            <Label htmlFor={`form-${uid}`}>Account Type</Label>
+            <Label htmlFor={`currency-${uid}`}>Currency</Label>
             <ComboBox
-              id={`form-${uid}`}
-              value={selectedFormIndex.toString()}
-              onChange={(value) => setSelectedFormIndex(Number(value))}
-              options={forms.map((form, i) => ({ value: i.toString(), label: form.title }))}
-              disabled={isPending}
+              id={`currency-${uid}`}
+              value={currency}
+              onChange={(value) => setCurrency(z.enum(currencyCodes).parse(value))}
+              options={CURRENCIES.map(({ value, name }) => ({ value, label: name }))}
             />
           </div>
-        ) : null}
 
-        {visibleFields?.map((field) => {
-          if (field.type === "select" || field.type === "radio") {
-            const errorMessage = errors.get(field.key);
-            const selectOptions = (field.valuesAllowed ?? []).map(({ key, name }) => ({ value: key, label: name }));
-
-            return (
-              <div key={field.key} className="grid gap-2">
-                <Label
-                  className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  htmlFor={field.key}
-                >
-                  {field.name}
-                </Label>
-                <ComboBox
-                  id={field.key}
-                  value={details.get(field.key) ?? ""}
-                  onChange={(value) => {
-                    setDetails((prev) => prev.set(field.key, value));
-                    setTimeout(() => fieldUpdated(field), 0);
-                  }}
-                  modal
-                  options={selectOptions}
-                  disabled={isPending}
-                  className={cn(errors.has(field.key) && "border-red-500 focus-visible:ring-red-500")}
-                />
-                {errorMessage ? <div className="text-sm text-red-500">{errorMessage}</div> : null}
-              </div>
-            );
-          }
-
-          return (
-            <BankAccountField
-              key={field.key}
-              value={details.get(field.key) ?? ""}
-              onChange={(value) => {
-                setDetails((prev) => prev.set(field.key, value));
-                setTimeout(() => fieldUpdated(field), 0);
-              }}
-              field={field}
-              invalid={errors.has(field.key)}
-              help={errors.get(field.key)}
+          {formSwitch ? (
+            <Checkbox
+              checked={(selectedFormIndex !== defaultFormIndex) !== formSwitch.defaultOn}
+              role="switch"
+              label={formSwitch.label}
+              disabled={isPending}
+              onCheckedChange={() => setSelectedFormIndex((prev) => (prev + 1) % 2)}
             />
-          );
-        })}
-
-        <div className="mt-4 flex items-center justify-between gap-4">
-          {showBillingDetails ? (
-            <Button variant="link" className="mr-auto" onClick={() => setShowBillingDetails(false)}>
-              ← Back
-            </Button>
+          ) : forms.length > 2 ? (
+            <div className="grid gap-2">
+              <Label>Transfer method</Label>
+              <div className="flex rounded-md p-1" style={{ backgroundColor: "#F8F8F8" }}>
+                {forms.map((form, index) => (
+                  <button
+                    key={form.type}
+                    type="button"
+                    onClick={() => setSelectedFormIndex(index)}
+                    className={cn(
+                      "flex-1 rounded px-3 py-1.5 text-sm font-medium transition-colors",
+                      selectedFormIndex === index ? "bg-white text-gray-900" : "text-gray-700 hover:text-gray-900",
+                    )}
+                  >
+                    {form.title}
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : null}
-          <span>Step {showBillingDetails ? 2 : 1} of 2</span>
-          {showBillingDetails ? (
-            <MutationButton mutation={submitMutation} loadingText="Saving bank account...">
+
+          {visibleFields
+            ? groupFields(visibleFields).map((fieldOrGroup, index) => {
+                if (Array.isArray(fieldOrGroup)) {
+                  // Render paired fields side by side
+                  return (
+                    <div key={`group-${index}`} className="grid grid-cols-2 gap-4">
+                      {fieldOrGroup.map((field) => renderField(field, false))}
+                    </div>
+                  );
+                }
+
+                // Render single field
+                return renderField(fieldOrGroup);
+              })
+            : null}
+        </div>
+
+        <div className="pt-4">
+          <div className="flex justify-end">
+            <MutationButton
+              mutation={submitMutation}
+              loadingText="Saving bank account..."
+              disabled={hasRequiredFieldsEmpty || hasVisibleErrors}
+            >
               Save bank account
             </MutationButton>
-          ) : (
-            <Button disabled={hasVisibleErrors} onClick={() => setShowBillingDetails(true)}>
-              Continue
-            </Button>
-          )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -536,11 +598,15 @@ const BankAccountField = ({
   field,
   invalid,
   help,
+  reserveErrorSpace,
   ...inputProps
-}: { field: InputField; onChange: (value: string) => void; invalid?: boolean; help?: string | undefined } & Omit<
-  React.ComponentProps<typeof Input>,
-  "onChange"
->) => {
+}: {
+  field: InputField;
+  onChange: (value: string) => void;
+  invalid?: boolean;
+  help?: string | undefined;
+  reserveErrorSpace?: boolean;
+} & Omit<React.ComponentProps<typeof Input>, "onChange">) => {
   const id = useId();
 
   const applyDisplayFormat = (inputValue: string, cursorPosition = 0) => {
