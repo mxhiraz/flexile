@@ -1,11 +1,10 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Map as ImmutableMap } from "immutable";
-import { set } from "lodash-es";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { cloneDeep, partition, set } from "lodash-es";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import ComboBox from "@/components/ComboBox";
 import MutationButton from "@/components/MutationButton";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -385,84 +384,82 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     });
   };
 
-  const renderField = (field: Field) => {
-    if (field.type === "select" || field.type === "radio") {
-      const errorMessage = errors.get(field.key);
-      const selectOptions = (field.valuesAllowed ?? []).map(({ key, name }) => ({
-        value: key,
-        label: name,
-      }));
+  const renderField = useCallback(
+    (field: Field) => {
+      if (field.type === "select" || field.type === "radio") {
+        const errorMessage = errors.get(field.key);
+        const selectOptions = (field.valuesAllowed ?? []).map(({ key, name }) => ({
+          value: key,
+          label: name,
+        }));
+
+        return (
+          <div key={field.key} className="grid gap-2">
+            <Label
+              className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              htmlFor={field.key}
+            >
+              {field.name}
+            </Label>
+            <ComboBox
+              id={field.key}
+              value={details.get(field.key) ?? ""}
+              onChange={(value) => {
+                setDetails((prev) => prev.set(field.key, value));
+                setTimeout(() => fieldUpdated(field), 0);
+              }}
+              modal
+              options={selectOptions}
+              disabled={isPending}
+              className={cn(errors.has(field.key) && "border-red-500 focus-visible:ring-red-500")}
+            />
+            {errorMessage ? <div className="text-sm text-red-500">{errorMessage}</div> : null}
+          </div>
+        );
+      }
 
       return (
-        <div key={field.key} className="grid gap-2">
-          <Label className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor={field.key}>
-            {field.name}
-          </Label>
-          <ComboBox
-            id={field.key}
-            value={details.get(field.key) ?? ""}
-            onChange={(value) => {
-              setDetails((prev) => prev.set(field.key, value));
-              setTimeout(() => fieldUpdated(field), 0);
-            }}
-            modal
-            options={selectOptions}
-            disabled={isPending}
-            className={cn(errors.has(field.key) && "border-red-500 focus-visible:ring-red-500")}
-          />
-          {errorMessage ? <div className="text-sm text-red-500">{errorMessage}</div> : null}
-        </div>
+        <BankAccountField
+          key={field.key}
+          value={details.get(field.key) ?? ""}
+          onChange={(value) => {
+            setDetails((prev) => prev.set(field.key, value));
+            setTimeout(() => fieldUpdated(field), 0);
+          }}
+          field={field}
+          invalid={errors.has(field.key)}
+          help={errors.get(field.key)}
+        />
       );
-    }
+    },
+    [details, setDetails, fieldUpdated, errors, isPending],
+  );
 
-    return (
-      <BankAccountField
-        key={field.key}
-        value={details.get(field.key) ?? ""}
-        onChange={(value) => {
-          setDetails((prev) => prev.set(field.key, value));
-          setTimeout(() => fieldUpdated(field), 0);
-        }}
-        field={field}
-        invalid={errors.has(field.key)}
-        help={errors.get(field.key)}
-      />
-    );
-  };
+  const groupedFields = useMemo(() => {
+    if (!visibleFields) return [];
 
-  const groupFields = (fields: Field[]): (Field | Field[])[] => {
     const fieldPairs: [string, string][] = [
       [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
       [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
     ];
 
-    const used = new Set<string>();
     const result: (Field | Field[])[] = [];
+    let allFields: Field[] = cloneDeep(visibleFields);
 
-    for (const field of fields) {
-      if (used.has(field.key)) continue;
-
-      const pair = fieldPairs.find(([first]) => field.key === first);
-      if (pair) {
-        const secondKey = pair[1];
-        const secondField = fields.find((f) => f.key === secondKey);
-
-        if (secondField && !used.has(secondKey)) {
-          result.push([field, secondField]);
-          used.add(field.key);
-          used.add(secondKey);
-        } else {
-          result.push(field);
-          used.add(field.key);
-        }
-      } else {
-        result.push(field);
-        used.add(field.key);
+    while (allFields.length > 0) {
+      const fieldPair = fieldPairs.find((pairs) => pairs.some((pair) => pair === allFields[0]?.key));
+      if (fieldPair) {
+        const [fieldGroup, otherFields] = partition(allFields, (field) => fieldPair.some((pair) => pair === field.key));
+        result.push(fieldGroup);
+        allFields = otherFields;
+      } else if (allFields[0]) {
+        result.push(allFields[0]);
+        allFields.shift();
       }
     }
 
     return result;
-  };
+  }, [visibleFields]);
 
   useEffect(() => {
     if (!allFields) return;
@@ -574,21 +571,19 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
             </div>
           ) : null}
 
-          {visibleFields
-            ? groupFields(visibleFields).map((fieldOrGroup, index) => {
-                if (Array.isArray(fieldOrGroup)) {
-                  // Render paired fields side by side
-                  return (
-                    <div key={`group-${index}`} className="grid grid-cols-2 items-start gap-4">
-                      {fieldOrGroup.map((field) => renderField(field))}
-                    </div>
-                  );
-                }
+          {groupedFields.map((fieldOrGroup, index) => {
+            if (Array.isArray(fieldOrGroup)) {
+              // Render paired fields side by side
+              return (
+                <div key={`group-${index}`} className="grid grid-cols-2 items-start gap-4">
+                  {fieldOrGroup.map((field) => renderField(field))}
+                </div>
+              );
+            }
 
-                // Render single field
-                return renderField(fieldOrGroup);
-              })
-            : null}
+            // Render single field
+            return renderField(fieldOrGroup);
+          })}
         </div>
 
         <div className="pt-4">
