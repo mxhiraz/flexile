@@ -529,8 +529,8 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
             />
           ) : forms.length > 2 ? (
             <div className="grid gap-2">
-              <Label>Transfer method</Label>
-              <div className="flex rounded-md p-1" style={{ backgroundColor: "#F8F8F8" }}>
+              <Label htmlFor={`form-${uid}`}>Transfer method</Label>
+              <div className="flex rounded-md bg-[#F8F8F8] p-1">
                 {forms.map((form, index) => (
                   <button
                     key={form.type}
@@ -586,12 +586,10 @@ const BankAccountField = ({
   invalid,
   help,
   ...inputProps
-}: {
-  field: InputField;
-  onChange: (value: string) => void;
-  invalid?: boolean;
-  help?: string | undefined;
-} & Omit<React.ComponentProps<typeof Input>, "onChange">) => {
+}: { field: InputField; onChange: (value: string) => void; invalid?: boolean; help?: string | undefined } & Omit<
+  React.ComponentProps<typeof Input>,
+  "onChange"
+>) => {
   const id = useId();
 
   const applyDisplayFormat = (inputValue: string, cursorPosition = 0) => {

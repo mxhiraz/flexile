@@ -6,6 +6,8 @@ export interface BaseField {
 
 export function groupFields<T extends BaseField>(fields: T[], fieldPairs: [string, string][]): T[][] {
   const result: T[][] = [];
+
+  // ensures the original fields param is not mutated
   let allFields: T[] = cloneDeep(fields);
 
   while (allFields.length > 0) {
@@ -15,11 +17,7 @@ export function groupFields<T extends BaseField>(fields: T[], fieldPairs: [strin
       result.push(fieldGroup);
       allFields = otherFields;
     } else {
-      const field = allFields[0];
-      if (field) {
-        result.push([field]);
-        allFields.shift();
-      }
+      result.push(allFields.splice(0, 1));
     }
   }
 
