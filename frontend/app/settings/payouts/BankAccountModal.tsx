@@ -483,32 +483,11 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[90vh] flex-col">
-        <style>{`
-          .thin-scrollbar::-webkit-scrollbar {
-            width: 4px;
-          }
-          .thin-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          .thin-scrollbar::-webkit-scrollbar-thumb {
-            background: #6a6b60;
-            border-radius: 4px;
-          }
-          .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #5a5b52;
-          }
-        `}</style>
         <DialogHeader>
           <DialogTitle>Bank account</DialogTitle>
         </DialogHeader>
 
-        <div
-          className="thin-scrollbar flex-1 space-y-4 overflow-y-auto pb-1"
-          style={{
-            scrollbarWidth: "thin",
-            scrollbarColor: "#6a6b60 transparent",
-          }}
-        >
+        <div className="flex-1 space-y-4 overflow-y-auto pb-1">
           <div className="grid gap-2">
             <Label htmlFor={`currency-${uid}`}>Currency</Label>
             <ComboBox
