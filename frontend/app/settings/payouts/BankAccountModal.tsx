@@ -395,10 +395,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
 
         return (
           <div key={field.key} className="grid gap-2">
-            <Label
-              className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              htmlFor={field.key}
-            >
+            <Label className="peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor={field.key}>
               {field.name}
             </Label>
             <ComboBox
@@ -526,7 +523,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
         </DialogHeader>
 
         <div
-          className="thin-scrollbar flex-1 space-y-4 overflow-y-auto"
+          className="thin-scrollbar flex-1 space-y-4 overflow-y-auto pb-1"
           style={{
             scrollbarWidth: "thin",
             scrollbarColor: "#6a6b60 transparent",
