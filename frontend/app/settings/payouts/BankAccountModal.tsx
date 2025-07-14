@@ -135,6 +135,7 @@ const validateCPF = (cpf: string): boolean => {
 const FIELD_PAIRS: [string, string][] = [
   [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
   [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
+  [KEY_SWIFT_CODE, KEY_ACCOUNT_NUMBER],
 ];
 
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
