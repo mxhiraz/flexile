@@ -135,6 +135,8 @@ const validateCPF = (cpf: string): boolean => {
 const FIELD_PAIRS: [string, string][] = [
   [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
   [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
+  // It is expected that the account number appears both here and in the first item.
+  // Because they're valid pairs of different transfer methods (in this case, ACH and SWIFT).
   [KEY_SWIFT_CODE, KEY_ACCOUNT_NUMBER],
 ];
 
