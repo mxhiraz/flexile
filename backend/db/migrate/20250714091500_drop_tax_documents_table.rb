@@ -1,7 +1,7 @@
 # db/migrate/20250714091500_drop_tax_documents_table.rb
 class DropTaxDocumentsTable < ActiveRecord::Migration[8.0]
   def up
-    # (Optional) --- Remove any stray ActiveStorage attachment rows
+    # Remove any stray ActiveStorage attachment rows
     execute <<~SQL
       DELETE FROM active_storage_attachments
       WHERE record_type = 'TaxDocument';
