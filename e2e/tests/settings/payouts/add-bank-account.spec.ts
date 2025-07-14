@@ -146,23 +146,20 @@ test.describe("Bank account settings", () => {
     await page.getByRole("link", { name: "Payouts" }).click();
     await page.getByRole("button", { name: "Add bank account" }).click();
     await page.getByLabel("Full name of the account holder").fill("Da R");
-    await page.getByRole("button", { name: "Save bank account" }).click();
-    await expect(page.getByLabel("Full name of the account holder")).not.toBeValid();
-    await expect(page.getByLabel("Account number")).not.toBeValid();
-    await expect(page.getByLabel("Routing number")).not.toBeValid();
-    await expect(page.getByText("Please enter an account number.")).toBeVisible();
-    await expect(page.getByText("This doesn't look like a full legal name.")).toBeVisible();
-
-    await page.getByLabel("Full name of the account holder").fill("Jane Doe");
-    await expect(page.getByLabel("Full name of the account holder")).toBeValid();
+    await expect(page.getByRole("button", { name: "Save bank account" })).toBeDisabled();
     await page.getByLabel("Routing number").fill("123456789");
     await page.getByLabel("Account number").fill("1");
     await page.getByRole("button", { name: "Save bank account" }).click();
 
+    await expect(page.getByLabel("Full name of the account holder")).not.toBeValid();
+    await expect(page.getByText("This doesn't look like a full legal name.")).toBeVisible();
     await expect(page.getByLabel("Account number")).not.toBeValid();
     await expect(page.getByLabel("Routing number")).not.toBeValid();
     await expect(page.getByText("Please enter a valid account number of between 4 and 17 digits.")).toBeVisible();
     await expect(page.getByText("This doesn't look like a valid ACH routing number.")).toBeVisible();
+
+    await page.getByLabel("Full name of the account holder").fill("Jane Doe");
+    await expect(page.getByLabel("Full name of the account holder")).toBeValid();
 
     await page.getByLabel("Account number").fill("abcd");
     await page.getByLabel("Account number").fill("12345678");
