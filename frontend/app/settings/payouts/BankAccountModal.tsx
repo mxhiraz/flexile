@@ -1,6 +1,6 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Map as ImmutableMap } from "immutable";
-import { cloneDeep, partition, set } from "lodash-es";
+import { set } from "lodash-es";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import ComboBox from "@/components/ComboBox";
@@ -16,7 +16,7 @@ import {
   currencyCodes,
   supportedCountries,
 } from "@/models/constants";
-import { cn } from "@/utils";
+import { cn, groupFields } from "@/utils";
 import { request } from "@/utils/request";
 import { save_bank_account_onboarding_path, wise_account_requirements_path } from "@/utils/routes";
 
@@ -26,7 +26,6 @@ const KEY_ACCOUNT_TYPE = "accountType";
 const KEY_ACCOUNT_HOLDER_NAME = "accountHolderName";
 const KEY_ACCOUNT_ROUTING_NUMBER = "abartn";
 const KEY_ACCOUNT_NUMBER = "accountNumber";
-const KEY_ADDRESS_PREFIX = "address";
 const KEY_ADDRESS_COUNTRY = "address.country";
 const KEY_ADDRESS_STATE = "address.state";
 const KEY_ADDRESS_CITY = "address.city";
@@ -132,6 +131,11 @@ const validateCPF = (cpf: string): boolean => {
 
   return parseInt(digits.charAt(10), 10) === secondCheckDigit;
 };
+
+const FIELD_PAIRS: [string, string][] = [
+  [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
+  [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
+];
 
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
   const defaultCurrency = bankAccount?.currency ?? currencyByCountryCode.get(billingDetails.country_code) ?? "USD";
@@ -432,31 +436,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     [details, setDetails, fieldUpdated, errors, isPending],
   );
 
-  const groupedFields = useMemo(() => {
-    if (!visibleFields) return [];
-
-    const fieldPairs: [string, string][] = [
-      [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
-      [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
-    ];
-
-    const result: (Field | Field[])[] = [];
-    let allFields: Field[] = cloneDeep(visibleFields);
-
-    while (allFields.length > 0) {
-      const fieldPair = fieldPairs.find((pairs) => pairs.some((pair) => pair === allFields[0]?.key));
-      if (fieldPair) {
-        const [fieldGroup, otherFields] = partition(allFields, (field) => fieldPair.some((pair) => pair === field.key));
-        result.push(fieldGroup);
-        allFields = otherFields;
-      } else if (allFields[0]) {
-        result.push(allFields[0]);
-        allFields.shift();
-      }
-    }
-
-    return result;
-  }, [visibleFields]);
+  const groupedFields = useMemo(() => groupFields(visibleFields ?? [], FIELD_PAIRS), [visibleFields]);
 
   useEffect(() => {
     if (!allFields) return;
@@ -568,18 +548,19 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
             </div>
           ) : null}
 
-          {groupedFields.map((fieldOrGroup, index) => {
-            if (Array.isArray(fieldOrGroup)) {
+          {groupedFields.map((fieldGroup, index) => {
+            if (fieldGroup.length > 1) {
               // Render paired fields side by side
               return (
                 <div key={`group-${index}`} className="grid grid-cols-2 items-start gap-4">
-                  {fieldOrGroup.map((field) => renderField(field))}
+                  {fieldGroup.map((field) => renderField(field))}
                 </div>
               );
             }
 
             // Render single field
-            return renderField(fieldOrGroup);
+            const field = fieldGroup[0];
+            return field ? renderField(field) : null;
           })}
         </div>
 
