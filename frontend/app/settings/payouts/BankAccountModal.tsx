@@ -224,11 +224,6 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     return { label, defaultOn: currency === "USD" && userCountry === "US" };
   }, [forms, defaultFormIndex, currency, userCountry]);
 
-  // Set default form selection
-  useEffect(() => {
-    setSelectedFormIndex(defaultFormIndex);
-  }, [defaultFormIndex]);
-
   const form = forms[selectedFormIndex];
   const allFields = form?.fields.flatMap((field) => field.group);
 

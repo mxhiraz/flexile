@@ -147,7 +147,6 @@ test.describe("Bank account settings", () => {
     await page.getByRole("button", { name: "Add bank account" }).click();
     await page.getByLabel("Full name of the account holder").fill("Da R");
     await page.getByRole("button", { name: "Save bank account" }).click();
-    await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
     await expect(page.getByLabel("Full name of the account holder")).not.toBeValid();
     await expect(page.getByLabel("Account number")).not.toBeValid();
     await expect(page.getByLabel("Routing number")).not.toBeValid();
