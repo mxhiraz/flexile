@@ -17,12 +17,10 @@ import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
   return (
-    <SettingsLayout>
       <div className="grid gap-8">
         <DetailsSection />
         <LeaveWorkspaceSection />
       </div>
-    </SettingsLayout>
   );
 }
 
