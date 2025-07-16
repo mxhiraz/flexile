@@ -3,7 +3,16 @@ import { and, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { DocumentTemplateType } from "@/db/enums";
-import { documents, documentTemplates, users } from "@/db/schema";
+import {
+  companies,
+  companyAdministrators,
+  companyContractors,
+  companyInvestors,
+  companyLawyers,
+  documents,
+  documentTemplates,
+  users,
+} from "@/db/schema";
 import env from "@/env";
 import { MAX_PREFERRED_NAME_LENGTH, MIN_EMAIL_LENGTH } from "@/models";
 import { createRouter, protectedProcedure } from "@/trpc";
@@ -92,6 +101,46 @@ export const usersRouter = createRouter({
           preferredName: input.preferredName,
         })
         .where(eq(users.id, BigInt(ctx.userId)));
+    }),
+
+  leaveCompany: protectedProcedure
+    .input(z.object({ companyId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const companyResult = await db.query.companies.findFirst({
+        where: eq(companies.externalId, input.companyId),
+        columns: { id: true },
+      });
+
+      if (!companyResult) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Company not found.",
+        });
+      }
+
+      const companyId = companyResult.id;
+      const userId = BigInt(ctx.userId);
+
+      // First, verify the user is NOT an administrator of this company.
+      const isAdmin = await db.query.companyAdministrators.findFirst({
+        where: and(eq(companyAdministrators.userId, userId), eq(companyAdministrators.companyId, companyId)),
+      });
+
+      if (isAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Administrators cannot leave a company using this feature.",
+        });
+      }
+
+      // Proceed with deleting all other roles for the user in this company.
+      await Promise.all([
+        db.delete(companyContractors).where(and(eq(companyContractors.userId, userId), eq(companyContractors.companyId, companyId))),
+        db.delete(companyInvestors).where(and(eq(companyInvestors.userId, userId), eq(companyInvestors.companyId, companyId))),
+        db.delete(companyLawyers).where(and(eq(companyLawyers.userId, userId), eq(companyLawyers.companyId, companyId))),
+      ]);
+
+      return { success: true };
     }),
 
   updateTaxSettings: protectedProcedure.input(z.object({ data: z.unknown() })).mutation(async ({ ctx, input }) => {
