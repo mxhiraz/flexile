@@ -13,7 +13,6 @@ import { useCurrentCompany, useCurrentUser } from "@/global";
 import defaultLogo from "@/images/default-company-logo.svg";
 import { MAX_PREFERRED_NAME_LENGTH, MIN_EMAIL_LENGTH } from "@/models";
 import { trpc } from "@/trpc/client";
-import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
   return (
@@ -87,6 +86,7 @@ const LeaveWorkspaceSection = () => {
   const user = useCurrentUser();
   const company = useCurrentCompany();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: contractorStatus } = trpc.users.getContractorStatus.useQuery(
     { companyId: company.id },
@@ -100,6 +100,9 @@ const LeaveWorkspaceSection = () => {
       document.cookie = `${user.id}_selected_company=; path=/; max-age=0`;
       window.location.href = "/dashboard";
     },
+    onError: (error) => {
+      setErrorMessage(error.message);
+    },
   });
 
   if (!contractorStatus?.isContractor || contractorStatus?.contractSignedElsewhere || contractorStatus?.hasActiveContract) {
@@ -107,8 +110,17 @@ const LeaveWorkspaceSection = () => {
   }
 
   const handleLeaveCompany = () => {
+    setErrorMessage(null);
     if (!company) return;
     leaveCompanyMutation.mutate({ companyId: company.id });
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open) {
+      setErrorMessage(null);
+      leaveCompanyMutation.reset();
+    }
+    setIsModalOpen(open);
   };
 
   return (
@@ -134,7 +146,7 @@ const LeaveWorkspaceSection = () => {
         </div>
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={handleModalOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Leave this workspace?</DialogTitle>
@@ -142,8 +154,9 @@ const LeaveWorkspaceSection = () => {
               You will lose access to all data and documents in {company.name}. Are you sure you want to continue?
             </DialogDescription>
           </DialogHeader>
+          {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
+            <Button variant="ghost" onClick={() => handleModalOpenChange(false)}>
               Cancel
             </Button>
             <MutationStatusButton
