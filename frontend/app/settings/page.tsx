@@ -87,22 +87,28 @@ const LeaveWorkspaceSection = () => {
   const user = useCurrentUser();
   const company = useCurrentCompany();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
+
+  const { data: contractorStatus } = trpc.users.getContractorStatus.useQuery(
+    { companyId: company.id },
+    {
+      enabled: !!company,
+    },
+  );
 
   const leaveCompanyMutation = trpc.users.leaveCompany.useMutation({
     onSuccess: () => {
       document.cookie = `${user.id}_selected_company=; path=/; max-age=0`;
-      setTimeout(() => router.push("/dashboard"), 1500);
+      window.location.href = "/dashboard";
     },
   });
 
-  if (user.roles.administrator) {
+  if (!contractorStatus?.isContractor || contractorStatus?.contractSignedElsewhere || contractorStatus?.hasActiveContract) {
     return null;
   }
 
   const handleLeaveCompany = () => {
+    if (!company) return;
     leaveCompanyMutation.mutate({ companyId: company.id });
-    setIsModalOpen(false);
   };
 
   return (
@@ -132,7 +138,9 @@ const LeaveWorkspaceSection = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Leave this workspace?</DialogTitle>
-            <DialogDescription>You'll lose access to all invoices and documents shared in this space.</DialogDescription>
+            <DialogDescription>
+              You will lose access to all data and documents in {company.name}. Are you sure you want to continue?
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
