@@ -490,7 +490,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
           <DialogTitle>Bank account</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 space-y-4 overflow-y-auto pb-1">
+        <div className="-mx-1 flex-1 space-y-4 overflow-y-auto px-1 py-1">
           <div className="grid gap-2">
             <Label htmlFor={`currency-${uid}`}>Currency</Label>
             <ComboBox
@@ -499,17 +499,18 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
               onChange={(value) => setCurrency(z.enum(currencyCodes).parse(value))}
               options={CURRENCIES.map(({ value, name }) => ({ value, label: name }))}
             />
+            {formSwitch ? (
+              <Checkbox
+                checked={(selectedFormIndex !== defaultFormIndex) !== formSwitch.defaultOn}
+                role="switch"
+                label={formSwitch.label}
+                disabled={isPending}
+                onCheckedChange={() => setSelectedFormIndex((prev) => (prev + 1) % 2)}
+              />
+            ) : null}
           </div>
 
-          {formSwitch ? (
-            <Checkbox
-              checked={(selectedFormIndex !== defaultFormIndex) !== formSwitch.defaultOn}
-              role="switch"
-              label={formSwitch.label}
-              disabled={isPending}
-              onCheckedChange={() => setSelectedFormIndex((prev) => (prev + 1) % 2)}
-            />
-          ) : forms.length > 2 ? (
+          {forms.length > 2 ? (
             <div className="grid gap-2">
               <Label htmlFor={`form-${uid}`}>Transfer method</Label>
               <div className="flex rounded-md bg-[#F8F8F8] p-1">
