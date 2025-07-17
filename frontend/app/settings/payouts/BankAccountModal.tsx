@@ -33,6 +33,11 @@ const KEY_ADDRESS_POST_CODE = "address.postCode";
 const KEY_ADDRESS_FIRST_LINE = "address.firstLine";
 const KEY_SWIFT_CODE = "swiftCode";
 const SWIFT_BANK_ACCOUNT_TYPE = "swift_code";
+const KEY_IFSC_CODE = "ifscCode";
+const KEY_SORT_CODE = "sortCode";
+const KEY_BANK_CODE = "bankCode";
+const KEY_INSTITUTION_NUMBER = "institutionNumber";
+const KEY_TRANSIT_NUMBER = "transitNumber";
 const LOCAL_BANK_ACCOUNT_TITLE = "Local bank account";
 
 const inputFieldSchema = z.object({
@@ -132,12 +137,16 @@ const validateCPF = (cpf: string): boolean => {
   return parseInt(digits.charAt(10), 10) === secondCheckDigit;
 };
 
-const FIELD_PAIRS: [string, string][] = [
+const FIELD_GROUPS: string[][] = [
+  [KEY_ACCOUNT_NUMBER, KEY_BANK_CODE], // For CZK currency
   [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
-  [KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
+  [KEY_ADDRESS_CITY, KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
   // It is expected that the account number appears both here and in the first item.
-  // Because they're valid pairs of different transfer methods (in this case, ACH and SWIFT).
+  // Because they're valid groups of different transfer methods (in this case, ACH and SWIFT).
   [KEY_SWIFT_CODE, KEY_ACCOUNT_NUMBER],
+  [KEY_IFSC_CODE, KEY_ACCOUNT_NUMBER], // For INR currency
+  [KEY_SORT_CODE, KEY_ACCOUNT_NUMBER], // For GBP currency
+  [KEY_INSTITUTION_NUMBER, KEY_TRANSIT_NUMBER, KEY_ACCOUNT_NUMBER], // For CAD currency
 ];
 
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
@@ -439,7 +448,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     [details, setDetails, fieldUpdated, errors, isPending],
   );
 
-  const groupedFields = useMemo(() => groupFields(visibleFields ?? [], FIELD_PAIRS), [visibleFields]);
+  const groupedFields = useMemo(() => groupFields(visibleFields ?? [], FIELD_GROUPS), [visibleFields]);
 
   useEffect(() => {
     if (!allFields) return;
@@ -533,9 +542,9 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
 
           {groupedFields.map((fieldGroup, index) => {
             if (fieldGroup.length > 1) {
-              // Render paired fields side by side
+              // Render grouped fields side by side
               return (
-                <div key={`group-${index}`} className="grid grid-cols-2 items-start gap-4">
+                <div key={`group-${index}`} className={`grid grid-cols-${fieldGroup.length} items-start gap-4`}>
                   {fieldGroup.map((field) => renderField(field))}
                 </div>
               );
