@@ -105,7 +105,12 @@ const LeaveWorkspaceSection = () => {
     },
   });
 
-  if (!contractorStatus?.isContractor || contractorStatus?.contractSignedElsewhere || contractorStatus?.hasActiveContract) {
+  if (
+    !contractorStatus?.isContractor ||
+    contractorStatus?.contractSignedElsewhere ||
+    contractorStatus?.hasActiveContract ||
+    user.roles.administrator
+  ) {
     return null;
   }
 
