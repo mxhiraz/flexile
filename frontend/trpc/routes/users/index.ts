@@ -102,76 +102,78 @@ export const usersRouter = createRouter({
         .where(eq(users.id, BigInt(ctx.userId)));
     }),
 
-  leaveCompany: companyProcedure
-    .input(z.object({ companyId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      if (!ctx.company) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No company context found.",
-        });
-      }
-      if (input.companyId !== ctx.company.externalId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You can only leave your current workspace.",
-        });
-      }
+  leaveCompany: companyProcedure.input(z.object({ companyId: z.string() })).mutation(async ({ ctx, input }) => {
+    if (!ctx.company) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No company context found.",
+      });
+    }
+    if (input.companyId !== ctx.company.externalId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "You can only leave your current workspace.",
+      });
+    }
 
-      const companyId = ctx.company.id;
-      const userId = BigInt(ctx.userId);
+    const companyId = ctx.company.id;
+    const userId = BigInt(ctx.userId);
 
-      await db.transaction(async (tx) => {
-        const isAdmin = await tx.query.companyAdministrators.findFirst({
-          where: and(eq(companyAdministrators.userId, userId), eq(companyAdministrators.companyId, companyId)),
-        });
-
-        if (isAdmin) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Administrators cannot leave a company.",
-          });
-        }
-
-        const contractor = await tx.query.companyContractors.findFirst({
-          where: and(eq(companyContractors.userId, userId), eq(companyContractors.companyId, companyId)),
-        });
-
-        if (!contractor) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "This action is only available to contractors.",
-          });
-        }
-
-        if (contractor.contractSignedElsewhere) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You cannot leave the workspace with an active contract.",
-          });
-        }
-
-        const now = new Date();
-        const hasActiveContract = contractor.startedAt <= now && (!contractor.endedAt || contractor.endedAt > now);
-
-        if (hasActiveContract) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You cannot leave the workspace with an active contract.",
-          });
-        }
-
-        await Promise.all([
-          tx
-            .delete(companyContractors)
-            .where(and(eq(companyContractors.userId, userId), eq(companyContractors.companyId, companyId))),
-          tx.delete(companyInvestors).where(and(eq(companyInvestors.userId, userId), eq(companyInvestors.companyId, companyId))),
-          tx.delete(companyLawyers).where(and(eq(companyLawyers.userId, userId), eq(companyLawyers.companyId, companyId))),
-        ]);
+    await db.transaction(async (tx) => {
+      const isAdmin = await tx.query.companyAdministrators.findFirst({
+        where: and(eq(companyAdministrators.userId, userId), eq(companyAdministrators.companyId, companyId)),
       });
 
-      return { success: true };
-    }),
+      if (isAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Administrators cannot leave a company.",
+        });
+      }
+
+      const contractor = await tx.query.companyContractors.findFirst({
+        where: and(eq(companyContractors.userId, userId), eq(companyContractors.companyId, companyId)),
+      });
+
+      if (!contractor) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This action is only available to contractors.",
+        });
+      }
+
+      if (contractor.contractSignedElsewhere) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot leave the workspace with an active contract.",
+        });
+      }
+
+      const now = new Date();
+      const hasActiveContract = contractor.startedAt <= now && (!contractor.endedAt || contractor.endedAt > now);
+
+      if (hasActiveContract) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot leave the workspace with an active contract.",
+        });
+      }
+
+      await Promise.all([
+        tx
+          .delete(companyContractors)
+          .where(and(eq(companyContractors.userId, userId), eq(companyContractors.companyId, companyId))),
+        tx
+          .delete(companyInvestors)
+          .where(and(eq(companyInvestors.userId, userId), eq(companyInvestors.companyId, companyId))),
+        tx
+          .delete(companyLawyers)
+          .where(and(eq(companyLawyers.userId, userId), eq(companyLawyers.companyId, companyId))),
+      ]);
+    });
+
+    return { success: true };
+  }),
 
   updateTaxSettings: protectedProcedure.input(z.object({ data: z.unknown() })).mutation(async ({ ctx, input }) => {
     const response = await fetch(settings_tax_url({ host: ctx.host }), {
@@ -223,12 +225,18 @@ export const usersRouter = createRouter({
   getContractorStatus: companyProcedure
     .input(z.object({ companyId: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (!ctx.company || ctx.company.externalId !== input.companyId) {
-        return { isContractor: false, contractSignedElsewhere: false, hasActiveContract: false };
+      if (input.companyId !== ctx.company.externalId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can only get the contractor status for your current workspace.",
+        });
       }
 
+      const companyId = ctx.company.id;
+      const userId = BigInt(ctx.userId);
+
       const contractor = await db.query.companyContractors.findFirst({
-        where: and(eq(companyContractors.userId, BigInt(ctx.userId)), eq(companyContractors.companyId, ctx.company.id)),
+        where: and(eq(companyContractors.userId, userId), eq(companyContractors.companyId, companyId)),
         columns: {
           contractSignedElsewhere: true,
           startedAt: true,
