@@ -543,8 +543,9 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
           {groupedFields.map((fieldGroup, index) => {
             if (fieldGroup.length > 1) {
               // Render grouped fields side by side
+              const gridCols = fieldGroup.length === 3 ? "grid-cols-3" : "grid-cols-2";
               return (
-                <div key={`group-${index}`} className={`grid grid-cols-${fieldGroup.length} items-start gap-4`}>
+                <div key={`group-${index}`} className={`grid ${gridCols} items-start gap-4`}>
                   {fieldGroup.map((field) => renderField(field))}
                 </div>
               );
