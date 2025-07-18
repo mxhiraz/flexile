@@ -11,7 +11,7 @@ export function groupFields<T extends BaseField>(fields: T[], fieldGroups: strin
   let allFields: T[] = cloneDeep(fields);
 
   while (allFields.length > 0) {
-    const fieldGroup = fieldGroups.find((group) => group.includes(allFields[0]?.key ?? ""));
+    const fieldGroup = fieldGroups.find((group) => group[0] === allFields[0]?.key);
     if (fieldGroup) {
       const [matchedFields, otherFields] = partition(allFields, (field) => fieldGroup.includes(field.key));
       result.push(matchedFields);

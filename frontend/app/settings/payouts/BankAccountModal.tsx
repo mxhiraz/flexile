@@ -36,6 +36,7 @@ const SWIFT_BANK_ACCOUNT_TYPE = "swift_code";
 const KEY_IFSC_CODE = "ifscCode";
 const KEY_SORT_CODE = "sortCode";
 const KEY_BANK_CODE = "bankCode";
+const KEY_BRANCH_CODE = "branchCode";
 const KEY_INSTITUTION_NUMBER = "institutionNumber";
 const KEY_TRANSIT_NUMBER = "transitNumber";
 const LOCAL_BANK_ACCOUNT_TITLE = "Local bank account";
@@ -147,6 +148,7 @@ const FIELD_GROUPS: string[][] = [
   [KEY_IFSC_CODE, KEY_ACCOUNT_NUMBER], // For INR currency
   [KEY_SORT_CODE, KEY_ACCOUNT_NUMBER], // For GBP currency
   [KEY_INSTITUTION_NUMBER, KEY_TRANSIT_NUMBER, KEY_ACCOUNT_NUMBER], // For CAD currency
+  [KEY_BRANCH_CODE, KEY_ACCOUNT_NUMBER], // For BRL currency
 ];
 
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
@@ -543,9 +545,9 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
           {groupedFields.map((fieldGroup, index) => {
             if (fieldGroup.length > 1) {
               // Render grouped fields side by side
-              const gridCols = fieldGroup.length === 3 ? "grid-cols-3" : "grid-cols-2";
+              const gridCols = fieldGroup.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
               return (
-                <div key={`group-${index}`} className={`grid ${gridCols} items-start gap-4`}>
+                <div key={`group-${index}`} className={`grid grid-cols-1 ${gridCols} items-start gap-4`}>
                   {fieldGroup.map((field) => renderField(field))}
                 </div>
               );
