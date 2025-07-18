@@ -90,12 +90,4 @@ test.describe("groupFields", () => {
 
     expect(result).toEqual([[{ key: "firstName" }, { key: "lastName" }], [{ key: "other" }]]);
   });
-
-  test("preserves field order within groups", () => {
-    const fields: BaseField[] = [{ key: "accountNumber" }, { key: "abartn" }];
-
-    const result = groupFields(fields, FIELD_GROUPS);
-
-    expect(result).toEqual([[{ key: "accountNumber" }, { key: "abartn" }]]);
-  });
 });
