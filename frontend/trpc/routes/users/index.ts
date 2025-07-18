@@ -145,7 +145,7 @@ export const usersRouter = createRouter({
       if (contractor.contractSignedElsewhere) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "You cannot leave the workspace with an active contract.",
+          message: "You cannot leave the workspace because you have a contract signed elsewhere.",
         });
       }
 
