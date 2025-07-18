@@ -5,7 +5,14 @@ import { useForm } from "react-hook-form";
 import { MutationStatusButton } from "@/components/MutationButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -16,10 +23,10 @@ import { trpc } from "@/trpc/client";
 
 export default function SettingsPage() {
   return (
-      <div className="grid gap-8">
-        <DetailsSection />
-        <LeaveWorkspaceSection />
-      </div>
+    <div className="grid gap-8">
+      <DetailsSection />
+      <LeaveWorkspaceSection />
+    </div>
   );
 }
 
@@ -116,11 +123,11 @@ const LeaveWorkspaceSection = () => {
 
   const handleLeaveCompany = () => {
     setErrorMessage(null);
-    if (!company) return;
     leaveCompanyMutation.mutate({ companyId: company.id });
   };
 
   const handleModalOpenChange = (open: boolean) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!open) {
       setErrorMessage(null);
       leaveCompanyMutation.reset();
@@ -143,7 +150,7 @@ const LeaveWorkspaceSection = () => {
           </div>
           <Button
             variant="outline"
-            className="w-full text-destructive hover:text-destructive sm:ml-auto sm:w-auto"
+            className="text-destructive hover:text-destructive w-full sm:ml-auto sm:w-auto"
             onClick={() => setIsModalOpen(true)}
           >
             Leave workspace
@@ -159,7 +166,7 @@ const LeaveWorkspaceSection = () => {
               You will lose access to all data and documents in {company.name}. Are you sure you want to continue?
             </DialogDescription>
           </DialogHeader>
-          {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+          {errorMessage ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
           <DialogFooter>
             <Button variant="ghost" onClick={() => handleModalOpenChange(false)}>
               Cancel
