@@ -6,13 +6,16 @@ import { MutationStatusButton } from "@/components/MutationButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Card, CardAction, CardHeader } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -103,7 +106,10 @@ const LeaveWorkspaceSection = () => {
 
   const leaveCompanyMutation = trpc.users.leaveCompany.useMutation({
     onSuccess: () => {
-      router.push("/dashboard");
+      // Show success state briefly, then redirect
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
     },
     onError: (error) => {
       setErrorMessage(error.message);
@@ -137,49 +143,55 @@ const LeaveWorkspaceSection = () => {
       <Separator />
       <div className="grid gap-4">
         <h2 className="text-xl font-medium">Workspace access</h2>
-        <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-8 rounded-md">
-              <AvatarImage src={company.logo_url ?? defaultLogo.src} alt="Company logo" />
-              <AvatarFallback>{company.name?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span className="font-medium">{company.name}</span>
-          </div>
-          <Button
-            variant="outline"
-            className="text-destructive hover:text-destructive w-full sm:ml-auto sm:w-auto"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Leave workspace
-          </Button>
-        </div>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Avatar className="size-8 rounded-md">
+                <AvatarImage src={company.logo_url ?? defaultLogo.src} alt="Company logo" />
+                <AvatarFallback>{company.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span className="font-medium">{company.name}</span>
+            </div>
+            <CardAction>
+              <Button
+                variant="outline"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Leave workspace
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={handleModalOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Leave this workspace?</DialogTitle>
-            <DialogDescription>
+      <AlertDialog open={isModalOpen} onOpenChange={handleModalOpenChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this workspace?</AlertDialogTitle>
+            <AlertDialogDescription>
               You will lose access to all data and documents in {company.name}. Are you sure you want to continue?
-            </DialogDescription>
-          </DialogHeader>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           {errorMessage ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => handleModalOpenChange(false)}>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => handleModalOpenChange(false)}>
               Cancel
-            </Button>
-            <MutationStatusButton
-              idleVariant="critical"
-              mutation={leaveCompanyMutation}
-              onClick={handleLeaveCompany}
-              loadingText="Leaving..."
-              successText="Success!"
-            >
-              Leave
-            </MutationStatusButton>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <MutationStatusButton
+                idleVariant="critical"
+                mutation={leaveCompanyMutation}
+                onClick={handleLeaveCompany}
+                loadingText="Leaving..."
+                successText="Success!"
+              >
+                Leave
+              </MutationStatusButton>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
