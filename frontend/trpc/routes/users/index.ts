@@ -140,7 +140,6 @@ export const usersRouter = createRouter({
       contractSignedElsewhere: ctx.companyContractor.contractSignedElsewhere,
     };
   }),
-
 });
 
 const getAddress = (user: User) => ({
