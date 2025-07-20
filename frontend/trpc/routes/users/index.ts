@@ -3,11 +3,7 @@ import { and, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { DocumentTemplateType } from "@/db/enums";
-import {
-  documents,
-  documentTemplates,
-  users,
-} from "@/db/schema";
+import { documents, documentTemplates, users } from "@/db/schema";
 import env from "@/env";
 import { MAX_PREFERRED_NAME_LENGTH, MIN_EMAIL_LENGTH } from "@/models";
 import { createRouter, protectedProcedure } from "@/trpc";
@@ -97,7 +93,6 @@ export const usersRouter = createRouter({
         })
         .where(eq(users.id, BigInt(ctx.userId)));
     }),
-
 
   updateTaxSettings: protectedProcedure.input(z.object({ data: z.unknown() })).mutation(async ({ ctx, input }) => {
     const response = await fetch(settings_tax_url({ host: ctx.host }), {
