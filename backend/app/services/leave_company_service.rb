@@ -20,25 +20,25 @@ class LeaveCompanyService
 
   private
 
-  def validate_user_can_leave!
-    if user_is_administrator?
-      raise "Administrators cannot leave a company."
-    end
+    def validate_user_can_leave!
+      if user_is_administrator?
+        raise "Administrators cannot leave a company."
+      end
 
-    contractor = user.company_workers.find_by(company: company)
-    
-    unless contractor
-      raise "This action is only available to contractors."
-    end
+      contractor = user.company_workers.find_by(company: company)
 
-    if contractor.contract_signed_elsewhere
-      raise "You cannot leave the workspace because you have a contract signed elsewhere."
-    end
+      unless contractor
+        raise "This action is only available to contractors."
+      end
 
-    if contractor_has_active_contract?(contractor)
-      raise "You cannot leave the workspace with an active contract."
+      if contractor.contract_signed_elsewhere
+        raise "You cannot leave the workspace because you have a contract signed elsewhere."
+      end
+
+      if contractor.active_contract?
+        raise "You cannot leave the workspace with an active contract."
+      end
     end
-  end
 
   def remove_user_roles!
     user.company_workers.where(company: company).delete_all
@@ -48,10 +48,5 @@ class LeaveCompanyService
 
   def user_is_administrator?
     user.company_administrators.exists?(company: company)
-  end
-
-  def contractor_has_active_contract?(contractor)
-    now = Time.current
-    contractor.started_at <= now && (contractor.ended_at.nil? || contractor.ended_at > now)
   end
 end
