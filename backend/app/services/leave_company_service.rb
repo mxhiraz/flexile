@@ -25,17 +25,17 @@ class LeaveCompanyService
         raise "Administrators cannot leave a company."
       end
 
-      contractor = user.company_workers.find_by(company: company)
-
-      unless contractor
-        raise "This action is only available to contractors."
+      unless user_has_leavable_role?
+        raise "You do not have permission to leave this company."
       end
 
-      if contractor.contract_signed_elsewhere
+      # Only check contract restrictions if user is a contractor
+      contractor = user.company_workers.find_by(company: company)
+      if contractor&.contract_signed_elsewhere
         raise "You cannot leave the workspace because you have a contract signed elsewhere."
       end
 
-      if contractor.active_contract?
+      if contractor&.active_contract?
         raise "You cannot leave the workspace with an active contract."
       end
     end
@@ -48,5 +48,11 @@ class LeaveCompanyService
 
   def user_is_administrator?
     user.company_administrators.exists?(company: company)
+  end
+
+  def user_has_leavable_role?
+    user.company_workers.exists?(company: company) ||
+      user.company_investors.exists?(company: company) ||
+      user.company_lawyers.exists?(company: company)
   end
 end
