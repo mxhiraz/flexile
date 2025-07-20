@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { request } from "@/utils/request";
 import { MutationStatusButton } from "@/components/MutationButton";
 import {
   AlertDialog,
@@ -100,26 +102,44 @@ const LeaveWorkspaceSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: contractorStatus } = trpc.users.getContractorStatus.useQuery({
-    companyId: company.id,
+  const { data: contractorStatus } = useQuery({
+    queryKey: ['contractorStatus', company.id],
+    queryFn: async () => {
+      const response = await request({
+        method: 'GET',
+        accept: 'json',
+        url: `/internal/companies/${company.id}/contractor_status`,
+      });
+      return response.json();
+    },
   });
 
-  const leaveCompanyMutation = trpc.users.leaveCompany.useMutation({
+  const leaveCompanyMutation = useMutation({
+    mutationFn: async () => {
+      const response = await request({
+        method: 'DELETE',
+        accept: 'json',
+        url: `/internal/companies/${company.id}/leave`,
+        assertOk: true,
+      });
+      
+      return response.json();
+    },
     onSuccess: () => {
-      // Show success state briefly, then redirect
       setTimeout(() => {
+        setIsModalOpen(false);
         router.push("/dashboard");
       }, 1000);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       setErrorMessage(error.message);
     },
   });
 
   if (
-    !contractorStatus?.isContractor ||
-    contractorStatus?.contractSignedElsewhere ||
-    contractorStatus?.hasActiveContract ||
+    !contractorStatus?.is_contractor ||
+    contractorStatus?.contract_signed_elsewhere ||
+    contractorStatus?.has_active_contract ||
     user.roles.administrator
   ) {
     return null;
@@ -127,7 +147,7 @@ const LeaveWorkspaceSection = () => {
 
   const handleLeaveCompany = () => {
     setErrorMessage(null);
-    leaveCompanyMutation.mutate({ companyId: company.id });
+    leaveCompanyMutation.mutate();
   };
 
   const handleModalOpenChange = (open: boolean) => {
@@ -180,7 +200,10 @@ const LeaveWorkspaceSection = () => {
               <MutationStatusButton
                 idleVariant="critical"
                 mutation={leaveCompanyMutation}
-                onClick={handleLeaveCompany}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLeaveCompany();
+                }}
                 loadingText="Leaving..."
                 successText="Success!"
               >
