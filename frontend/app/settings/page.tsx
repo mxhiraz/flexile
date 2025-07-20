@@ -136,12 +136,21 @@ const LeaveWorkspaceSection = () => {
     },
   });
 
-  if (
-    !contractorStatus?.is_contractor ||
+  // Don't show leave option if user is administrator
+  if (user.roles.administrator) {
+    return null;
+  }
+
+  // Don't show leave option if user has no leavable roles
+  if (!user.roles.worker && !user.roles.investor && !user.roles.lawyer) {
+    return null;
+  }
+
+  // Only apply contract restrictions to workers/contractors
+  if (user.roles.worker && (
     contractorStatus?.contract_signed_elsewhere ||
-    contractorStatus?.has_active_contract ||
-    user.roles.administrator
-  ) {
+    contractorStatus?.has_active_contract
+  )) {
     return null;
   }
 
