@@ -32,7 +32,7 @@ const ComboBox = ({
           role="combobox"
           aria-expanded={open}
           {...props}
-          className={cn("justify-between", className)}
+          className={cn("w-full min-w-0 justify-between", className)}
         >
           <div className="truncate">
             {value?.length ? (multiple ? value.map(getLabel).join(", ") : getLabel(value)) : placeholder}
