@@ -139,17 +139,20 @@ const validateCPF = (cpf: string): boolean => {
 };
 
 const FIELD_GROUPS: string[][] = [
-  [KEY_ACCOUNT_NUMBER, KEY_BANK_CODE], // For CZK currency
   [KEY_ACCOUNT_ROUTING_NUMBER, KEY_ACCOUNT_NUMBER],
   [KEY_ADDRESS_CITY, KEY_ADDRESS_STATE, KEY_ADDRESS_POST_CODE],
   // It is expected that the account number appears both here and in the first item.
   // Because they're valid groups of different transfer methods (in this case, ACH and SWIFT).
   [KEY_SWIFT_CODE, KEY_ACCOUNT_NUMBER],
-  [KEY_IFSC_CODE, KEY_ACCOUNT_NUMBER], // For INR currency
-  [KEY_SORT_CODE, KEY_ACCOUNT_NUMBER], // For GBP currency
-  [KEY_INSTITUTION_NUMBER, KEY_TRANSIT_NUMBER, KEY_ACCOUNT_NUMBER], // For CAD currency
-  [KEY_BRANCH_CODE, KEY_ACCOUNT_NUMBER], // For BRL currency
 ];
+
+const CURRENCY_FIELD_GROUPS: Record<string, string[]> = {
+  CZK: [KEY_ACCOUNT_NUMBER, KEY_BANK_CODE],
+  INR: [KEY_IFSC_CODE, KEY_ACCOUNT_NUMBER],
+  GBP: [KEY_SORT_CODE, KEY_ACCOUNT_NUMBER],
+  CAD: [KEY_INSTITUTION_NUMBER, KEY_TRANSIT_NUMBER, KEY_ACCOUNT_NUMBER],
+  BRL: [KEY_BRANCH_CODE, KEY_ACCOUNT_NUMBER],
+};
 
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
   const defaultCurrency = bankAccount?.currency ?? currencyByCountryCode.get(billingDetails.country_code) ?? "USD";
@@ -450,7 +453,12 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     [details, setDetails, fieldUpdated, errors, isPending],
   );
 
-  const groupedFields = useMemo(() => groupFields(visibleFields ?? [], FIELD_GROUPS), [visibleFields]);
+  const fieldGroups = useMemo(() => {
+    const currencyFieldGroup = CURRENCY_FIELD_GROUPS[currency];
+    return [...FIELD_GROUPS, ...(currencyFieldGroup ? [currencyFieldGroup] : [])];
+  }, [currency]);
+
+  const groupedFields = useMemo(() => groupFields(visibleFields ?? [], fieldGroups), [visibleFields]);
 
   useEffect(() => {
     if (!allFields) return;
