@@ -128,7 +128,7 @@ export default function Dividends() {
     ],
     [],
   );
-  const table = useTable({ columns, data, onRowClicked: (row) => setSelectedDividend(row) });
+  const table = useTable({ columns, data, onRowClicked: (row: Dividend) => setSelectedDividend(row) });
   return (
     <>
       <DashboardHeader

@@ -136,8 +136,8 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
           <SheetFooter>
             <div className="grid gap-4">
               <MutationButton
+                param={{ dividendId: dividend.id.toString() }}
                 mutation={retriggerPayment}
-                onClick={() => retriggerPayment.mutate({ dividendId: dividend.id.toString() })}
                 errorText="Failed to retrigger payment. Please try again."
               >
                 <RefreshCw className="mr-2 size-4" />
