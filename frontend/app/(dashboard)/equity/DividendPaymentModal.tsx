@@ -5,6 +5,7 @@ import MutationButton from "@/components/MutationButton";
 import Status from "@/components/Status";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { formatMoneyFromCents } from "@/utils/formatMoney";
@@ -52,6 +53,7 @@ const getTransferStatusColor = (status: string) => {
 };
 
 export default function DividendPaymentModal({ dividend, onClose }: DividendPaymentModalProps) {
+  const company = useCurrentCompany();
   const retriggerPayment = trpc.dividends.retriggerPayment.useMutation({
     onSuccess: () => {
       onClose();
@@ -136,7 +138,7 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
           <SheetFooter>
             <div className="grid gap-4">
               <MutationButton
-                param={{ dividendId: dividend.id.toString() }}
+                param={{ companyId: company.id, dividendId: dividend.id.toString() }}
                 mutation={retriggerPayment}
                 errorText="Failed to retrigger payment. Please try again."
               >
