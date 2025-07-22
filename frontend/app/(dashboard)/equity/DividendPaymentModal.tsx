@@ -62,7 +62,7 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
 
   if (!dividend) return null;
 
-  const payment = dividend.payments?.[0]?.dividendPayment;
+  const payment = dividend.payments[0]?.dividendPayment;
   const hasPaymentChanged = payment && new Date(payment.updatedAt) > new Date(dividend.updatedAt);
 
   return (
