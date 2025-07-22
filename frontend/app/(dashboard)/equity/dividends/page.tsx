@@ -128,7 +128,7 @@ export default function Dividends() {
     ],
     [],
   );
-  const table = useTable({ columns, data, onRowClicked: (row: Dividend) => setSelectedDividend(row) });
+  const table = useTable({ columns, data });
   return (
     <>
       <DashboardHeader
@@ -171,7 +171,7 @@ export default function Dividends() {
       {isLoading ? (
         <TableSkeleton columns={7} />
       ) : data.length > 0 ? (
-        <DataTable table={table} />
+        <DataTable table={table} onRowClicked={(row: Dividend) => setSelectedDividend(row)} />
       ) : (
         <Placeholder icon={CircleCheck}>You have not been issued any dividends yet.</Placeholder>
       )}
