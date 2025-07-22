@@ -10,9 +10,11 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
+  APP_ID: ${{ secrets.APP_ID }}
   CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+  PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
   RAILS_ENV: test
   STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
   WISE_API_KEY: ${{ secrets.WISE_API_KEY }}
