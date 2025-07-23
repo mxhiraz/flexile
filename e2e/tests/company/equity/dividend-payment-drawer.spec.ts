@@ -15,13 +15,13 @@ test.describe("Dividend Payment Drawer", () => {
       userId: user.id,
     });
     const dividendRound = await dividendRoundsFactory.create({ companyId: company.id });
-    const dividend = await dividendsFactory.create({
+    await dividendsFactory.create({
       companyId: company.id,
       companyInvestorId: companyInvestor.id,
       dividendRoundId: dividendRound.id,
       status: "Paid",
-      totalAmountInCents: 100000n,
-      numberOfShares: 1000n,
+      totalAmountInCents: BigInt(100000),
+      numberOfShares: BigInt(1000),
     });
 
     await login(page, user);
@@ -35,7 +35,7 @@ test.describe("Dividend Payment Drawer", () => {
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("Dividend payment details")).toBeVisible();
     await expect(page.getByText("Dividend summary")).toBeVisible();
-    await expect(page.getByText(user.name)).toBeVisible();
+    await expect(page.getByText(user.legalName || user.email)).toBeVisible();
     await expect(page.getByText("$1,000")).toBeVisible();
     await expect(page.getByText("1,000")).toBeVisible();
   });
@@ -48,13 +48,13 @@ test.describe("Dividend Payment Drawer", () => {
       userId: user.id,
     });
     const dividendRound = await dividendRoundsFactory.create({ companyId: company.id });
-    const dividend = await dividendsFactory.create({
+    await dividendsFactory.create({
       companyId: company.id,
       companyInvestorId: companyInvestor.id,
       dividendRoundId: dividendRound.id,
       status: "Paid",
-      totalAmountInCents: 50000n,
-      numberOfShares: 500n,
+      totalAmountInCents: BigInt(50000),
+      numberOfShares: BigInt(500),
     });
 
     await login(page, user);
@@ -67,7 +67,7 @@ test.describe("Dividend Payment Drawer", () => {
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("Dividend payment details")).toBeVisible();
     await expect(page.getByText("Dividend summary")).toBeVisible();
-    await expect(page.getByText(user.name)).toBeVisible();
+    await expect(page.getByText(user.legalName || user.email)).toBeVisible();
     await expect(page.getByText("$500")).toBeVisible();
     await expect(page.getByText("500")).toBeVisible();
   });
@@ -80,13 +80,13 @@ test.describe("Dividend Payment Drawer", () => {
       userId: user.id,
     });
     const dividendRound = await dividendRoundsFactory.create({ companyId: company.id });
-    const dividend = await dividendsFactory.create({
+    await dividendsFactory.create({
       companyId: company.id,
       companyInvestorId: companyInvestor.id,
       dividendRoundId: dividendRound.id,
       status: "Issued",
-      totalAmountInCents: 75000n,
-      numberOfShares: 750n,
+      totalAmountInCents: BigInt(75000),
+      numberOfShares: BigInt(750),
     });
 
     await login(page, user);
@@ -98,8 +98,8 @@ test.describe("Dividend Payment Drawer", () => {
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("No payment information")).toBeVisible();
     await expect(page.getByText("This dividend has not been processed for payment yet.")).toBeVisible();
-    
-    await expect(page.getByRole("button", { name: /retrigger payment/i })).not.toBeVisible();
+
+    await expect(page.getByRole("button", { name: /retrigger payment/iu })).not.toBeVisible();
   });
 
   test("closes drawer when clicking close button", async ({ page }) => {
@@ -110,13 +110,13 @@ test.describe("Dividend Payment Drawer", () => {
       userId: user.id,
     });
     const dividendRound = await dividendRoundsFactory.create({ companyId: company.id });
-    const dividend = await dividendsFactory.create({
+    await dividendsFactory.create({
       companyId: company.id,
       companyInvestorId: companyInvestor.id,
       dividendRoundId: dividendRound.id,
       status: "Paid",
-      totalAmountInCents: 25000n,
-      numberOfShares: 250n,
+      totalAmountInCents: BigInt(25000),
+      numberOfShares: BigInt(250),
     });
 
     await login(page, user);
@@ -138,13 +138,13 @@ test.describe("Dividend Payment Drawer", () => {
       userId: user.id,
     });
     const dividendRound = await dividendRoundsFactory.create({ companyId: company.id });
-    const dividend = await dividendsFactory.create({
+    await dividendsFactory.create({
       companyId: company.id,
       companyInvestorId: companyInvestor.id,
       dividendRoundId: dividendRound.id,
       status: "Processing",
-      totalAmountInCents: 150000n,
-      numberOfShares: 1500n,
+      totalAmountInCents: BigInt(150000),
+      numberOfShares: BigInt(1500),
     });
 
     await login(page, user);
@@ -165,13 +165,13 @@ test.describe("Dividend Payment Drawer", () => {
       userId: user.id,
     });
     const dividendRound = await dividendRoundsFactory.create({ companyId: company.id });
-    const dividend = await dividendsFactory.create({
+    await dividendsFactory.create({
       companyId: company.id,
       companyInvestorId: companyInvestor.id,
       dividendRoundId: dividendRound.id,
       status: "Paid",
-      totalAmountInCents: 200000n,
-      numberOfShares: 2000n,
+      totalAmountInCents: BigInt(200000),
+      numberOfShares: BigInt(2000),
     });
 
     await login(page, user);
