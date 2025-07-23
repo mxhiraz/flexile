@@ -73,7 +73,7 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
         </SheetHeader>
         <div className="grid gap-4 pb-6 not-print:overflow-y-auto">
           <h3 className="text-md px-6 font-medium">Dividend summary</h3>
-          <Item label="Investor" value={dividend.investor.user.legalName || dividend.investor.user.email} />
+          <Item label="Investor" value={dividend.investor.user.name || dividend.investor.user.email} />
           <Item label="Issue date" value={formatDate(dividend.dividendRound.issuedAt)} />
           <Item label="Total amount" value={formatMoneyFromCents(dividend.totalAmountInCents)} />
           <Item label="Number of shares" value={dividend.numberOfShares?.toLocaleString() || "N/A"} />
