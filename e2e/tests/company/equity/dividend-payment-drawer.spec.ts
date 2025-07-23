@@ -99,7 +99,7 @@ test.describe("Dividend Payment Drawer", () => {
     await expect(page.getByText("No payment information")).toBeVisible();
     await expect(page.getByText("This dividend has not been processed for payment yet.")).toBeVisible();
 
-    await expect(page.getByRole("button", { name: /retrigger payment/iu })).not.toBeVisible();
+    await expect(page.getByRole("button").filter({ hasText: "Retrigger payment" })).not.toBeVisible();
   });
 
   test("closes drawer when clicking close button", async ({ page }) => {
