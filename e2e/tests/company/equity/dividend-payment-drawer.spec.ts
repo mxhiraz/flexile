@@ -154,7 +154,7 @@ test.describe("Dividend Payment Drawer", () => {
     await page.getByRole("row").filter({ hasText: "$1,500" }).click();
 
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByText("Processing")).toBeVisible();
+    await expect(page.getByRole("dialog").getByText("Processing")).toBeVisible();
   });
 
   test("handles keyboard navigation for drawer", async ({ page }) => {
