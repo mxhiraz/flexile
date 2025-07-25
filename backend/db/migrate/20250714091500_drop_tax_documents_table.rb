@@ -26,8 +26,8 @@ class DropTaxDocumentsTable < ActiveRecord::Migration[8.0]
     end
 
     add_index :tax_documents, :company_id
-    add_index :tax_documents, %i[name tax_year user_compliance_info_id], 
-              unique: true, 
+    add_index :tax_documents, %i[name tax_year user_compliance_info_id],
+              unique: true,
               where: "(status <> 'deleted'::tax_documents_status)",
               name: "idx_on_name_tax_year_user_compliance_info_id_a24b2e6c51"
     add_index :tax_documents, :status
