@@ -33,12 +33,6 @@ const KEY_ADDRESS_POST_CODE = "address.postCode";
 const KEY_ADDRESS_FIRST_LINE = "address.firstLine";
 const KEY_SWIFT_CODE = "swiftCode";
 const SWIFT_BANK_ACCOUNT_TYPE = "swift_code";
-const KEY_IFSC_CODE = "ifscCode";
-const KEY_SORT_CODE = "sortCode";
-const KEY_BANK_CODE = "bankCode";
-const KEY_BRANCH_CODE = "branchCode";
-const KEY_INSTITUTION_NUMBER = "institutionNumber";
-const KEY_TRANSIT_NUMBER = "transitNumber";
 const LOCAL_BANK_ACCOUNT_TITLE = "Local bank account";
 
 const inputFieldSchema = z.object({
@@ -147,11 +141,11 @@ const FIELD_GROUPS: string[][] = [
 ];
 
 const CURRENCY_FIELD_GROUPS: Record<string, string[]> = {
-  CZK: [KEY_ACCOUNT_NUMBER, KEY_BANK_CODE],
-  INR: [KEY_IFSC_CODE, KEY_ACCOUNT_NUMBER],
-  GBP: [KEY_SORT_CODE, KEY_ACCOUNT_NUMBER],
-  CAD: [KEY_INSTITUTION_NUMBER, KEY_TRANSIT_NUMBER, KEY_ACCOUNT_NUMBER],
-  BRL: [KEY_BRANCH_CODE, KEY_ACCOUNT_NUMBER],
+  CZK: [KEY_ACCOUNT_NUMBER, "bankCode"],
+  INR: ["ifscCode", KEY_ACCOUNT_NUMBER],
+  GBP: ["sortCode", KEY_ACCOUNT_NUMBER],
+  CAD: ["institutionNumber", "transitNumber", KEY_ACCOUNT_NUMBER],
+  BRL: ["branchCode", KEY_ACCOUNT_NUMBER],
 };
 
 const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClose }: Props) => {
@@ -452,7 +446,7 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     return [...FIELD_GROUPS, ...(currencyFieldGroup ? [currencyFieldGroup] : [])];
   }, [currency]);
 
-  const groupedFields = useMemo(() => groupFields(visibleFields ?? [], fieldGroups), [visibleFields]);
+  const groupedFields = useMemo(() => groupFields(visibleFields ?? [], fieldGroups), [visibleFields, fieldGroups]);
 
   useEffect(() => {
     if (!allFields) return;
