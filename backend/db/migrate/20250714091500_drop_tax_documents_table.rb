@@ -3,8 +3,8 @@
 class DropTaxDocumentsTable < ActiveRecord::Migration[8.0]
   def up
     # Drop the table and the enum type if they still exist
-    drop_table :tax_documents, if_exists: true
-    drop_enum :tax_documents_status, if_exists: true
+    drop_table :tax_documents
+    drop_enum :tax_documents_status
   end
 
   def down
