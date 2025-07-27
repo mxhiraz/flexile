@@ -8,7 +8,6 @@ class DropTaxDocumentsTable < ActiveRecord::Migration[8.0]
   end
 
   def down
-    # Recreate the enum and table structure (data cannot be restored)
     create_enum :tax_documents_status, %w[initialized submitted deleted]
 
     create_table :tax_documents do |t|
