@@ -508,7 +508,6 @@ test.describe("Bank account settings", () => {
 
       await selectComboboxOption(page, "Currency", "USD (United States Dollar)");
 
-      // Initially, save button should be disabled due to empty required fields
       await expect(page.getByRole("button", { name: "Save bank account" })).toBeDisabled();
 
       await page.getByLabel("Full name of the account holder").fill("John Doe");

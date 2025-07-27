@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CURRENCIES,
   type Currency,
@@ -520,21 +521,18 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
           {forms.length > 2 ? (
             <div className="grid gap-2">
               <Label htmlFor={`form-${uid}`}>Transfer method</Label>
-              <div className="flex rounded-md bg-[#F8F8F8] p-1">
-                {forms.map((form, index) => (
-                  <button
-                    key={form.type}
-                    type="button"
-                    onClick={() => setSelectedFormIndex(index)}
-                    className={cn(
-                      "flex-1 rounded px-3 py-1.5 text-sm font-medium transition-colors",
-                      selectedFormIndex === index ? "bg-white text-gray-900" : "text-gray-700 hover:text-gray-900",
-                    )}
-                  >
-                    {form.title}
-                  </button>
-                ))}
-              </div>
+              <Tabs
+                value={selectedFormIndex.toString()}
+                onValueChange={(value) => setSelectedFormIndex(parseInt(value, 10))}
+              >
+                <TabsList className="w-full">
+                  {forms.map((form, index) => (
+                    <TabsTrigger key={form.type} value={index.toString()}>
+                      {form.title}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
           ) : null}
 
