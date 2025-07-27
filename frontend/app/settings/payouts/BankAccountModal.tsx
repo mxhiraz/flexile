@@ -279,15 +279,9 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
     [allFields],
   );
 
-  const hasVisibleErrors = useMemo(
-    () => visibleFields?.some((field) => errors.has(field.key)),
-    [visibleFields, errors],
-  );
+  const hasVisibleErrors = visibleFields?.some((field) => errors.has(field.key));
 
-  const hasRequiredFieldsEmpty = useMemo(
-    () => visibleFields?.some((field) => field.required && !details.get(field.key)?.trim()),
-    [visibleFields, details],
-  );
+  const hasRequiredFieldsEmpty = visibleFields?.some((field) => field.required && !details.get(field.key)?.trim());
 
   const validateField = async (field: Field) => {
     const value = details.get(field.key)?.trim() ?? "";
@@ -552,10 +546,9 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
 
           {groupedFields.map((fieldGroup, index) => {
             if (fieldGroup.length > 1) {
-              // Render grouped fields side by side
               const gridCols = fieldGroup.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
               return (
-                <div key={`group-${index}`} className={`grid grid-cols-1 ${gridCols} items-start gap-4`}>
+                <div key={`group-${index}`} className={cn("grid grid-cols-1 items-start gap-4", gridCols)}>
                   {fieldGroup.map((field) => renderField(field))}
                 </div>
               );
