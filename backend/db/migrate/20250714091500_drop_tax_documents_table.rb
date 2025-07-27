@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# db/migrate/20250714091500_drop_tax_documents_table.rb
 class DropTaxDocumentsTable < ActiveRecord::Migration[8.0]
   def up
     # Drop the table and the enum type if they still exist
