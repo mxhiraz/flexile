@@ -546,7 +546,6 @@ const BankAccountModal = ({ open, billingDetails, bankAccount, onComplete, onClo
               );
             }
 
-            // Render single field
             const field = fieldGroup[0];
             return field ? renderField(field) : null;
           })}
