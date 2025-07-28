@@ -19,18 +19,17 @@ const CheckIcon = () => (
 );
 
 const CHECKLIST_ROUTES = {
-  add_bank_account: "/settings/administrator/billing",
-  invite_contractor: "/people", 
-  send_first_payment: "/invoices",
-  fill_tax_information: "/settings/tax",
-  add_payout_information: "/settings/payouts",
-  sign_contract: "/documents",
-  add_company_details: "/settings/administrator/details",
+  add_bank_account: "/settings/administrator/billing" as const,
+  invite_contractor: "/people" as const, 
+  send_first_payment: "/invoices" as const,
+  fill_tax_information: "/settings/tax" as const,
+  add_payout_information: "/settings/payouts" as const,
+  sign_contract: "/documents" as const,
+  add_company_details: "/settings/administrator/details" as const,
 };
 
-const getItemHref = (key: string): string => {
-  const routes: Record<string, string> = CHECKLIST_ROUTES;
-  return routes[key] || "/";
+const getItemHref = (key: string) => {
+  return CHECKLIST_ROUTES[key as keyof typeof CHECKLIST_ROUTES] || "/" as const;
 };
 
 type Status = "expanded" | "dismissed" | "collapsed" | "completed";
@@ -139,7 +138,7 @@ export const GettingStarted = () => {
                     className="flex h-8 items-center space-x-1 text-sm"
                     onClick={() => {
                       if (!item.completed && pathname !== getItemHref(item.key)) {
-                        router.push(getItemHref(item.key) as any);
+                        router.push(getItemHref(item.key));
                       }
                     }}
                   >
