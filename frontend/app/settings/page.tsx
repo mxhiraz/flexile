@@ -132,8 +132,12 @@ const LeaveWorkspaceSection = () => {
         method: "DELETE",
         accept: "json",
         url: `/internal/companies/${company.id}/leave`,
-        assertOk: true,
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error_message || errorData?.error || "Failed to leave workspace");
+      }
 
       return response.json();
     },
