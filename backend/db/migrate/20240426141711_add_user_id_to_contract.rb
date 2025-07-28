@@ -3,11 +3,12 @@ class AddUserIdToContract < ActiveRecord::Migration[7.1]
     add_reference :contracts, :user
 
     up_only do
-      Contract.reset_column_information
-      Contract.find_each do |contract|
-        contractor = contract.company_contractor
-        contract.update_columns(user_id: contractor.user_id)
-      end
+      execute <<~SQL.squish
+        UPDATE contracts
+        SET user_id = company_contractors.user_id
+        FROM company_contractors
+        WHERE contracts.company_contractor_id = company_contractors.id
+      SQL
     end
 
     change_column_null :contracts, :user_id, false

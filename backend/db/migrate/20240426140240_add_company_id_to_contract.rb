@@ -3,11 +3,12 @@ class AddCompanyIdToContract < ActiveRecord::Migration[7.1]
     add_reference :contracts, :company
 
     up_only do
-      Contract.reset_column_information
-      Contract.find_each do |contract|
-        administrator = contract.company_administrator
-        contract.update_columns(company_id: administrator.company_id)
-      end
+      execute <<~SQL.squish
+        UPDATE contracts
+        SET company_id = company_administrators.company_id
+        FROM company_administrators
+        WHERE contracts.company_administrator_id = company_administrators.id
+      SQL
     end
 
     change_column_null :contracts, :company_id, false
