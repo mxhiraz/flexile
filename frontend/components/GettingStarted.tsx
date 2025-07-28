@@ -1,6 +1,5 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { ChevronDown, X } from "lucide-react";
-
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import CircularProgress from "@/components/CircularProgress";
@@ -19,17 +18,20 @@ const CheckIcon = () => (
   </svg>
 );
 
-const CHECKLIST_ROUTES: Record<string, string> = {
+const CHECKLIST_ROUTES = {
   add_bank_account: "/settings/administrator/billing",
-  invite_contractor: "/people",
+  invite_contractor: "/people", 
   send_first_payment: "/invoices",
   fill_tax_information: "/settings/tax",
   add_payout_information: "/settings/payouts",
   sign_contract: "/documents",
   add_company_details: "/settings/administrator/details",
-} as const;
+};
 
-const getItemHref = (key: string): string => CHECKLIST_ROUTES[key] || "/";
+const getItemHref = (key: string) => {
+  const routes: Record<string, string> = CHECKLIST_ROUTES;
+  return routes[key] || "/";
+};
 
 type Status = "expanded" | "dismissed" | "collapsed" | "completed";
 
@@ -137,8 +139,7 @@ export const GettingStarted = () => {
                     className="flex h-8 items-center space-x-1 text-sm"
                     onClick={() => {
                       if (!item.completed && pathname !== getItemHref(item.key)) {
-                        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- getItemHref returns string but router.push expects Route
-                        router.push(getItemHref(item.key) as any);
+                        router.push(getItemHref(item.key));
                       }
                     }}
                   >

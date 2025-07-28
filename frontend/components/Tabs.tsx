@@ -1,9 +1,10 @@
-import { type Route } from "next";
+
+
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-export type TabLink<T extends string = string> = { label: string; route: Route<T> };
+export type TabLink<T extends string = string> = { label: string; route: T };
 
 const Tabs = <T extends string>({ links }: { links: TabLink<T>[] }) => {
   const tabsRef = useRef<HTMLDivElement>(null);
