@@ -137,6 +137,7 @@ export const GettingStarted = () => {
                     className="flex h-8 items-center space-x-1 text-sm"
                     onClick={() => {
                       if (!item.completed && pathname !== getItemHref(item.key)) {
+                        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- getItemHref returns string but router.push expects Route
                         router.push(getItemHref(item.key) as any);
                       }
                     }}
