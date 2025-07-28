@@ -4,7 +4,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { TRPCProvider } from "@/trpc/client";
-import { HelperWrapper } from "@/components/HelperWrapper";
 
 const abcWhyte = localFont({
   src: [
@@ -17,21 +16,24 @@ const abcWhyte = localFont({
 
 export const metadata: Metadata = {
   title: "Flexile",
-  description: "Equity for everyone",
-  icons: [
-    {
-      rel: "icon",
-      type: "image/png",
-      url: "/favicon-light.png",
-      media: "(prefers-color-scheme: light)",
-    },
-    {
-      rel: "icon",
-      type: "image/png",
-      url: "/favicon-dark.png",
-      media: "(prefers-color-scheme: dark)",
-    },
-  ],
+  description: "Contractor payments as easy as 1-2-3",
+  icons: {
+    icon: [
+      {
+        rel: "icon",
+        type: "image/png",
+        url: "/favicon-light.png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        url: "/favicon-dark.png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: [{ url: "/apple-icon.png" }],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -69,11 +71,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             },
           }}
         >
-          <HelperWrapper>
-            <TRPCProvider>
-              <NuqsAdapter>{children}</NuqsAdapter>
-            </TRPCProvider>
-          </HelperWrapper>
+          <TRPCProvider>
+            <NuqsAdapter>{children}</NuqsAdapter>
+          </TRPCProvider>
         </ClerkProvider>
       </body>
     </html>

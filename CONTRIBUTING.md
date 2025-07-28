@@ -45,19 +45,23 @@ pnpm playwright test
 - For API endpoints, test response status, format, and content
 - Use factories for test data instead of creating objects directly
 - Test both happy path and edge cases
+- Please include specific performance benchmarks for any optimizations
 
 ## Pull Request
 
 1. Update documentation if you're changing behavior
 2. Add or update tests for your changes
 3. Include screenshots of your test suite passing locally
-4. Use professional English in all communication with no excessive capitalization, question marks, or informal language - we have a zero tolerance policy as it makes async communication difficult
+4. Use native-sounding English in all communication with no excessive capitalization (e.g HOW IS THIS GOING), multiple question marks (how's this going???), grammatical errors (how's dis going), or typos (thnx fr update).
+   - ❌ Before: "is this still open ?? I am happy to work on it ??"
+   - ✅ After: "Is this actively being worked on? I've started work on it here…"
 5. Make sure all tests pass
 6. Request a review from maintainers
 7. After reviews begin, avoid force-pushing to your branch
    - Force-pushing rewrites history and makes review threads hard to follow
    - Don't worry about messy commits - we squash everything when merging to main
-8. The PR will be merged once you have the sign-off of at least one other developer
+8. Self-review your PR with explanatory comments for any non-intuitive or non-obvious changes to help reviewers understand your reasoning
+9. The PR will be merged once you have the sign-off of at least one other developer
 
 ## Style Guide
 
