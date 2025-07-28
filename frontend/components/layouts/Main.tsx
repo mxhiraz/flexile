@@ -23,10 +23,9 @@ import {
 } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/global";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { useIsMobile } from "@/utils/use-mobile";
-import { hasSubItems, useNavLinks, type NavLinkInfo } from "@/lib/useNavLinks";
-import { CompanySwitcherList, CompanySwitcherHeader } from "@/components/navigation/CompanySwitcher";
+import { navLinks as equityNavLinks } from "@/app/equity";
+import { GettingStarted } from "@/components/GettingStarted";
+import { storageKeys } from "@/models/constants";
 
 export default function MainLayout({
   children,
@@ -69,38 +68,19 @@ export default function MainLayout({
                   </DropdownMenu>
                 </SidebarMenuItem>
               </SidebarMenu>
-            ) : (
-              <div className="flex items-center gap-2 p-2">
-                <CompanySwitcherHeader />
-              </div>
-            )}
-          </SidebarHeader>
-          <SidebarContent>
-            {user.currentCompanyId ? (
-              <SidebarGroup>
-                <SidebarGroupContent>
-                  <NavLinks />
-                </SidebarGroupContent>
-              </SidebarGroup>
-            ) : null}
-
-            <SidebarGroup className="mt-auto">
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SignOutButton>
-                      <SidebarMenuButton className="cursor-pointer">
-                        <LogOut className="size-6" />
-                        <span>Log out</span>
-                      </SidebarMenuButton>
-                    </SignOutButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
-      )}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        {user.currentCompanyId && (user.roles.administrator || user.roles.worker) ? (
+          <SidebarGroup className="mt-auto px-0 py-0">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <GettingStarted />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+      </Sidebar>
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
           <main className={`flex flex-1 flex-col pb-4 not-print:overflow-y-auto ${isMobile ? "pb-20" : ""}`}>
@@ -130,27 +110,131 @@ export default function MainLayout({
   );
 }
 
+const CompanyName = () => {
+  const company = useCurrentCompany();
+  return (
+    <>
+      {company.name ? (
+        <Link href="/settings" className="relative size-6">
+          <Image src={company.logo_url || defaultCompanyLogo} fill className="rounded-sm" alt="" />
+        </Link>
+      ) : null}
+      <div>
+        <span className="line-clamp-1 text-sm font-bold" title={company.name ?? ""}>
+          {company.name}
+        </span>
+      </div>
+    </>
+  );
+};
+
 const NavLinks = () => {
   const pathname = usePathname();
-  const navLinks = useNavLinks();
+  const routes = new Set(
+    company.routes.flatMap((route) => [route.label, ...(route.subLinks?.map((subLink) => subLink.label) || [])]),
+  );
+  const { data: invoicesData } = trpc.invoices.list.useQuery(
+    user.currentCompanyId && user.roles.administrator
+      ? { companyId: user.currentCompanyId, status: ["received", "approved", "failed"] }
+      : skipToken,
+    { refetchInterval: 30_000 },
+  );
+  const isInvoiceActionable = useIsActionable();
+  const { data: documentsData } = trpc.documents.list.useQuery(
+    user.currentCompanyId && user.id
+      ? { companyId: user.currentCompanyId, userId: user.id, signable: true }
+      : skipToken,
+    { refetchInterval: 30_000 },
+  );
+  const updatesPath = company.routes.find((route) => route.label === "Updates")?.name;
+  const equityLinks = equityNavLinks(user, company);
+
+  const [isOpen, setIsOpen] = React.useState(() => localStorage.getItem(storageKeys.EQUITY_MENU_STATE) === "open");
 
   return (
     <SidebarMenu>
-      {navLinks.map((link) => {
-        if (hasSubItems(link)) {
-          return <CollapsibleNavLink key={link.label} link={link} pathname={pathname} />;
-        }
-
-        if (link.href) {
-          return (
-            <NavLink key={link.label} href={link.href} icon={link.icon} active={link.isActive} badge={link.badge}>
-              {link.label}
-            </NavLink>
-          );
-        }
-
-        return null;
-      })}
+      {updatesPath ? (
+        <NavLink href="/updates/company" icon={Rss} filledIcon={Rss} active={pathname.startsWith("/updates")}>
+          Updates
+        </NavLink>
+      ) : null}
+      {routes.has("Invoices") && (
+        <NavLink
+          href="/invoices"
+          icon={ReceiptIcon}
+          active={pathname.startsWith("/invoices")}
+          badge={invoicesData?.filter(isInvoiceActionable).length}
+        >
+          Invoices
+        </NavLink>
+      )}
+      {routes.has("Expenses") && (
+        <NavLink
+          href={`/companies/${company.id}/expenses`}
+          icon={CircleDollarSign}
+          active={pathname.startsWith(`/companies/${company.id}/expenses`)}
+        >
+          Expenses
+        </NavLink>
+      )}
+      {routes.has("Documents") && (
+        <NavLink
+          href="/documents"
+          icon={Files}
+          active={pathname.startsWith("/documents") || pathname.startsWith("/document_templates")}
+          badge={documentsData?.length}
+        >
+          Documents
+        </NavLink>
+      )}
+      {routes.has("People") && (
+        <NavLink
+          href="/people"
+          icon={Users}
+          active={pathname.startsWith("/people") || pathname.includes("/investor_entities/")}
+        >
+          People
+        </NavLink>
+      )}
+      {routes.has("Roles") && (
+        <NavLink href="/roles" icon={BookUser} active={pathname.startsWith("/roles")}>
+          Roles
+        </NavLink>
+      )}
+      {routes.has("Equity") && equityLinks.length > 0 && (
+        <Collapsible
+          open={isOpen}
+          onOpenChange={(state) => {
+            setIsOpen(state);
+            localStorage.setItem(storageKeys.EQUITY_MENU_STATE, state ? "open" : "closed");
+          }}
+          className="group/collapsible"
+        >
+          <SidebarMenuItem>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton closeOnMobileClick={false}>
+                <ChartPie />
+                <span>Equity</span>
+                <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {equityLinks.map((link) => (
+                  <SidebarMenuSubItem key={link.route}>
+                    <SidebarMenuSubButton asChild isActive={pathname === link.route}>
+                      <Link href={link.route}>{link.label}</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </SidebarMenuItem>
+        </Collapsible>
+      )}
+      <NavLink href="/settings" active={pathname.startsWith("/settings")} icon={Settings}>
+        Settings
+      </NavLink>
     </SidebarMenu>
   );
 };
