@@ -4,7 +4,7 @@ import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle } from "lucide-rea
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import React, { useMemo, useState, useEffect } from "react";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
-import MainLayout from "@/components/layouts/Main";
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -386,15 +386,15 @@ export default function SupportPage() {
   };
 
   return (
-    <MainLayout
-      title="Support"
-      headerActions={
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Support</h1>
         <Button variant="outline" size="small" onClick={() => setShowNewTicketModal(true)}>
-          <Plus className="size-4" />
+          <Plus className="size-4 mr-2" />
           New ticket
         </Button>
-      }
-    >
+      </div>
+
       <div className="grid gap-4">
         {loading ? (
           <div className="grid gap-4">
@@ -433,6 +433,6 @@ export default function SupportPage() {
         onClose={() => setShowNewTicketModal(false)}
         onSuccess={handleTicketCreated}
       />
-    </MainLayout>
+    </div>
   );
 }

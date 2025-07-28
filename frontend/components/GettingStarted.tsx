@@ -1,6 +1,6 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { ChevronDown, X } from "lucide-react";
-import type { Route } from "next";
+
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import CircularProgress from "@/components/CircularProgress";
@@ -19,7 +19,7 @@ const CheckIcon = () => (
   </svg>
 );
 
-const CHECKLIST_ROUTES: Record<string, Route> = {
+const CHECKLIST_ROUTES: Record<string, string> = {
   add_bank_account: "/settings/administrator/billing",
   invite_contractor: "/people",
   send_first_payment: "/invoices",
@@ -29,7 +29,7 @@ const CHECKLIST_ROUTES: Record<string, Route> = {
   add_company_details: "/settings/administrator/details",
 } as const;
 
-const getItemHref = (key: string): Route => CHECKLIST_ROUTES[key] || "/";
+const getItemHref = (key: string): string => CHECKLIST_ROUTES[key] || "/";
 
 type Status = "expanded" | "dismissed" | "collapsed" | "completed";
 
@@ -88,7 +88,6 @@ export const GettingStarted = () => {
       >
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
-            closeOnMobileClick={false}
             className="h-full items-center justify-between rounded-none px-5"
           >
             {status === "completed" ? (
@@ -138,7 +137,7 @@ export const GettingStarted = () => {
                     className="flex h-8 items-center space-x-1 text-sm"
                     onClick={() => {
                       if (!item.completed && pathname !== getItemHref(item.key)) {
-                        router.push(getItemHref(item.key));
+                        router.push(getItemHref(item.key) as any);
                       }
                     }}
                   >
