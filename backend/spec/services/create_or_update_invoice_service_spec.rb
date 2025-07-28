@@ -38,7 +38,7 @@ RSpec.describe CreateOrUpdateInvoiceService do
     create(:active_grant, company_investor: create(:company_investor, company:, user:),
                           share_price_usd: 2.34, year: Date.current.year)
   end
-  let(:expected_total_amount_in_cents) { 14100 }
+  let(:expected_total_amount_in_cents) { 14101 }
 
   before { company.update!(equity_compensation_enabled: true) }
 
@@ -80,8 +80,8 @@ RSpec.describe CreateOrUpdateInvoiceService do
 
           invoice = result[:invoice]
           expect(invoice.invoice_line_items).to match([
-                                                        an_object_having_attributes(description: "I worked on XYZ", quantity: 121, hourly: true, pay_rate_in_subunits: contractor.pay_rate_in_subunits),
-                                                        an_object_having_attributes(description: "I also did ABC", quantity: 2, hourly: false, pay_rate_in_subunits: 1000),
+                                                        an_object_having_attributes(description: "I worked on XYZ", quantity: BigDecimal("121"), hourly: true, pay_rate_in_subunits: contractor.pay_rate_in_subunits),
+                                                        an_object_having_attributes(description: "I also did ABC", quantity: BigDecimal("2"), hourly: false, pay_rate_in_subunits: 1000),
                                                       ])
           expect(invoice.invoice_date.strftime("%Y-%m-%d")).to eq(Date.current.strftime("%Y-%m-%d"))
           expect(invoice.invoice_number).to eq("INV-123")
@@ -111,27 +111,25 @@ RSpec.describe CreateOrUpdateInvoiceService do
       end
 
       it "calculates the amounts correctly if the contractor has opted for some compensation in equity" do
-        create(:equity_allocation, company_worker: contractor, equity_percentage: 60, year: date.year)
-
+        contractor.update!(equity_percentage: 60)
         expect do
           result = invoice_service.process
           expect(result[:success]).to be(true)
           invoice = result[:invoice]
           expect(invoice.total_amount_in_usd_cents).to eq(expected_total_amount_in_cents)
           expect(invoice.equity_percentage).to eq(60)
-          expected_equity_cents = 8460
+          expected_equity_cents = 8461
           expect(invoice.equity_amount_in_cents).to eq(expected_equity_cents)
           expected_cash_cents = 5640
           expect(invoice.cash_amount_in_cents).to eq(expected_cash_cents)
           expect(invoice.flexile_fee_cents).to eq(50 + (1.5 * expected_total_amount_in_cents / 100.0).round)
           expected_options = 36 # (expected_equity_cents / (company.share_price_in_usd * 100)).round
           expect(invoice.equity_amount_in_options).to eq(expected_options)
-          expect(contractor.equity_allocation_for(date.year).locked?).to eq(true)
         end.to change { user.invoices.count }.by(1)
       end
 
       it "does not apply an equity split if the equity portion makes up less than one share" do
-        create(:equity_allocation, company_worker: contractor, equity_percentage: 1, year: date.year)
+        contractor.update!(equity_percentage: 1)
         equity_grant.update!(share_price_usd: 20)
 
         expect do
@@ -145,12 +143,11 @@ RSpec.describe CreateOrUpdateInvoiceService do
           expect(invoice.equity_amount_in_cents).to eq(0)
           expect(invoice.cash_amount_in_cents).to eq(expected_total_amount_in_cents)
           expect(invoice.flexile_fee_cents).to eq(50 + (1.5 * expected_total_amount_in_cents / 100).round)
-          expect(contractor.equity_allocation_for(date.year).locked?).to eq(true)
         end.to change { user.invoices.count }.by(1)
       end
 
       it "does not apply an equity split if the feature is not enabled" do
-        create(:equity_allocation, company_worker: contractor, equity_percentage: 60, year: date.year)
+        contractor.update!(equity_percentage: 60)
         company.update!(equity_compensation_enabled: false)
 
         expect do
@@ -168,7 +165,7 @@ RSpec.describe CreateOrUpdateInvoiceService do
       end
 
       it "fails to create an invoice if an active grant is missing, company does not have a share price, and the contractor has an equity percentage" do
-        create(:equity_allocation, company_worker: contractor, equity_percentage: 20, year: date.year)
+        contractor.update!(equity_percentage: 20)
         equity_grant.destroy!
         company.update!(fmv_per_share_in_usd: nil)
 
@@ -257,7 +254,7 @@ RSpec.describe CreateOrUpdateInvoiceService do
         end
 
         it "calculates the amounts correctly if the contractor has opted for some compensation in equity" do
-          create(:equity_allocation, company_worker: contractor, equity_percentage: 30, year: date.year)
+          contractor.update!(equity_percentage: 30)
 
           expect do
             result = invoice_service.process
@@ -266,14 +263,13 @@ RSpec.describe CreateOrUpdateInvoiceService do
             expect(invoice.invoice_expenses.count).to eq(1)
             expect(invoice.total_amount_in_usd_cents).to eq(expected_total_amount_in_cents + invoice_expense.total_amount_in_cents)
             expect(invoice.equity_percentage).to eq(30)
-            expected_equity_cents = expected_total_amount_in_cents * 0.3
+            expected_equity_cents = (expected_total_amount_in_cents * 0.3).round
             expect(invoice.equity_amount_in_cents).to eq(expected_equity_cents)
             expected_cash_cents = expected_total_amount_in_cents + invoice_expense.total_amount_in_cents - expected_equity_cents
             expect(invoice.cash_amount_in_cents).to eq(expected_cash_cents)
             expect(invoice.flexile_fee_cents).to eq(15_00) # max fee
             expected_options = 18 # (expected_equity_cents / (company.share_price_in_usd * 100)).floor
             expect(invoice.equity_amount_in_options).to eq(expected_options)
-            expect(contractor.equity_allocation_for(date.year).locked?).to eq(true)
           end.to change { user.invoices.count }.by(1)
         end
       end
@@ -314,8 +310,8 @@ RSpec.describe CreateOrUpdateInvoiceService do
           expect(invoice.invoice_date.strftime("%Y-%m-%d")).to eq(Date.current.strftime("%Y-%m-%d"))
           expect(invoice.invoice_number).to eq("INV-123")
           expect(invoice.invoice_line_items).to match([
-                                                        an_object_having_attributes(description: "I worked on XYZ", quantity: 121, hourly: true, pay_rate_in_subunits: contractor.pay_rate_in_subunits),
-                                                        an_object_having_attributes(description: "I also did ABC", quantity: 2, hourly: false, pay_rate_in_subunits: 1000),
+                                                        an_object_having_attributes(description: "I worked on XYZ", quantity: BigDecimal("121"), hourly: true, pay_rate_in_subunits: contractor.pay_rate_in_subunits),
+                                                        an_object_having_attributes(description: "I also did ABC", quantity: BigDecimal("2"), hourly: false, pay_rate_in_subunits: 1000),
                                                       ])
           expect(invoice.total_amount_in_usd_cents).to eq(expected_total_amount_in_cents)
           expect(invoice.equity_percentage).to eq(0)
@@ -348,7 +344,7 @@ RSpec.describe CreateOrUpdateInvoiceService do
       end
 
       it "updates the amounts correctly if the contractor has opted for some compensation in equity" do
-        create(:equity_allocation, :locked, company_worker: contractor, equity_percentage: 60, year: date.year)
+        contractor.update!(equity_percentage: 60)
 
         expect do
           result = invoice_service.process
@@ -356,7 +352,7 @@ RSpec.describe CreateOrUpdateInvoiceService do
           invoice.reload
           expect(invoice.total_amount_in_usd_cents).to eq(expected_total_amount_in_cents)
           expect(invoice.equity_percentage).to eq(60)
-          expected_equity_cents = expected_total_amount_in_cents * 0.6
+          expected_equity_cents = (expected_total_amount_in_cents * 0.6).round
           expect(invoice.equity_amount_in_cents).to eq(expected_equity_cents)
           expected_cash_cents = expected_total_amount_in_cents - expected_equity_cents
           expect(invoice.cash_amount_in_cents).to eq(expected_cash_cents)
@@ -372,7 +368,7 @@ RSpec.describe CreateOrUpdateInvoiceService do
           result = invoice_service.process
           expect(result[:success]).to eq(false)
           expect(result[:error_message]).to eq(
-            "Invoice line items quantity must be greater than 0 and Total amount in usd cents must be greater than 99"
+            "Invoice line items quantity must be greater than or equal to 0.01 and Total amount in usd cents must be greater than 99"
           )
           expect(user.invoices.count).to eq(1)
         end.to_not change { invoice.invoice_line_items.first.quantity }
@@ -466,7 +462,7 @@ RSpec.describe CreateOrUpdateInvoiceService do
         end
 
         it "updates the amounts correctly if the contractor has opted for some compensation in equity" do
-          create(:equity_allocation, :locked, company_worker: contractor, equity_percentage: 30, year: date.year)
+          contractor.update!(equity_percentage: 30)
 
           expect do
             result = invoice_service.process
@@ -477,14 +473,13 @@ RSpec.describe CreateOrUpdateInvoiceService do
             expected_total_amount = expected_total_amount_in_cents + expense_1.total_amount_in_cents + expense_2.total_amount_in_cents
             expect(invoice.total_amount_in_usd_cents).to eq(expected_total_amount)
             expect(invoice.equity_percentage).to eq(30)
-            expected_equity_cents = expected_total_amount_in_cents * 0.3
+            expected_equity_cents = (expected_total_amount_in_cents * 0.3).round
             expect(invoice.equity_amount_in_cents).to eq(expected_equity_cents)
             expected_cash_cents = expected_total_amount - expected_equity_cents
             expect(invoice.cash_amount_in_cents).to eq(expected_cash_cents)
             expect(invoice.flexile_fee_cents).to eq(15_00) # max fee
             expected_options = 18 # (expected_equity_cents / (company.share_price_in_usd * 100)).round
             expect(invoice.equity_amount_in_options).to eq(expected_options)
-            expect(contractor.equity_allocation_for(date.year).locked?).to eq(true)
           end.to change { user.invoices.count }.by(0)
         end
       end

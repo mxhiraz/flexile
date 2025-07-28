@@ -1,3 +1,19 @@
+import {
+  type AccessorKeyColumnDef,
+  type Column,
+  createColumnHelper as originalCreateColumnHelper,
+  type DeepKeys,
+  type DeepValue,
+  flexRender,
+  getCoreRowModel,
+  type RowData,
+  type Table,
+  type TableOptions,
+  useReactTable,
+} from "@tanstack/react-table";
+import { ChevronDown, ChevronUp, ListFilterIcon, SearchIcon, X } from "lucide-react";
+import React, { useMemo } from "react";
+import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,7 +33,6 @@ import { Input } from "@/components/ui/input";
 import {
   Table as ShadcnTable,
   TableBody,
-  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
@@ -25,22 +40,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/utils";
-import {
-  type AccessorKeyColumnDef,
-  type Column,
-  type DeepKeys,
-  type DeepValue,
-  flexRender,
-  getCoreRowModel,
-  createColumnHelper as originalCreateColumnHelper,
-  type RowData,
-  type Table,
-  type TableOptions,
-  useReactTable,
-} from "@tanstack/react-table";
-import { ChevronDown, ChevronUp, ListFilterIcon, SearchIcon, X } from "lucide-react";
-import React, { useMemo } from "react";
-import { z } from "zod";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -90,7 +89,6 @@ export const useTable = <T extends RowData>(
 
 interface TableProps<T> {
   table: Table<T>;
-  caption?: string;
   onRowClicked?: ((row: T) => void) | undefined;
   actions?: React.ReactNode;
   searchColumn?: string | undefined;
@@ -106,7 +104,6 @@ interface TableProps<T> {
 
 export default function DataTable<T extends RowData>({
   table,
-  caption,
   onRowClicked,
   actions,
   searchColumn: searchColumnName,
@@ -288,9 +285,6 @@ export default function DataTable<T extends RowData>({
       ) : null}
 
       <ShadcnTable className="caption-top not-print:max-md:grid">
-        {caption ? (
-          <TableCaption className="mb-2 text-left text-lg font-bold text-black">{caption}</TableCaption>
-        ) : null}
         <TableHeader className="not-print:max-md:hidden">
           {data.headers.map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -332,7 +326,7 @@ export default function DataTable<T extends RowData>({
               const rowContent = (
                 <TableRow
                   key={row.id}
-                  className={rowClasses}
+                  className={`${rowClasses} ${onRowClicked ? "cursor-pointer" : ""}`}
                   data-state={isSelected ? "selected" : undefined}
                   onClick={() => onRowClicked?.(row.original)}
                 >

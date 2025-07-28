@@ -27,7 +27,6 @@ class User < ApplicationRecord
 
   has_many :company_workers
   has_many :clients, -> { order(CompanyWorker.arel_table[:created_at]) }, through: :company_workers, source: :company
-  has_many :contracts
   has_many :document_signatures
   has_many :documents, through: :document_signatures do
     def unsigned_contracts
@@ -49,9 +48,10 @@ class User < ApplicationRecord
 
   has_many :user_compliance_infos, autosave: true
   has_one :compliance_info, -> { alive.order(tax_information_confirmed_at: :desc) }, class_name: "UserComplianceInfo"
-  has_many :tax_documents, through: :user_compliance_infos
 
   has_one_attached :avatar
+
+  belongs_to :signup_invite_link, class_name: "CompanyInviteLink", optional: true
 
   validates :email, presence: true, length: { minimum: MIN_EMAIL_LENGTH }
   validates :legal_name,
@@ -145,6 +145,10 @@ class User < ApplicationRecord
 
   def company_investor_for?(company)
     company_investor_for(company).present?
+  end
+
+  def company_worker_invitation_for?(company)
+    signup_invite_link.present? && signup_invite_link.company == company
   end
 
   def build_compliance_info(attributes)
