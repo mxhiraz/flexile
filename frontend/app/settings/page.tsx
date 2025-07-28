@@ -1,10 +1,10 @@
 "use client";
 
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { request } from "@/utils/request";
+import { z } from "zod";
 import { MutationStatusButton } from "@/components/MutationButton";
 import {
   AlertDialog,
@@ -25,7 +25,8 @@ import { Separator } from "@/components/ui/separator";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import defaultLogo from "@/images/default-company-logo.svg";
 import { MAX_PREFERRED_NAME_LENGTH, MIN_EMAIL_LENGTH } from "@/models";
-import { trpc } from "@/trpc/client";
+import { request } from "@/utils/request";
+import { settings_path } from "@/utils/routes";
 
 export default function SettingsPage() {
   return (
@@ -45,7 +46,17 @@ const DetailsSection = () => {
     },
   });
 
-  const saveMutation = trpc.users.update.useMutation({
+  const saveMutation = useMutation({
+    mutationFn: async (values: { email: string; preferredName: string }) => {
+      const response = await request({
+        url: settings_path(),
+        method: "PATCH",
+        accept: "json",
+        jsonData: { settings: { email: values.email, preferred_name: values.preferredName } },
+      });
+      if (!response.ok)
+        throw new Error(z.object({ error_message: z.string() }).parse(await response.json()).error_message);
+    },
     onSuccess: () => setTimeout(() => saveMutation.reset(), 2000),
   });
   const submit = form.handleSubmit((values) => saveMutation.mutate(values));
@@ -81,6 +92,7 @@ const DetailsSection = () => {
             </FormItem>
           )}
         />
+        {saveMutation.isError ? <p className="text-red-500">{saveMutation.error.message}</p> : null}
         <MutationStatusButton
           className="w-fit"
           type="submit"
@@ -103,11 +115,11 @@ const LeaveWorkspaceSection = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: contractorStatus } = useQuery({
-    queryKey: ['contractorStatus', company.id],
+    queryKey: ["contractorStatus", company.id],
     queryFn: async () => {
       const response = await request({
-        method: 'GET',
-        accept: 'json',
+        method: "GET",
+        accept: "json",
         url: `/internal/companies/${company.id}/contractor_status`,
       });
       return response.json();
@@ -117,12 +129,12 @@ const LeaveWorkspaceSection = () => {
   const leaveCompanyMutation = useMutation({
     mutationFn: async () => {
       const response = await request({
-        method: 'DELETE',
-        accept: 'json',
+        method: "DELETE",
+        accept: "json",
         url: `/internal/companies/${company.id}/leave`,
         assertOk: true,
       });
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -147,10 +159,7 @@ const LeaveWorkspaceSection = () => {
   }
 
   // Only apply contract restrictions to workers/contractors
-  if (user.roles.worker && (
-    contractorStatus?.contract_signed_elsewhere ||
-    contractorStatus?.has_active_contract
-  )) {
+  if (user.roles.worker && (contractorStatus?.contract_signed_elsewhere || contractorStatus?.has_active_contract)) {
     return null;
   }
 
