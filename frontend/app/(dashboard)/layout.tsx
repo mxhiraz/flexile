@@ -285,7 +285,7 @@ const NavLinks = () => {
                 {equityLinks.map((link) => (
                   <SidebarMenuSubItem key={link.route}>
                     <SidebarMenuSubButton asChild isActive={pathname === link.route}>
-                      <NavLink href={link.route}>{link.label}</NavLink>
+                      <NavLink href={link.route as any}>{link.label}</NavLink>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 ))}

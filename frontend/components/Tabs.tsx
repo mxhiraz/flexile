@@ -46,7 +46,7 @@ const Tabs = <T extends string>({ links }: { links: TabLink<T>[] }) => {
         {links.map((link, i) => (
           <Link
             key={link.label}
-            href={link.route}
+            href={link.route as any}
             className="rounded-full px-3 py-2 text-inherit no-underline hover:bg-gray-50"
             role="tab"
             aria-selected={i === activeIndex}

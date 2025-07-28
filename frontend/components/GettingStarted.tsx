@@ -28,7 +28,7 @@ const CHECKLIST_ROUTES = {
   add_company_details: "/settings/administrator/details",
 };
 
-const getItemHref = (key: string) => {
+const getItemHref = (key: string): string => {
   const routes: Record<string, string> = CHECKLIST_ROUTES;
   return routes[key] || "/";
 };
@@ -139,7 +139,7 @@ export const GettingStarted = () => {
                     className="flex h-8 items-center space-x-1 text-sm"
                     onClick={() => {
                       if (!item.completed && pathname !== getItemHref(item.key)) {
-                        router.push(getItemHref(item.key));
+                        router.push(getItemHref(item.key) as any);
                       }
                     }}
                   >
