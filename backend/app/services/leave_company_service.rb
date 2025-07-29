@@ -12,10 +12,12 @@ class LeaveCompanyService
     ApplicationRecord.transaction do
       validate_user_can_leave!
       remove_user_roles!
-      { success: true }
     end
-  rescue StandardError => e
+  rescue => e
+    Bugsnag.notify(e)
     { success: false, error: e.message }
+  else
+    { success: true }
   end
 
   private
@@ -30,7 +32,10 @@ class LeaveCompanyService
     end
 
     def remove_user_roles!
-      user.company_workers.where(company: company).delete_all
+      # Set ended_at for contractors to mark contract end date (preserve contract history)
+      user.company_workers.where(company: company).update_all(ended_at: Time.current)
+
+      # Remove investors and lawyers completely (no contract history needed)
       user.company_investors.where(company: company).delete_all
       user.company_lawyers.where(company: company).delete_all
     end
@@ -40,7 +45,7 @@ class LeaveCompanyService
     end
 
     def user_has_leavable_role?
-      user.company_workers.exists?(company: company) ||
+      user.company_workers.active.exists?(company: company) ||
         user.company_investors.exists?(company: company) ||
         user.company_lawyers.exists?(company: company)
     end

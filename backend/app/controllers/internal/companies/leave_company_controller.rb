@@ -15,7 +15,7 @@ class Internal::Companies::LeaveCompanyController < Internal::Companies::BaseCon
       cookies.delete(cookie_name)
       render json: { success: true }, status: :ok
     else
-      render json: { error: result[:error] }, status: :unprocessable_entity
+      render json: { success: false, error: result[:error] }, status: :unprocessable_entity
     end
   end
 end

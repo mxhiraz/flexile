@@ -36,6 +36,17 @@ RSpec.describe LeaveCompanyService do
       end
     end
 
+    context "when user already left the company" do
+      let!(:company_worker) { create(:company_worker, user: user, company: company, ended_at: 1.day.ago) }
+
+      it "returns failure with appropriate error message" do
+        result = service.call
+
+        expect(result[:success]).to be false
+        expect(result[:error]).to eq "You do not have permission to leave this company."
+      end
+    end
+
     context "when user is a contractor" do
       let!(:company_worker) { create(:company_worker, user: user, company: company) }
 
@@ -46,8 +57,9 @@ RSpec.describe LeaveCompanyService do
         expect(result[:error]).to be_nil
       end
 
-      it "removes the contractor role" do
-        expect { service.call }.to change { user.company_workers.count }.by(-1)
+      it "ends the contractor contract" do
+        expect { service.call }.to change { user.company_workers.where(company: company).first&.ended_at }.from(nil)
+        expect(user.company_workers.where(company: company).first.ended_at).to be_present
       end
     end
 
@@ -94,9 +106,12 @@ RSpec.describe LeaveCompanyService do
       end
 
       it "removes all user roles" do
-        expect { service.call }.to change { user.company_workers.count }.by(-1)
-          .and change { user.company_investors.count }.by(-1)
+        expect { service.call }.to change { user.company_investors.count }.by(-1)
           .and change { user.company_lawyers.count }.by(-1)
+
+        # Worker should have ended_at set instead of being deleted
+        worker = user.company_workers.where(company: company).first
+        expect(worker.ended_at).to be_present
       end
     end
 
@@ -109,8 +124,14 @@ RSpec.describe LeaveCompanyService do
         result = service.call
 
         expect(result[:success]).to be true
-        expect(user.company_workers.where(company: company)).to be_empty
-        expect(user.company_workers.where(company: other_company)).to exist
+
+        # Worker for this company should have ended_at set
+        company_worker = user.company_workers.where(company: company).first
+        expect(company_worker.ended_at).to be_present
+
+        # Worker for other company should remain active
+        other_worker = user.company_workers.where(company: other_company).first
+        expect(other_worker.ended_at).to be_nil
       end
     end
 
