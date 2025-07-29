@@ -2,7 +2,7 @@
 
 import { SignOutButton } from "@clerk/nextjs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { skipToken, useQueryClient } from "@tanstack/react-query";
+import { skipToken } from "@tanstack/react-query";
 import {
   BookUser,
   ChartPie,
@@ -47,27 +47,18 @@ import {
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
+import { useCurrentCompany, useCurrentUser } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
+import { useCompanySwitcher } from "@/lib/useCompanySwitcher";
 import { storageKeys } from "@/models/constants";
 import { trpc } from "@/trpc/client";
-import { request } from "@/utils/request";
-import { company_switch_path } from "@/utils/routes";
+import { cn } from "@/utils";
+import { useIsMobile } from "@/utils/use-mobile";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = useCurrentUser();
-
-  const queryClient = useQueryClient();
-  const switchCompany = async (companyId: string) => {
-    useUserStore.setState((state) => ({ ...state, pending: true }));
-    await request({
-      method: "POST",
-      url: company_switch_path(companyId),
-      accept: "json",
-    });
-    await queryClient.resetQueries({ queryKey: ["currentUser"] });
-    useUserStore.setState((state) => ({ ...state, pending: false }));
-  };
+  const isMobile = useIsMobile();
+  const { switchCompany } = useCompanySwitcher();
 
   return (
     <SidebarProvider>
@@ -151,7 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
-          <main className="flex flex-1 flex-col pb-4 not-print:overflow-y-auto">
+          <main className={cn("flex flex-1 flex-col pb-4 not-print:overflow-y-auto", isMobile && "pb-20")}>
             <div className="mx-3 flex flex-col gap-6">{children}</div>
           </main>
         </div>

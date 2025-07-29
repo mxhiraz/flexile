@@ -1,17 +1,16 @@
 "use client";
 
-import { cn } from "@/utils/index";
-import { MoreVertical, LogOut } from "lucide-react";
+import { SignOutButton } from "@clerk/nextjs";
+import { LogOut, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { useNavLinks, type NavLinkInfo, hasSubItems } from "@/lib/useNavLinks";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import React, { useMemo } from "react";
-import { useCurrentUser } from "@/global";
-import { SignOutButton } from "@clerk/nextjs";
-import { Separator } from "@/components/ui/separator";
 import { CompanySwitcherList } from "@/components/navigation/CompanySwitcher";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useCurrentUser } from "@/global";
+import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
+import { cn } from "@/utils/index";
 
 const NAV_PRIORITIES: Record<string, number> = {
   Invoices: 1,
@@ -81,7 +80,7 @@ const NavItemWithSubmenu = ({ item }: { item: NavItem & { subItems: NonNullable<
           <NavIconButton {...item} />
         </button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-auto">
+      <SheetContent side="bottom" className="rounded-t-2xl">
         <SheetHeader>
           <SheetTitle>{item.label}</SheetTitle>
         </SheetHeader>
@@ -119,20 +118,12 @@ const OverflowMenu = ({ items }: { items: NavItem[] }) => {
           <span className="text-xs font-medium">More</span>
         </button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-auto">
+      <SheetContent side="bottom" className="rounded-t-2xl">
         <SheetHeader>
           <SheetTitle>More Options</SheetTitle>
         </SheetHeader>
         <div>
-          {/* Company section */}
-          {user.companies.length > 0 && (
-            <>
-              <CompanySwitcherList itemClassName="px-6 py-3 font-medium" />
-              {items.length > 0 && <Separator className="my-0" />}
-            </>
-          )}
-
-          {/* Navigation items */}
+          {user.companies.length > 0 && <CompanySwitcherList itemClassName="px-6 py-3 font-medium" />}
           {items.map((item) => (
             <React.Fragment key={item.label}>
               {item.subItems ? (
@@ -142,9 +133,6 @@ const OverflowMenu = ({ items }: { items: NavItem[] }) => {
               ) : null}
             </React.Fragment>
           ))}
-
-          {/* Log out section */}
-          <Separator className="my-0" />
           <SignOutButton>
             <button
               className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"

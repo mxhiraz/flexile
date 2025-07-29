@@ -1,9 +1,6 @@
 "use client";
 
-import { useIsActionable } from "@/app/invoices";
-import { navLinks as equityNavLinks } from "@/app/equity";
-import { useCurrentCompany, useCurrentUser } from "@/global";
-import { trpc } from "@/trpc/client";
+import { skipToken } from "@tanstack/react-query";
 import {
   BookUser,
   ChartPie,
@@ -16,7 +13,10 @@ import {
   Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { skipToken } from "@tanstack/react-query";
+import { navLinks as equityNavLinks } from "@/app/(dashboard)/equity";
+import { useIsActionable } from "@/app/(dashboard)/invoices";
+import { useCurrentCompany, useCurrentUser } from "@/global";
+import { trpc } from "@/trpc/client";
 
 export interface NavLinkInfo {
   label: string;
@@ -51,7 +51,11 @@ export const useNavLinks = (): NavLinkInfo[] => {
 
   const { data: documentsData } = trpc.documents.list.useQuery(
     user.currentCompanyId && user.id
-      ? { companyId: user.currentCompanyId, userId: user.id, signable: true }
+      ? {
+          companyId: user.currentCompanyId,
+          userId: user.roles.administrator || user.roles.lawyer ? null : user.id,
+          signable: true,
+        }
       : skipToken,
     { refetchInterval: 30_000 },
   );
