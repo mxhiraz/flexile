@@ -98,6 +98,7 @@ export default function Dividends() {
     },
   });
 
+  const hasLegalDetails = user.legalName && user.address.street_address && user.taxInformationConfirmedAt;
   const columns = useMemo(
     () => [
       columnHelper.simple("dividendRound.issuedAt", "Issue date", formatDate),
@@ -114,8 +115,8 @@ export default function Dividends() {
           <div className="flex min-h-8 justify-between gap-2">
             <DividendStatusIndicator dividend={info.row.original} />
             {info.row.original.investor.user.id === user.id &&
+            hasLegalDetails &&
             user.hasPayoutMethodForDividends &&
-            user.legalName &&
             info.row.original.dividendRound.releaseDocument &&
             !info.row.original.signedReleaseAt ? (
               <Button size="small" onClick={() => setSigningDividend({ id: info.row.original.id, state: "initial" })}>
@@ -145,7 +146,7 @@ export default function Dividends() {
         }
       />
 
-      {!user.legalName ? (
+      {!hasLegalDetails ? (
         <Alert>
           <Info />
           <AlertDescription>
@@ -177,7 +178,7 @@ export default function Dividends() {
       )}
       <Dialog open={!!dividendData} onOpenChange={() => setSigningDividend(null)}>
         <DialogContent>
-          {dividendData && signingDividend && user.legalName ? (
+          {dividendData && signingDividend && hasLegalDetails && user.legalName ? (
             signingDividend.state !== "initial" ? (
               <>
                 <DialogHeader className="text-left">

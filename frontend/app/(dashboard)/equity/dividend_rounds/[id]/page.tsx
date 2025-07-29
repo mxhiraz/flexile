@@ -7,6 +7,7 @@ import DividendPaymentModal from "@/app/(dashboard)/equity/DividendPaymentModal"
 import DividendStatusIndicator from "@/app/(dashboard)/equity/DividendStatusIndicator";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
+import TableSkeleton from "@/components/TableSkeleton";
 import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
@@ -16,11 +17,11 @@ type Dividend = RouterOutput["dividends"]["list"][number];
 const rowLink = (row: Dividend) => `/people/${row.investor.user.id}?tab=dividends` as const;
 const columnHelper = createColumnHelper<Dividend>();
 const columns = [
-  columnHelper.accessor("investor.user.name", {
+  columnHelper.accessor("investor.user.legalName", {
     header: "Recipient",
     cell: (info) => (
       <Link href={rowLink(info.row.original)} className="no-underline">
-        <strong>{info.getValue()}</strong>
+        <strong>{info.getValue() || info.row.original.investor.user.preferredName || info.row.original.investor.user.email}</strong>
       </Link>
     ),
   }),
@@ -35,19 +36,23 @@ const columns = [
 export default function DividendRound() {
   const { id } = useParams<{ id: string }>();
   const company = useCurrentCompany();
-  const [data] = trpc.dividends.list.useSuspenseQuery({
+  const { data: dividends = [], isLoading } = trpc.dividends.list.useQuery({
     companyId: company.id,
     dividendRoundId: Number(id),
   });
 
   const [selectedDividend, setSelectedDividend] = useState<Dividend | null>(null);
 
-  const table = useTable({ columns, data });
+  const table = useTable({ data: dividends, columns });
 
   return (
     <>
       <DashboardHeader title="Dividend" />
-      <DataTable table={table} onRowClicked={(row) => setSelectedDividend(row)} />
+      {isLoading ? (
+        <TableSkeleton columns={4} />
+      ) : (
+        <DataTable table={table} onRowClicked={(row) => setSelectedDividend(row)} />
+      )}
       <DividendPaymentModal dividend={selectedDividend} onClose={() => setSelectedDividend(null)} />
     </>
   );

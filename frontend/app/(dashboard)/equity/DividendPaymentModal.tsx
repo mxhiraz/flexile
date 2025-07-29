@@ -4,7 +4,7 @@ import React from "react";
 import MutationButton from "@/components/MutationButton";
 import Status from "@/components/Status";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
@@ -19,7 +19,7 @@ interface DividendPaymentModalProps {
 }
 
 const Item = ({ label, value }: { label: string; value: string | React.ReactNode }) => (
-  <div className="flex justify-between gap-4 px-6">
+  <div className="flex justify-between gap-4">
     <div className="text-muted-foreground text-sm">{label}</div>
     <div className="text-right text-sm">{value}</div>
   </div>
@@ -62,18 +62,18 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
 
   if (!dividend) return null;
 
-  const payment = dividend.payments[0]?.dividendPayment;
+  const payment = dividend.payments?.[0]?.dividendPayment;
   const hasPaymentChanged = payment && new Date(payment.updatedAt) > new Date(dividend.updatedAt);
 
   return (
-    <Sheet open={!!dividend} onOpenChange={onClose}>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Dividend payment details</SheetTitle>
-        </SheetHeader>
-        <div className="grid gap-4 pb-6 not-print:overflow-y-auto">
-          <h3 className="text-md px-6 font-medium">Dividend summary</h3>
-          <Item label="Investor" value={dividend.investor.user.name || dividend.investor.user.email} />
+    <Dialog open={!!dividend} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Dividend payment details</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 pb-6">
+          <h3 className="text-md font-medium">Dividend summary</h3>
+          <Item label="Investor" value={dividend.investor.user.legalName || dividend.investor.user.preferredName || dividend.investor.user.email} />
           <Item label="Issue date" value={formatDate(dividend.dividendRound.issuedAt)} />
           <Item label="Total amount" value={formatMoneyFromCents(dividend.totalAmountInCents)} />
           <Item label="Number of shares" value={dividend.numberOfShares?.toLocaleString() || "N/A"} />
@@ -82,7 +82,7 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
 
           {payment ? (
             <>
-              <h3 className="text-md px-6 font-medium">Payment details</h3>
+              <h3 className="text-md font-medium">Payment details</h3>
               <Item
                 label="Payment status"
                 value={
@@ -125,8 +125,8 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
             </>
           ) : (
             <>
-              <h3 className="text-md px-6 font-medium">Payment details</h3>
-              <div className="px-6 py-4 text-center">
+              <h3 className="text-md font-medium">Payment details</h3>
+              <div className="py-4 text-center">
                 <AlertTriangle className="mx-auto mb-2 size-8 text-yellow-500" />
                 <h4 className="font-semibold">No payment information</h4>
                 <p className="text-muted-foreground text-sm">This dividend has not been processed for payment yet.</p>
@@ -135,7 +135,7 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
           )}
         </div>
         {payment && hasPaymentChanged ? (
-          <SheetFooter>
+          <DialogFooter>
             <div className="grid gap-4">
               <MutationButton
                 param={{ companyId: company.id, dividendId: dividend.id.toString() }}
@@ -147,9 +147,9 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
               </MutationButton>
               <div className="text-xs">This will retry the payment process with updated information.</div>
             </div>
-          </SheetFooter>
+          </DialogFooter>
         ) : null}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -35,7 +35,7 @@ test.describe("Dividend Payment Drawer", () => {
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("Dividend payment details")).toBeVisible();
     await expect(page.getByText("Dividend summary")).toBeVisible();
-    await expect(page.getByText(user.name || user.email)).toBeVisible();
+    await expect(page.getByText(user.legalName || user.preferredName || user.email)).toBeVisible();
     await expect(page.getByText("$1,000")).toBeVisible();
     await expect(page.getByText("1,000")).toBeVisible();
   });
@@ -67,7 +67,7 @@ test.describe("Dividend Payment Drawer", () => {
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("Dividend payment details")).toBeVisible();
     await expect(page.getByText("Dividend summary")).toBeVisible();
-    await expect(page.getByText(user.name || user.email)).toBeVisible();
+    await expect(page.getByText(user.legalName || user.preferredName || user.email)).toBeVisible();
     await expect(page.getByText("$500")).toBeVisible();
     await expect(page.getByText("500")).toBeVisible();
   });
