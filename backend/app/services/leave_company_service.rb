@@ -27,16 +27,6 @@ class LeaveCompanyService
       unless user_has_leavable_role?
         raise "You do not have permission to leave this company."
       end
-
-      # Only check contract restrictions if user is a contractor
-      contractor = user.company_workers.find_by(company: company)
-      if contractor&.contract_signed_elsewhere
-        raise "You cannot leave the workspace because you have a contract signed elsewhere."
-      end
-
-      if contractor&.active_contract?
-        raise "You cannot leave the workspace with an active contract."
-      end
     end
 
     def remove_user_roles!

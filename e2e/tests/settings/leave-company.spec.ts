@@ -6,7 +6,6 @@ import { companyLawyersFactory } from "@test/factories/companyLawyers";
 import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
-import { subDays } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import { companyContractors, companyInvestors, companyLawyers } from "@/db/schema";
 
@@ -20,52 +19,13 @@ test.describe("Leave company", () => {
     await expect(page.getByText("Leave workspace")).not.toBeVisible();
   });
 
-  test("contractor with active contract cannot see leave workspace option", async ({ page }) => {
+  test("contractor can leave successfully", async ({ page }) => {
     const { company } = await companiesFactory.createCompletedOnboarding();
     const { user } = await usersFactory.create();
 
     await companyContractorsFactory.create({
       companyId: company.id,
       userId: user.id,
-      startedAt: subDays(new Date(), 1),
-      endedAt: null,
-      contractSignedElsewhere: false,
-    });
-
-    await login(page, user);
-    await page.getByRole("link", { name: "Settings" }).click();
-
-    await expect(page.getByText("Leave workspace")).not.toBeVisible();
-  });
-
-  test("contractor with contract signed elsewhere cannot see leave workspace option", async ({ page }) => {
-    const { company } = await companiesFactory.createCompletedOnboarding();
-    const { user } = await usersFactory.create();
-
-    await companyContractorsFactory.create({
-      companyId: company.id,
-      userId: user.id,
-      startedAt: subDays(new Date(), 2),
-      endedAt: subDays(new Date(), 1),
-      contractSignedElsewhere: true,
-    });
-
-    await login(page, user);
-    await page.getByRole("link", { name: "Settings" }).click();
-
-    await expect(page.getByText("Leave workspace")).not.toBeVisible();
-  });
-
-  test("contractor with ended contract can leave successfully", async ({ page }) => {
-    const { company } = await companiesFactory.createCompletedOnboarding();
-    const { user } = await usersFactory.create();
-
-    await companyContractorsFactory.create({
-      companyId: company.id,
-      userId: user.id,
-      startedAt: subDays(new Date(), 2),
-      endedAt: subDays(new Date(), 1),
-      contractSignedElsewhere: false,
     });
 
     await login(page, user);
@@ -76,7 +36,7 @@ test.describe("Leave company", () => {
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
 
-    await expect(page).toHaveURL("/invoices");
+    await expect(page).toHaveURL("/dashboard");
 
     const contractor = await db.query.companyContractors.findFirst({
       where: and(eq(companyContractors.companyId, company.id), eq(companyContractors.userId, user.id)),
@@ -101,7 +61,7 @@ test.describe("Leave company", () => {
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
 
-    await expect(page).toHaveURL("/invoices");
+    await expect(page).toHaveURL("/dashboard");
 
     const investor = await db.query.companyInvestors.findFirst({
       where: and(eq(companyInvestors.companyId, company.id), eq(companyInvestors.userId, user.id)),
@@ -126,7 +86,7 @@ test.describe("Leave company", () => {
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
 
-    await expect(page).toHaveURL("/invoices");
+    await expect(page).toHaveURL("/dashboard");
 
     const lawyer = await db.query.companyLawyers.findFirst({
       where: and(eq(companyLawyers.companyId, company.id), eq(companyLawyers.userId, user.id)),
@@ -141,9 +101,6 @@ test.describe("Leave company", () => {
     await companyContractorsFactory.create({
       companyId: company.id,
       userId: user.id,
-      startedAt: subDays(new Date(), 2),
-      endedAt: subDays(new Date(), 1),
-      contractSignedElsewhere: false,
     });
 
     await companyInvestorsFactory.create({
@@ -159,7 +116,7 @@ test.describe("Leave company", () => {
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
 
-    await expect(page).toHaveURL("/invoices");
+    await expect(page).toHaveURL("/dashboard");
 
     const contractor = await db.query.companyContractors.findFirst({
       where: and(eq(companyContractors.companyId, company.id), eq(companyContractors.userId, user.id)),

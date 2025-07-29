@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -114,18 +114,6 @@ const LeaveWorkspaceSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: contractorStatus } = useQuery({
-    queryKey: ["contractorStatus", company.id],
-    queryFn: async () => {
-      const response = await request({
-        method: "GET",
-        accept: "json",
-        url: `/internal/companies/${company.id}/contractor_status`,
-      });
-      return response.json();
-    },
-  });
-
   const leaveCompanyMutation = useMutation({
     mutationFn: async () => {
       const response = await request({
@@ -159,11 +147,6 @@ const LeaveWorkspaceSection = () => {
 
   // Don't show leave option if user has no leavable roles
   if (!user.roles.worker && !user.roles.investor && !user.roles.lawyer) {
-    return null;
-  }
-
-  // Only apply contract restrictions to workers/contractors
-  if (user.roles.worker && (contractorStatus?.contract_signed_elsewhere || contractorStatus?.has_active_contract)) {
     return null;
   }
 

@@ -39,80 +39,15 @@ RSpec.describe LeaveCompanyService do
     context "when user is a contractor" do
       let!(:company_worker) { create(:company_worker, user: user, company: company) }
 
-      context "with contract_signed_elsewhere as true" do
-        before do
-          company_worker.update!(contract_signed_elsewhere: true)
-        end
+      it "returns success" do
+        result = service.call
 
-        it "returns failure with appropriate error message" do
-          result = service.call
-
-          expect(result[:success]).to be false
-          expect(result[:error]).to eq "You cannot leave the workspace because you have a contract signed elsewhere."
-        end
-
-        it "does not remove user roles" do
-          expect { service.call }.not_to change { user.company_workers.count }
-        end
+        expect(result[:success]).to be true
+        expect(result[:error]).to be_nil
       end
 
-      context "with active contract" do
-        before do
-          company_worker.update!(started_at: 1.day.ago, ended_at: nil)
-        end
-
-        it "returns failure with appropriate error message" do
-          result = service.call
-
-          expect(result[:success]).to be false
-          expect(result[:error]).to eq "You cannot leave the workspace with an active contract."
-        end
-
-        it "does not remove user roles" do
-          expect { service.call }.not_to change { user.company_workers.count }
-        end
-      end
-
-      context "with inactive contract and contract_signed_elsewhere as false" do
-        before do
-          company_worker.update!(
-            started_at: 2.days.ago,
-            ended_at: 1.day.ago,
-            contract_signed_elsewhere: false
-          )
-        end
-
-        it "returns success" do
-          result = service.call
-
-          expect(result[:success]).to be true
-          expect(result[:error]).to be_nil
-        end
-
-        it "removes the contractor role" do
-          expect { service.call }.to change { user.company_workers.count }.by(-1)
-        end
-      end
-
-      context "with contract_signed_elsewhere as false and no active contract" do
-        before do
-          company_worker.update!(
-            started_at: 2.days.ago,
-            ended_at: 1.day.ago,
-            contract_signed_elsewhere: false
-          )
-        end
-
-        it "returns success" do
-          result = service.call
-
-          expect(result[:success]).to be true
-          expect(result[:error]).to be_nil
-        end
-
-        it "removes the contractor role" do
-          expect { service.call }.to change { user.company_workers.count }.by(-1)
-        end
+      it "removes the contractor role" do
+        expect { service.call }.to change { user.company_workers.count }.by(-1)
       end
     end
 
@@ -147,7 +82,7 @@ RSpec.describe LeaveCompanyService do
     end
 
     context "when user has multiple roles" do
-      let!(:company_worker) { create(:company_worker, user: user, company: company, ended_at: 1.day.ago) }
+      let!(:company_worker) { create(:company_worker, user: user, company: company) }
       let!(:company_investor) { create(:company_investor, user: user, company: company) }
       let!(:company_lawyer) { create(:company_lawyer, user: user, company: company) }
 
@@ -167,7 +102,7 @@ RSpec.describe LeaveCompanyService do
 
     context "when user has roles in multiple companies" do
       let(:other_company) { create(:company) }
-      let!(:company_worker) { create(:company_worker, user: user, company: company, ended_at: 1.day.ago) }
+      let!(:company_worker) { create(:company_worker, user: user, company: company) }
       let!(:other_company_worker) { create(:company_worker, user: user, company: other_company) }
 
       it "only removes roles for the specified company" do
@@ -196,7 +131,7 @@ RSpec.describe LeaveCompanyService do
     end
 
     context "when database operation fails" do
-      let!(:company_worker) { create(:company_worker, user: user, company: company, ended_at: 1.day.ago) }
+      let!(:company_worker) { create(:company_worker, user: user, company: company) }
 
       before do
         allow(user.company_workers).to receive(:where).and_raise(ActiveRecord::ActiveRecordError, "Database error")
@@ -211,7 +146,7 @@ RSpec.describe LeaveCompanyService do
     end
 
     context "transaction rollback behavior" do
-      let!(:company_worker) { create(:company_worker, user: user, company: company, ended_at: 1.day.ago) }
+      let!(:company_worker) { create(:company_worker, user: user, company: company) }
       let!(:company_investor) { create(:company_investor, user: user, company: company) }
 
       before do
