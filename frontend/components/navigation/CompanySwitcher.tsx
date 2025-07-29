@@ -1,10 +1,10 @@
 "use client";
 
-import { cn } from "@/utils/index";
 import Image from "next/image";
-import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { useCurrentUser } from "@/global";
+import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { useCompanySwitcher } from "@/lib/useCompanySwitcher";
+import { cn } from "@/utils/index";
 
 export interface CompanySwitcherProps {
   onCompanySelect?: (companyId: string) => void;
