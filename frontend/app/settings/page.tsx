@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardHeader } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import defaultLogo from "@/images/default-company-logo.svg";
 import { MAX_PREFERRED_NAME_LENGTH, MIN_EMAIL_LENGTH } from "@/models";
@@ -165,11 +164,10 @@ const LeaveWorkspaceSection = () => {
 
   return (
     <>
-      <Separator />
       <div className="grid gap-4">
-        <h2 className="text-xl font-medium">Workspace access</h2>
+        <h3 className="text mt-4 font-medium">Workspace access</h3>
         <Card>
-          <CardHeader>
+          <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="size-8 rounded-md">
                 <AvatarImage src={company.logo_url ?? defaultLogo.src} alt="Company logo" />
@@ -195,12 +193,14 @@ const LeaveWorkspaceSection = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Leave this workspace?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will lose access to all data and documents in {company.name}. Are you sure you want to continue?
+              You'll lose access to all invoices, documents, and other data in {company.name}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {errorMessage ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => handleModalOpenChange(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => handleModalOpenChange(false)}>
+              <Button variant="outline">Cancel</Button>
+            </AlertDialogCancel>
             <AlertDialogAction asChild>
               <MutationStatusButton
                 idleVariant="critical"
