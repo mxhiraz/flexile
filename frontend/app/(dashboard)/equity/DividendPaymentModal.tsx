@@ -3,8 +3,8 @@ import { AlertTriangle, CheckCircle, Clock, RefreshCw, XCircle } from "lucide-re
 import React from "react";
 import MutationButton from "@/components/MutationButton";
 import Status from "@/components/Status";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
@@ -67,16 +67,19 @@ export default function DividendPaymentModal({ dividend, onClose }: DividendPaym
 
   return (
     <Dialog open={!!dividend} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Dividend payment details</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 pb-6">
           <h3 className="text-md font-medium">Dividend summary</h3>
-          <Item label="Investor" value={dividend.investor.user.legalName || dividend.investor.user.preferredName || dividend.investor.user.email} />
+          <Item label="Investor" value={dividend.investor.user.name} />
           <Item label="Issue date" value={formatDate(dividend.dividendRound.issuedAt)} />
           <Item label="Total amount" value={formatMoneyFromCents(dividend.totalAmountInCents)} />
-          <Item label="Number of shares" value={dividend.numberOfShares?.toLocaleString() || "N/A"} />
+          <Item
+            label="Number of shares"
+            value={dividend.numberOfShares ? dividend.numberOfShares.toLocaleString() : "N/A"}
+          />
           <Item label="Status" value={<Status>{dividend.status}</Status>} />
           <Separator />
 
