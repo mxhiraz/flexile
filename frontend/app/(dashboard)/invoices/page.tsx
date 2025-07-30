@@ -48,7 +48,6 @@ import TableSkeleton from "@/components/TableSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
@@ -56,10 +55,10 @@ import { useCurrentCompany, useCurrentUser } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { PayRateType, trpc } from "@/trpc/client";
 import { formatMoneyFromCents } from "@/utils/formatMoney";
-import { pluralize } from "@/utils/pluralize";
 import { request } from "@/utils/request";
 import { company_invoices_path, export_company_invoices_path } from "@/utils/routes";
 import { formatDate } from "@/utils/time";
+import { useIsMobile } from "@/utils/use-mobile";
 import QuantityInput from "./QuantityInput";
 import { useCanSubmitInvoices } from ".";
 
@@ -78,6 +77,7 @@ type Invoice = RouterOutput["invoices"]["list"][number];
 export default function InvoicesPage() {
   const user = useCurrentUser();
   const company = useCurrentCompany();
+  const isMobile = useIsMobile();
   const [openModal, setOpenModal] = useState<"approve" | "reject" | "delete" | null>(null);
   const [detailInvoice, setDetailInvoice] = useState<Invoice | null>(null);
   const isActionable = useIsActionable();
@@ -336,12 +336,21 @@ export default function InvoicesPage() {
         title="Invoices"
         headerActions={
           user.roles.worker ? (
-            <Button asChild variant="outline" size="small" disabled={!canSubmitInvoices}>
-              <Link href="/invoices/new" inert={!canSubmitInvoices}>
-                <Plus className="size-4" />
-                New invoice
-              </Link>
-            </Button>
+            isMobile ? (
+              <button
+                className="text-blue-600"
+                onClick={() => table.toggleAllRowsSelected(!table.getIsAllRowsSelected())}
+              >
+                {table.getIsAllRowsSelected() ? "Unselect all" : "Select all"}
+              </button>
+            ) : (
+              <Button asChild variant="outline" size="small" disabled={!canSubmitInvoices}>
+                <Link href="/invoices/new" inert={!canSubmitInvoices}>
+                  <Plus className="size-4" />
+                  New invoice
+                </Link>
+              </Button>
+            )
           ) : null
         }
       />
@@ -395,17 +404,6 @@ export default function InvoicesPage() {
                 )}
               </>
             ) : null}
-
-            <div className="flex justify-between md:hidden">
-              <h2 className="text-xl font-bold">
-                {data.length} {pluralize("invoice", data.length)}
-              </h2>
-              <Checkbox
-                checked={table.getIsAllRowsSelected()}
-                label="Select all"
-                onCheckedChange={(checked) => table.toggleAllRowsSelected(checked === true)}
-              />
-            </div>
 
             <DataTable
               table={table}
