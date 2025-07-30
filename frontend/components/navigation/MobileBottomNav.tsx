@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { CompanySwitcherList } from "@/components/navigation/CompanySwitcher";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/global";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
@@ -87,7 +86,9 @@ const MobileNavSheet = ({
       <SheetHeader>
         <SheetTitle>{title}</SheetTitle>
       </SheetHeader>
-      <div className="transition-all duration-300 ease-in-out">{children}</div>
+      <div className="max-h-[60vh] overflow-y-auto">
+        <div className="transition-all duration-300">{children}</div>
+      </div>
     </SheetContent>
   </Sheet>
 );
@@ -166,15 +167,21 @@ const SubmenuSection = ({ item, pathname }: { item: NavItem; pathname: string })
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
-      <CollapsibleTrigger asChild>
-        <button className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors">
-          <item.icon className="h-5 w-5" />
-          <span className="font-normal">{item.label}</span>
-          <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-        </button>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
+    <div className="overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
+      >
+        <item.icon className="h-5 w-5" />
+        <span className="font-normal">{item.label}</span>
+        <ChevronRight className={cn("ml-auto h-4 w-4 transition-transform duration-200", isOpen && "rotate-90")} />
+      </button>
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-300 ease-in-out",
+          isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
         <div className="space-y-1 pb-2">
           {item.subItems?.map((subItem) => (
             <Link
@@ -189,8 +196,8 @@ const SubmenuSection = ({ item, pathname }: { item: NavItem; pathname: string })
             </Link>
           ))}
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </div>
   );
 };
 
