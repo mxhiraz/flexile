@@ -16,6 +16,7 @@ import ComboBox from "@/components/ComboBox";
 import DatePicker from "@/components/DatePicker";
 import { MutationStatusButton } from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -87,7 +88,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       numberOfShares: 10_000,
       optionGrantType: "nso" as const,
       vestingCommencementDate: today(getLocalTimeZone()),
-      vestingTrigger: "invoice_paid" as const,
+      vestingTrigger: "scheduled" as const,
       boardApprovalDate: today(getLocalTimeZone()),
     },
     context: {
@@ -478,13 +479,15 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
             </div>
 
             <div className="grid gap-4">
-              <div
-                className="flex items-center justify-between"
+              <Button
+                type="button"
+                variant="ghost"
+                className="flex h-auto w-full items-center justify-between p-0 text-left hover:bg-transparent"
                 onClick={() => setShowExercisePeriods(!showExercisePeriods)}
               >
                 <h2 className="text-lg font-medium">Customize post-termination exercise period</h2>
                 {showExercisePeriods ? <ChevronDown className="size-6" /> : <ChevronRight className="size-6" />}
-              </div>
+              </Button>
 
               {showExercisePeriods ? (
                 <div className="grid gap-4">
