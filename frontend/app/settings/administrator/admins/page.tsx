@@ -156,18 +156,20 @@ export default function AdminsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (confirmRevokeUser) {
-                  revokeAdminMutation.mutate({
-                    companyId: company.id,
-                    userId: confirmRevokeUser.id,
-                  });
-                  setConfirmRevokeUser(null);
-                }
-              }}
-            >
-              Remove admin
+            <AlertDialogAction asChild>
+              <Button
+                variant="critical"
+                onClick={() => {
+                  if (confirmRevokeUser) {
+                    revokeAdminMutation.mutate({
+                      companyId: company.id,
+                      userId: confirmRevokeUser.id,
+                    });
+                  }
+                }}
+              >
+                Remove admin
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

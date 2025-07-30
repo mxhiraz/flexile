@@ -173,7 +173,6 @@ const PersonalDetails = () => {
               <Button
                 onClick={() => {
                   setConfirmNoPayout(true);
-                  setModalOpen(false);
                   save.mutate();
                 }}
               >
