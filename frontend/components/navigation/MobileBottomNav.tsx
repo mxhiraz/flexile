@@ -1,12 +1,13 @@
 "use client";
 
 import { SignOutButton } from "@clerk/nextjs";
-import { LogOut, MoreVertical } from "lucide-react";
+import { ChevronRight, LogOut, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { CompanySwitcherList } from "@/components/navigation/CompanySwitcher";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/global";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
@@ -70,36 +71,54 @@ const SimpleNavItem = ({ item }: { item: NavItem }) => {
   );
 };
 
+// Generic mobile nav sheet component
+const MobileNavSheet = ({
+  trigger,
+  title,
+  children,
+}: {
+  trigger: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <Sheet>
+    <SheetTrigger asChild>{trigger}</SheetTrigger>
+    <SheetContent side="bottom" className="z-50 rounded-t-2xl border-t-0 pb-16">
+      <SheetHeader>
+        <SheetTitle>{title}</SheetTitle>
+      </SheetHeader>
+      <div className="transition-all duration-300 ease-in-out">{children}</div>
+    </SheetContent>
+  </Sheet>
+);
+
 const NavItemWithSubmenu = ({ item }: { item: NavItem & { subItems: NonNullable<NavItem["subItems"]> } }) => {
   const pathname = usePathname();
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <MobileNavSheet
+      trigger={
         <button aria-label={`${item.label} menu`} aria-current={item.isActive ? "page" : undefined} className="w-full">
           <NavIconButton {...item} />
         </button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl">
-        <SheetHeader>
-          <SheetTitle>{item.label}</SheetTitle>
-        </SheetHeader>
-        <div className="flex flex-col gap-1">
-          {item.subItems.map((subItem) => (
-            <Link
-              key={subItem.label}
-              href={{ pathname: subItem.route }}
-              className={cn(
-                "flex items-center px-6 py-2",
-                pathname === subItem.route && "bg-accent text-accent-foreground",
-              )}
-            >
-              <span className="font-medium">{subItem.label}</span>
-            </Link>
-          ))}
-        </div>
-      </SheetContent>
-    </Sheet>
+      }
+      title={item.label}
+    >
+      <div className="flex flex-col gap-1">
+        {item.subItems.map((subItem) => (
+          <Link
+            key={subItem.label}
+            href={{ pathname: subItem.route }}
+            className={cn(
+              "flex items-center px-6 py-2",
+              pathname === subItem.route && "bg-accent text-accent-foreground",
+            )}
+          >
+            <span className="font-normal">{subItem.label}</span>
+          </Link>
+        ))}
+      </div>
+    </MobileNavSheet>
   );
 };
 
@@ -108,68 +127,72 @@ const OverflowMenu = ({ items }: { items: NavItem[] }) => {
   const user = useCurrentUser();
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <MobileNavSheet
+      trigger={
         <button
           aria-label="More navigation options"
           className="text-muted-foreground hover:text-foreground flex h-full w-full flex-col items-center justify-center p-2 transition-colors active:scale-95"
         >
-          <MoreVertical className="mb-1 h-5 w-5" />
+          <MoreHorizontal className="mb-1 h-5 w-5" />
           <span className="text-xs font-medium">More</span>
         </button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl">
-        <SheetHeader>
-          <SheetTitle>More Options</SheetTitle>
-        </SheetHeader>
-        <div>
-          {user.companies.length > 0 && <CompanySwitcherList itemClassName="px-6 py-3 font-medium" />}
-          {items.map((item) => (
-            <React.Fragment key={item.label}>
-              {item.subItems ? (
-                <SubmenuSection item={item} pathname={pathname} />
-              ) : item.href ? (
-                <OverflowLink item={item} />
-              ) : null}
-            </React.Fragment>
-          ))}
-          <SignOutButton>
-            <button
-              className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
-              aria-label="Log out"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="font-medium">Log out</span>
-            </button>
-          </SignOutButton>
-        </div>
-      </SheetContent>
-    </Sheet>
+      }
+      title="More Options"
+    >
+      {user.companies.length > 0 && <CompanySwitcherList itemClassName="px-6 py-3 font-normal" />}
+      {items.map((item) => (
+        <React.Fragment key={item.label}>
+          {item.subItems ? (
+            <SubmenuSection item={item} pathname={pathname} />
+          ) : item.href ? (
+            <OverflowLink item={item} />
+          ) : null}
+        </React.Fragment>
+      ))}
+      <SignOutButton>
+        <button
+          className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
+          aria-label="Log out"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="font-normal">Log out</span>
+        </button>
+      </SignOutButton>
+    </MobileNavSheet>
   );
 };
 
-const SubmenuSection = ({ item, pathname }: { item: NavItem; pathname: string }) => (
-  <>
-    <div className="text-muted-foreground flex items-center gap-3 font-medium">
-      <item.icon className="h-5 w-5" />
-      <span>{item.label}</span>
-    </div>
-    <div className="space-y-1">
-      {item.subItems?.map((subItem) => (
-        <Link
-          key={subItem.label}
-          href={{ pathname: subItem.route }}
-          className={cn(
-            "hover:bg-accent block rounded-md px-6 py-2 text-sm transition-colors",
-            pathname === subItem.route && "bg-accent text-accent-foreground",
-          )}
-        >
-          {subItem.label}
-        </Link>
-      ))}
-    </div>
-  </>
-);
+const SubmenuSection = ({ item, pathname }: { item: NavItem; pathname: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
+      <CollapsibleTrigger asChild>
+        <button className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors">
+          <item.icon className="h-5 w-5" />
+          <span className="font-normal">{item.label}</span>
+          <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="space-y-1 pb-2">
+          {item.subItems?.map((subItem) => (
+            <Link
+              key={subItem.label}
+              href={{ pathname: subItem.route }}
+              className={cn(
+                "hover:bg-accent block rounded-md py-2 pl-14 text-sm transition-colors",
+                pathname === subItem.route && "bg-accent text-accent-foreground",
+              )}
+            >
+              {subItem.label}
+            </Link>
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
 
 const OverflowLink = ({ item }: { item: NavItem }) => (
   <Link
@@ -211,11 +234,7 @@ export function MobileBottomNav() {
     <nav
       role="navigation"
       aria-label="Mobile navigation"
-      className={cn(
-        "fixed right-0 bottom-0 left-0 z-50",
-        "bg-background/95 supports-[backdrop-filter]:bg-background/60 backdrop-blur",
-        "border-border border-t",
-      )}
+      className="bg-background border-border fixed right-0 bottom-0 left-0 z-60 border-t"
     >
       <ul role="list" className="flex items-center justify-around">
         {mainNavItems.map((item) => (

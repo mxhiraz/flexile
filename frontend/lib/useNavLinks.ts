@@ -16,6 +16,7 @@ import { usePathname } from "next/navigation";
 import { navLinks as equityNavLinks } from "@/app/(dashboard)/equity";
 import { useIsActionable } from "@/app/(dashboard)/invoices";
 import { useCurrentCompany, useCurrentUser } from "@/global";
+import { getVisibleSettingsLinks } from "@/lib/settingsNavLinks";
 import { trpc } from "@/trpc/client";
 
 export interface NavLinkInfo {
@@ -68,7 +69,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (updatesPath) {
     navLinks.push({
       label: "Updates",
-      href: "/updates/company",
+      href: "/updates/company" as const,
       icon: Rss,
       isActive: pathname.startsWith("/updates"),
     });
@@ -77,7 +78,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Invoices")) {
     navLinks.push({
       label: "Invoices",
-      href: "/invoices",
+      href: "/invoices" as const,
       icon: ReceiptIcon,
       isActive: pathname.startsWith("/invoices"),
       badge: invoicesData?.filter(isInvoiceActionable).length ?? 0,
@@ -87,7 +88,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Expenses") && company.id) {
     navLinks.push({
       label: "Expenses",
-      href: `/companies/${company.id}/expenses`,
+      href: `/companies/${company.id}/expenses` as const,
       icon: CircleDollarSign,
       isActive: pathname.startsWith(`/companies/${company.id}/expenses`),
     });
@@ -96,7 +97,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Documents")) {
     navLinks.push({
       label: "Documents",
-      href: "/documents",
+      href: "/documents" as const,
       icon: Files,
       isActive: pathname.startsWith("/documents") || pathname.startsWith("/document_templates"),
       badge: documentsData?.length ?? 0,
@@ -106,7 +107,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("People")) {
     navLinks.push({
       label: "People",
-      href: "/people",
+      href: "/people" as const,
       icon: Users,
       isActive: pathname.startsWith("/people") || pathname.includes("/investor_entities/"),
     });
@@ -115,7 +116,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Roles")) {
     navLinks.push({
       label: "Roles",
-      href: "/roles",
+      href: "/roles" as const,
       icon: BookUser,
       isActive: pathname.startsWith("/roles"),
     });
@@ -130,11 +131,13 @@ export const useNavLinks = (): NavLinkInfo[] => {
     });
   }
 
+  const settingsLinks = getVisibleSettingsLinks(user);
   navLinks.push({
     label: "Settings",
-    href: "/settings",
+    href: "/settings" as const,
     icon: Settings,
     isActive: pathname.startsWith("/settings"),
+    subItems: settingsLinks,
   });
 
   return navLinks;
