@@ -104,6 +104,8 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
   const estimatedValue =
     data.sharePriceUsd && numberOfShares ? (Number(data.sharePriceUsd) * numberOfShares).toFixed(2) : null;
 
+  const isFormValid = form.formState.isValid && form.formState.isDirty;
+
   useEffect(() => {
     if (!recipientId) return;
 
@@ -590,8 +592,13 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
         </Form>
 
         <DialogFooter>
-          <MutationStatusButton type="submit" mutation={createEquityGrant} onClick={handleSubmit}>
-            Create option grant
+          <MutationStatusButton
+            type="submit"
+            mutation={createEquityGrant}
+            onClick={handleSubmit}
+            disabled={!isFormValid}
+          >
+            Create grant
           </MutationStatusButton>
         </DialogFooter>
       </DialogContent>
