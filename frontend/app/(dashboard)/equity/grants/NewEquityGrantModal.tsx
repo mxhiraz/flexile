@@ -17,14 +17,7 @@ import DatePicker from "@/components/DatePicker";
 import { MutationStatusButton } from "@/components/MutationButton";
 import NumberInput from "@/components/NumberInput";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import {
   DocumentTemplateType,
@@ -88,7 +81,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       numberOfShares: 10_000,
       optionGrantType: "nso" as const,
       vestingCommencementDate: today(getLocalTimeZone()),
-      vestingTrigger: "scheduled" as const,
+      vestingTrigger: "invoice_paid" as const,
       boardApprovalDate: today(getLocalTimeZone()),
     },
     context: {
@@ -105,7 +98,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
   const estimatedValue =
     data.sharePriceUsd && numberOfShares ? (Number(data.sharePriceUsd) * numberOfShares).toFixed(2) : null;
 
-  const isFormValid = form.formState.isValid && form.formState.isDirty;
+  const isFormValid = form.formState.isValid;
 
   useEffect(() => {
     if (!recipientId) return;
@@ -201,10 +194,6 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
   const handleClose = () => {
     onOpenChange(false);
     form.reset();
-  };
-
-  const handleSubmit = () => {
-    void submit();
   };
 
   return (
@@ -591,19 +580,14 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
                 </div>
               ) : null}
             </div>
+
+            <div className="flex justify-end">
+              <MutationStatusButton type="submit" mutation={createEquityGrant} disabled={!isFormValid}>
+                Create grant
+              </MutationStatusButton>
+            </div>
           </form>
         </Form>
-
-        <DialogFooter>
-          <MutationStatusButton
-            type="submit"
-            mutation={createEquityGrant}
-            onClick={handleSubmit}
-            disabled={!isFormValid}
-          >
-            Create grant
-          </MutationStatusButton>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
