@@ -17,11 +17,11 @@ type Dividend = RouterOutput["dividends"]["list"][number];
 const rowLink = (row: Dividend) => `/people/${row.investor.user.id}?tab=dividends` as const;
 const columnHelper = createColumnHelper<Dividend>();
 const columns = [
-  columnHelper.accessor("investor.user.legalName", {
+  columnHelper.accessor("investor.user.name", {
     header: "Recipient",
     cell: (info) => (
       <Link href={rowLink(info.row.original)} className="no-underline">
-        <strong>{info.getValue() || info.row.original.investor.user.preferredName || info.row.original.investor.user.email}</strong>
+        <strong>{info.getValue()}</strong>
       </Link>
     ),
   }),
