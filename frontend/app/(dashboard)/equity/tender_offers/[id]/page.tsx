@@ -290,7 +290,7 @@ export default function BuybackView() {
         </>
       ) : null}
 
-      {isLoading ? <TableSkeleton columns={5} /> : bids && bids.length > 0 ? <DataTable table={bidsTable} /> : null}
+      {isLoading ? <TableSkeleton columns={5} /> : bids.length > 0 ? <DataTable table={bidsTable} /> : null}
 
       {cancelingBid ? (
         <AlertDialog open onOpenChange={() => setCancelingBid(null)}>
