@@ -64,7 +64,7 @@ const NavIcon: React.FC<NavIconProps> = ({ icon: Icon, label, badge, isActive, c
   >
     <Icon className={cn("mb-1 h-5 w-5 transition-transform duration-200")} />
     <span className="text-xs font-normal">{label}</span>
-    {badge && badge > 0 ? (
+    {badge ? (
       <span className="absolute top-2 right-1/2 flex h-3.5 w-3.5 translate-x-4 -translate-y-1 rounded-full border-3 border-white bg-blue-500" />
     ) : null}
   </div>
@@ -73,8 +73,8 @@ const NavIcon: React.FC<NavIconProps> = ({ icon: Icon, label, badge, isActive, c
 interface NavSheetProps {
   trigger: React.ReactNode;
   title: string;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onBack?: () => void;
   children: React.ReactNode;
 }
@@ -92,7 +92,7 @@ const SheetOverlay: React.FC<{ open: boolean }> = ({ open }) =>
     document.getElementById("sidebar-wrapper") ?? document.body,
   );
 
-const NavSheet: React.FC<NavSheetProps> = ({ trigger, title, open, onOpenChange, onBack, children }) => (
+const NavSheet = ({ trigger, title, open, onOpenChange, onBack, children }: NavSheetProps) => (
   <>
     <SheetOverlay open={!!open} />
     <Sheet modal={false} open={open} onOpenChange={onOpenChange}>
@@ -128,19 +128,19 @@ interface SheetNavItemProps {
   pathname?: string;
 }
 
-const SheetNavItem: React.FC<SheetNavItemProps> = ({ item, onClick, showChevron, pathname }) => {
+const SheetNavItem = ({ item, onClick, showChevron, pathname }: SheetNavItemProps) => {
   const isActive = pathname === item.href || item.isActive;
 
   if (item.href && !showChevron) {
     return (
       <Link
-        href={item.href}
+        href={{ pathname: item.href }}
         className={cn(
           "hover:bg-accent flex items-center px-6 py-4 transition-colors",
           "gap-3 rounded-md py-3",
           isActive && "bg-accent text-accent-foreground font-medium",
         )}
-        onClick={onClick}
+        {...(onClick && { onClick })}
       >
         <item.icon className="h-5 w-5" />
         <span className="font-normal">{item.label}</span>
@@ -168,7 +168,7 @@ interface NavWithSubmenuProps {
   item: NavItem & { subItems: NonNullable<NavItem["subItems"]> };
 }
 
-const NavWithSubmenu: React.FC<NavWithSubmenuProps> = ({ item }) => {
+const NavWithSubmenu = ({ item }: NavWithSubmenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -244,7 +244,7 @@ interface OverflowMenuProps {
   items: NavItem[];
 }
 
-const OverflowMenu: React.FC<OverflowMenuProps> = ({ items }) => {
+const OverflowMenu = ({ items }: OverflowMenuProps) => {
   const user = useCurrentUser();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -411,11 +411,11 @@ export function MobileBottomNav() {
           <li key={item.label} className="flex-1">
             {hasSubItems(item) ? (
               <NavWithSubmenu item={item} />
-            ) : (
-              <Link href={item.href}>
+            ) : item.href ? (
+              <Link href={{ pathname: item.href }}>
                 <NavIcon {...item} />
               </Link>
-            )}
+            ) : null}
           </li>
         ))}
         <li className="flex-1">

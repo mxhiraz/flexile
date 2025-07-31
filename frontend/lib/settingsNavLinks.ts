@@ -1,25 +1,7 @@
-import {
-  Briefcase,
-  Building,
-  CreditCard,
-  Landmark,
-  type LucideIcon,
-  PieChart,
-  ScrollText,
-  ShieldUser,
-  UserCircle2,
-} from "lucide-react";
+import { Briefcase, Building, CreditCard, Landmark, PieChart, ScrollText, ShieldUser, UserCircle2 } from "lucide-react";
 import type { CurrentUser } from "@/models/user";
 
-export interface SettingsNavLink {
-  label: string;
-  route: string;
-  icon: LucideIcon;
-  isVisible: (user: CurrentUser) => boolean;
-  category: "personal" | "company";
-}
-
-export const settingsNavLinks: SettingsNavLink[] = [
+export const settingsNavLinks = [
   // Personal links
   {
     label: "Profile",

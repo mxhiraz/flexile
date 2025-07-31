@@ -13,10 +13,12 @@ import {
   Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import React from "react";
 import { navLinks as equityNavLinks } from "@/app/(dashboard)/equity";
 import { useIsActionable } from "@/app/(dashboard)/invoices";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { getVisibleSettingsLinks } from "@/lib/settingsNavLinks";
+import { storageKeys } from "@/models/constants";
 import { trpc } from "@/trpc/client";
 
 export interface NavLinkInfo {
@@ -26,6 +28,8 @@ export interface NavLinkInfo {
   isActive: boolean;
   badge?: number;
   subItems?: { label: string; route: string }[];
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
 }
 
 export const hasSubItems = (
@@ -37,6 +41,21 @@ export const useNavLinks = (): NavLinkInfo[] => {
   const pathname = usePathname();
   const user = useCurrentUser();
   const company = useCurrentCompany();
+
+  const [openStates, setOpenStates] = React.useState<Record<string, boolean>>(() => {
+    const states: Record<string, boolean> = {};
+
+    const equityState = localStorage.getItem(storageKeys.EQUITY_MENU_STATE);
+    const settingsState = localStorage.getItem(storageKeys.SETTINGS_MENU_STATE);
+    states.Equity = equityState === "open";
+    states.Settings = settingsState === "open";
+    return states;
+  });
+
+  const createToggleHandler = (label: string, storageKey: string) => (isOpen: boolean) => {
+    setOpenStates((prev) => ({ ...prev, [label]: isOpen }));
+    localStorage.setItem(storageKey, isOpen ? "open" : "closed");
+  };
 
   const routes = new Set(
     company.routes.flatMap((route) => [route.label, ...(route.subLinks?.map((subLink) => subLink.label) || [])]),
@@ -128,6 +147,8 @@ export const useNavLinks = (): NavLinkInfo[] => {
       icon: ChartPie,
       isActive: equityLinks.some((link) => pathname === link.route),
       subItems: equityLinks,
+      isOpen: openStates.Equity ?? false,
+      onToggle: createToggleHandler("Equity", storageKeys.EQUITY_MENU_STATE),
     });
   }
 
@@ -138,6 +159,8 @@ export const useNavLinks = (): NavLinkInfo[] => {
     icon: Settings,
     isActive: pathname.startsWith("/settings"),
     subItems: settingsLinks,
+    isOpen: openStates.Settings ?? false,
+    onToggle: createToggleHandler("Settings", storageKeys.SETTINGS_MENU_STATE),
   });
 
   return navLinks;

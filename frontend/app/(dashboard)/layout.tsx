@@ -2,10 +2,10 @@
 
 import { SignOutButton } from "@clerk/nextjs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { ChevronRight, ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronRight, ChevronsUpDown, LogOut, Sparkles, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import { GettingStarted } from "@/components/GettingStarted";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
@@ -35,7 +35,6 @@ import { useCurrentCompany, useCurrentUser } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { useCompanySwitcher } from "@/lib/useCompanySwitcher";
 import { hasSubItems, useNavLinks } from "@/lib/useNavLinks";
-import { storageKeys } from "@/models/constants";
 import { cn } from "@/utils";
 import { useIsMobile } from "@/utils/use-mobile";
 
@@ -43,6 +42,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const user = useCurrentUser();
   const isMobile = useIsMobile();
   const { switchCompany } = useCompanySwitcher();
+  const company = useCurrentCompany();
+  const router = useRouter();
+  const [showTryEquity, setShowTryEquity] = React.useState(true);
+  const [hovered, setHovered] = React.useState(false);
+  const canShowTryEquity = user.roles.administrator && !company.equityEnabled;
 
   return (
     <SidebarProvider>
@@ -189,7 +193,6 @@ const CompanyName = () => {
 const NavLinks = () => {
   const pathname = usePathname();
   const navLinks = useNavLinks();
-  const [isOpen, setIsOpen] = React.useState(() => localStorage.getItem(storageKeys.EQUITY_MENU_STATE) === "open");
 
   return (
     <SidebarMenu>
@@ -198,11 +201,8 @@ const NavLinks = () => {
           return (
             <Collapsible
               key={link.label}
-              open={isOpen}
-              onOpenChange={(state) => {
-                setIsOpen(state);
-                localStorage.setItem(storageKeys.EQUITY_MENU_STATE, state ? "open" : "closed");
-              }}
+              open={link.isOpen || false}
+              onOpenChange={link.onToggle || (() => undefined)}
               className="group/collapsible"
             >
               <SidebarMenuItem>
@@ -218,7 +218,7 @@ const NavLinks = () => {
                     {link.subItems.map((subLink) => (
                       <SidebarMenuSubItem key={subLink.route}>
                         <SidebarMenuSubButton asChild isActive={pathname === subLink.route}>
-                          <Link href={subLink.route}>{subLink.label}</Link>
+                          <Link href={{ pathname: subLink.route }}>{subLink.label}</Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
@@ -260,7 +260,7 @@ const NavItem = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active ?? false} className={className}>
-        <Link href={href}>
+        <Link href={{ pathname: href }}>
           <Icon />
           <span>{children}</span>
           {badge && badge > 0 ? (
