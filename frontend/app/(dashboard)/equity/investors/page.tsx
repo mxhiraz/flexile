@@ -1,6 +1,5 @@
 "use client";
 import { CircleCheck } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import React, { useMemo } from "react";
 import CopyButton from "@/components/CopyButton";
 import { DashboardHeader } from "@/components/DashboardHeader";
@@ -17,13 +16,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useCurrentCompany, useCurrentUser } from "@/global";
-import {
-  fetchInvestorEmail,
-  fetchInvestorId,
-  fetchInvestorUserId,
-  isInvestor,
-  isInvestorForAdmin,
-} from "@/models/investor";
+import { fetchInvestorEmail, fetchInvestorId, isInvestor, isInvestorForAdmin } from "@/models/investor";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { formatOwnershipPercentage } from "@/utils/numbers";
@@ -32,14 +25,11 @@ type Data = RouterOutput["capTable"]["show"];
 
 export default function CapTable() {
   const company = useCurrentCompany();
-  const searchParams = useSearchParams();
-  const newSchema = searchParams.get("new_schema") !== null;
   const {
     data = { investors: [], shareClasses: [], optionPools: [], outstandingShares: "", fullyDilutedShares: "" },
     isLoading,
   } = trpc.capTable.show.useQuery({
     companyId: company.id,
-    newSchema,
   });
   const user = useCurrentUser();
   const canViewInvestor = !!user.roles.administrator || !!user.roles.lawyer;
@@ -49,14 +39,9 @@ export default function CapTable() {
 
   const investorRowLink = (investor: InvestorItem) => {
     const selectedTab = isInvestor(investor) && investor.outstandingShares > 0 ? "shares" : "options";
-    if (newSchema) {
-      const id = fetchInvestorId(investor);
-      if (id === null) return "#";
-      return `/companies/${company.id}/investor_entities/${id}?tab=${selectedTab}`;
-    }
-    const userId = fetchInvestorUserId(investor);
-    if (userId === null) return "#";
-    return `/people/${userId}?tab=${selectedTab}`;
+    const id = fetchInvestorId(investor);
+    if (id === null) return "#";
+    return `/companies/${company.id}/investor_entities/${id}?tab=${selectedTab}`;
   };
 
   const investorsColumns = useMemo(

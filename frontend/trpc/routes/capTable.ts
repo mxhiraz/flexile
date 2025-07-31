@@ -5,19 +5,17 @@ import { z } from "zod";
 import { db } from "@/db";
 import {
   companyInvestorEntities,
-  companyInvestors,
   convertibleInvestments,
   equityGrants,
   optionPools,
   shareClasses,
   shareHoldings,
-  users,
 } from "@/db/schema";
 import type { CapTableInvestor, CapTableInvestorForAdmin } from "@/models/investor";
 import { companyProcedure, createRouter } from "@/trpc";
 
 export const capTableRouter = createRouter({
-  show: companyProcedure.input(z.object({ newSchema: z.boolean().optional() })).query(async ({ ctx, input }) => {
+  show: companyProcedure.input(z.object({})).query(async ({ ctx }) => {
     const isAdminOrLawyer = !!(ctx.companyAdministrator || ctx.companyLawyer);
     if (!ctx.company.equityEnabled || !(isAdminOrLawyer || ctx.companyInvestor))
       throw new TRPCError({ code: "FORBIDDEN" });
@@ -25,54 +23,31 @@ export const capTableRouter = createRouter({
     let outstandingShares = BigInt(0);
 
     const investors: (CapTableInvestor | CapTableInvestorForAdmin)[] = [];
-    const investorsConditions = (relation: typeof companyInvestorEntities | typeof companyInvestors) =>
+    const investorsConditions = (relation: typeof companyInvestorEntities) =>
       and(
         eq(relation.companyId, ctx.company.id),
         or(sql`${relation.totalShares} > 0`, sql`${relation.totalOptions} > 0`),
       );
 
-    if (input.newSchema) {
-      (
-        await db
-          .select({
-            id: companyInvestorEntities.externalId,
-            name: companyInvestorEntities.name,
-            outstandingShares: companyInvestorEntities.totalShares,
-            fullyDilutedShares: sql<bigint>`${companyInvestorEntities.totalShares} + ${companyInvestorEntities.totalOptions}`,
-            notes: companyInvestorEntities.capTableNotes,
-            email: companyInvestorEntities.email,
-          })
-          .from(companyInvestorEntities)
-          .where(investorsConditions(companyInvestorEntities))
-          .orderBy(desc(companyInvestorEntities.totalShares), desc(companyInvestorEntities.totalOptions))
-      ).forEach((investor) => {
-        outstandingShares += investor.outstandingShares;
-        investors.push({
-          ...(isAdminOrLawyer ? investor : omit(investor, "email")),
-        });
+    (
+      await db
+        .select({
+          id: companyInvestorEntities.externalId,
+          name: companyInvestorEntities.name,
+          outstandingShares: companyInvestorEntities.totalShares,
+          fullyDilutedShares: sql<bigint>`${companyInvestorEntities.totalShares} + ${companyInvestorEntities.totalOptions}`,
+          notes: companyInvestorEntities.capTableNotes,
+          email: companyInvestorEntities.email,
+        })
+        .from(companyInvestorEntities)
+        .where(investorsConditions(companyInvestorEntities))
+        .orderBy(desc(companyInvestorEntities.totalShares), desc(companyInvestorEntities.totalOptions))
+    ).forEach((investor) => {
+      outstandingShares += investor.outstandingShares;
+      investors.push({
+        ...(isAdminOrLawyer ? investor : omit(investor, "email")),
       });
-    } else {
-      (
-        await db
-          .select({
-            id: companyInvestors.externalId,
-            userId: users.externalId,
-            name: sql<string>`COALESCE(${users.legalName}, '')`,
-            outstandingShares: companyInvestors.totalShares,
-            fullyDilutedShares: companyInvestors.fullyDilutedShares,
-            notes: companyInvestors.capTableNotes,
-
-            email: users.email,
-          })
-          .from(companyInvestors)
-          .innerJoin(users, eq(companyInvestors.userId, users.id))
-          .where(investorsConditions(companyInvestors))
-          .orderBy(desc(companyInvestors.totalShares), desc(companyInvestors.totalOptions))
-      ).forEach((investor) => {
-        outstandingShares += investor.outstandingShares;
-        investors.push(isAdminOrLawyer ? investor : omit(investor, "email"));
-      });
-    }
+    });
 
     (
       await db

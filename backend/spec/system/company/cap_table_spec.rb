@@ -224,7 +224,7 @@ RSpec.describe "Cap table page" do
         it "shows data as expected" do
           sign_in user
 
-          visit spa_company_cap_table_path(company.external_id, new_schema: "true")
+          visit spa_company_cap_table_path(company.external_id)
 
           expect(page).to have_text("Cap table")
 
