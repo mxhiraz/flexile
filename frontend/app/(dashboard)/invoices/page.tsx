@@ -180,7 +180,7 @@ export default function InvoicesPage() {
   });
 
   const columnHelper = createColumnHelper<(typeof data)[number]>();
-  const columns = useMemo(
+  const desktopColumns = useMemo(
     () => [
       user.roles.administrator
         ? columnHelper.accessor("billFrom", {
@@ -208,6 +208,7 @@ export default function InvoicesPage() {
         "numeric",
       ),
       columnHelper.accessor((row) => statusNames[row.status], {
+        id: "status",
         header: "Status",
         cell: (info) => (
           <div className="relative z-1">
@@ -243,6 +244,87 @@ export default function InvoicesPage() {
     [],
   );
 
+  const mobileColumns = useMemo(
+    () => [
+      columnHelper.display({
+        id: "billFromRoleAmount",
+        cell: (info) => {
+          const invoice = info.row.original;
+          const amount = formatMoneyFromCents(invoice.totalAmountInUsdCents);
+
+          return user.roles.administrator ? (
+            <div className="flex flex-col gap-2">
+              <div>
+                <div className="truncate text-base font-medium">{invoice.billFrom}</div>
+                <div className="text-gray-600">{invoice.contractor.role}</div>
+              </div>
+              <div className="text-base text-sm">{amount}</div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Link
+                href={`/invoices/${invoice.id}`}
+                className="relative truncate font-medium no-underline after:absolute after:inset-0"
+              >
+                {invoice.invoiceNumber}
+              </Link>
+              <div className="text-base text-sm">{amount}</div>
+            </div>
+          );
+        },
+        meta: {
+          cellClassName: "w-full",
+        },
+      }),
+
+      columnHelper.display({
+        id: "statusSentOn",
+        cell: (info) => {
+          const invoice = info.row.original;
+          const sentOn = invoice.invoiceDate ? formatDate(invoice.invoiceDate) : "N/A";
+
+          return (
+            <div className="absolute inset-0 flex w-0 flex-col items-end justify-between py-2">
+              <div className="relative z-1">
+                <Status invoice={invoice} iconOnly />
+              </div>
+              <div className="self-end text-gray-600">{sentOn}</div>
+            </div>
+          );
+        },
+        meta: {
+          cellClassName: "relative px-1.5",
+        },
+      }),
+
+      columnHelper.accessor((row) => statusNames[row.status], {
+        id: "status",
+        meta: {
+          filterOptions: [...new Set(data.map((invoice) => statusNames[invoice.status]))],
+          hidden: true,
+        },
+      }),
+
+      columnHelper.accessor((row) => row.billFrom, {
+        header: "Contractor",
+        id: "billFrom",
+        meta: {
+          hidden: true,
+        },
+      }),
+
+      columnHelper.accessor("invoiceDate", {
+        id: "invoiceDate",
+        meta: {
+          hidden: true,
+        },
+      }),
+    ],
+    [],
+  );
+
+  const columns = isMobile ? mobileColumns : desktopColumns;
+
   const handleInvoiceAction = (actionId: string, invoices: Invoice[]) => {
     const isSingleAction = invoices.length === 1;
     const singleInvoice = invoices[0];
@@ -276,8 +358,8 @@ export default function InvoicesPage() {
     data,
     getRowId: (invoice) => invoice.id,
     initialState: {
-      sorting: [{ id: user.roles.administrator ? "Status" : "invoiceDate", desc: !user.roles.administrator }],
-      columnFilters: user.roles.administrator ? [{ id: "Status", value: ["Awaiting approval", "Failed"] }] : [],
+      sorting: [{ id: user.roles.administrator ? "status" : "invoiceDate", desc: !user.roles.administrator }],
+      columnFilters: user.roles.administrator ? [{ id: "status", value: ["Awaiting approval", "Failed"] }] : [],
     },
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -409,6 +491,7 @@ export default function InvoicesPage() {
               table={table}
               onRowClicked={user.roles.administrator ? setDetailInvoice : undefined}
               searchColumn={user.roles.administrator ? "billFrom" : undefined}
+              tabsColumn="status"
               actions={
                 user.roles.administrator ? (
                   <Button variant="outline" size="small" asChild>
