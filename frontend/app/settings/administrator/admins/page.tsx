@@ -165,6 +165,7 @@ export default function AdminsPage() {
                       companyId: company.id,
                       userId: confirmRevokeUser.id,
                     });
+                    setConfirmRevokeUser(null);
                   }
                 }}
               >
