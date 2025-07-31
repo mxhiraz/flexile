@@ -1,12 +1,7 @@
-import { db } from "@test/db";
 import { companiesFactory } from "@test/factories/companies";
-import { companyInvestorsFactory } from "@test/factories/companyInvestors";
-import { shareHoldingsFactory } from "@test/factories/shareHoldings";
-import { usersFactory } from "@test/factories/users";
+import { companyInvestorEntitiesFactory } from "@test/factories/companyInvestorEntities";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
-import { eq } from "drizzle-orm";
-import { companyInvestors } from "@/db/schema";
 
 test.describe("Investors", () => {
   test("displays correct ownership percentages for investors", async ({ page }) => {
@@ -15,35 +10,21 @@ test.describe("Investors", () => {
       fullyDilutedShares: BigInt(1000000),
     });
 
-    const { user: investor1 } = await usersFactory.create({ legalName: "Alice Investor" });
-    const { companyInvestor: companyInvestor1 } = await companyInvestorsFactory.create({
+    await companyInvestorEntitiesFactory.create({
       companyId: company.id,
-      userId: investor1.id,
+      name: "Alice Investor",
+      email: "alice@example.com",
+      totalShares: BigInt(100000),
+      investmentAmountCents: BigInt(0),
     });
-    await shareHoldingsFactory.create({
-      companyInvestorId: companyInvestor1.id,
-      numberOfShares: 100000,
-      shareHolderName: "Alice Investor",
-    });
-    await db
-      .update(companyInvestors)
-      .set({ totalShares: BigInt(100000) })
-      .where(eq(companyInvestors.id, companyInvestor1.id));
 
-    const { user: investor2 } = await usersFactory.create({ legalName: "Bob Investor" });
-    const { companyInvestor: companyInvestor2 } = await companyInvestorsFactory.create({
+    await companyInvestorEntitiesFactory.create({
       companyId: company.id,
-      userId: investor2.id,
+      name: "Bob Investor",
+      email: "bob@example.com",
+      totalShares: BigInt(50000),
+      investmentAmountCents: BigInt(0),
     });
-    await shareHoldingsFactory.create({
-      companyInvestorId: companyInvestor2.id,
-      numberOfShares: 50000,
-      shareHolderName: "Bob Investor",
-    });
-    await db
-      .update(companyInvestors)
-      .set({ totalShares: BigInt(50000) })
-      .where(eq(companyInvestors.id, companyInvestor2.id));
 
     await login(page, adminUser);
     await page.goto("/equity/investors");
@@ -65,20 +46,13 @@ test.describe("Investors", () => {
       fullyDilutedShares: BigInt(1000000),
     });
 
-    const { user: investor } = await usersFactory.create({ legalName: "Test Investor" });
-    const { companyInvestor } = await companyInvestorsFactory.create({
+    await companyInvestorEntitiesFactory.create({
       companyId: company.id,
-      userId: investor.id,
+      name: "Test Investor",
+      email: "test@example.com",
+      totalShares: BigInt(200000),
+      investmentAmountCents: BigInt(0),
     });
-    await shareHoldingsFactory.create({
-      companyInvestorId: companyInvestor.id,
-      numberOfShares: 200000,
-      shareHolderName: "Test Investor",
-    });
-    await db
-      .update(companyInvestors)
-      .set({ totalShares: BigInt(200000) })
-      .where(eq(companyInvestors.id, companyInvestor.id));
 
     await login(page, adminUser);
     await page.goto("/equity/investors");
@@ -94,20 +68,13 @@ test.describe("Investors", () => {
       fullyDilutedShares: BigInt(2000000),
     });
 
-    const { user: investor } = await usersFactory.create({ legalName: "Major Investor" });
-    const { companyInvestor } = await companyInvestorsFactory.create({
+    await companyInvestorEntitiesFactory.create({
       companyId: company.id,
-      userId: investor.id,
+      name: "Major Investor",
+      email: "major@example.com",
+      totalShares: BigInt(300000),
+      investmentAmountCents: BigInt(0),
     });
-    await shareHoldingsFactory.create({
-      companyInvestorId: companyInvestor.id,
-      numberOfShares: 300000,
-      shareHolderName: "Major Investor",
-    });
-    await db
-      .update(companyInvestors)
-      .set({ totalShares: BigInt(300000) })
-      .where(eq(companyInvestors.id, companyInvestor.id));
 
     await login(page, adminUser);
     await page.goto("/equity/investors");
