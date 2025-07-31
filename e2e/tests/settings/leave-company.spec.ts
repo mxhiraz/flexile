@@ -38,7 +38,7 @@ test.describe("Leave company", () => {
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
     // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
-    await expect(page.url()).toMatch(/(invoices|documents)/);
+    await expect(page.url()).toMatch(/\/(invoices|documents)/);
 
     await page.waitForTimeout(1500);
 
@@ -67,7 +67,7 @@ test.describe("Leave company", () => {
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
     // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
-    await expect(page.url()).toMatch(/(invoices|documents)/);
+    await expect(page.url()).toMatch(/\/(invoices|documents)/);
 
     await page.waitForTimeout(1500);
 
@@ -96,7 +96,7 @@ test.describe("Leave company", () => {
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
     // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
-    await expect(page.url()).toMatch(/(invoices|documents)/);
+    await expect(page.url()).toMatch(/\/(invoices|documents)/);
 
     await page.waitForTimeout(1500);
 
@@ -130,7 +130,7 @@ test.describe("Leave company", () => {
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
     // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
-    await expect(page.url()).toMatch(/(invoices|documents)/);
+    await expect(page.url()).toMatch(/\/(invoices|documents)/);
 
     await page.waitForTimeout(1500);
 
