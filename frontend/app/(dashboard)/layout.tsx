@@ -163,7 +163,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
-          <main className={cn("flex flex-1 flex-col pb-4 not-print:overflow-y-auto", isMobile && "pb-20")}>
+          <main className={cn("flex flex-1 flex-col p-4 not-print:overflow-y-auto", isMobile && "pb-20")}>
             <div className="mx-3 flex flex-col gap-6">{children}</div>
           </main>
         </div>
