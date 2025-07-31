@@ -36,6 +36,9 @@ test.describe("Leave company", () => {
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
 
+    await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
+    await expect(page).toHaveURL(/\/(invoices|documents)/u);
+
     const contractor = await db.query.companyContractors.findFirst({
       where: and(eq(companyContractors.companyId, company.id), eq(companyContractors.userId, user.id)),
     });
@@ -59,6 +62,9 @@ test.describe("Leave company", () => {
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
 
+    await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
+    await expect(page).toHaveURL(/\/(invoices|documents)/u);
+
     const investor = await db.query.companyInvestors.findFirst({
       where: and(eq(companyInvestors.companyId, company.id), eq(companyInvestors.userId, user.id)),
     });
@@ -81,6 +87,9 @@ test.describe("Leave company", () => {
 
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
+
+    await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
+    await expect(page).toHaveURL(/\/(invoices|documents)/u);
 
     const lawyer = await db.query.companyLawyers.findFirst({
       where: and(eq(companyLawyers.companyId, company.id), eq(companyLawyers.userId, user.id)),
@@ -109,6 +118,9 @@ test.describe("Leave company", () => {
 
     await expect(page.getByText("Leave this workspace?")).toBeVisible();
     await page.getByRole("button", { name: "Leave" }).click();
+
+    await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
+    await expect(page).toHaveURL(/\/(invoices|documents)/u);
 
     const contractor = await db.query.companyContractors.findFirst({
       where: and(eq(companyContractors.companyId, company.id), eq(companyContractors.userId, user.id)),
