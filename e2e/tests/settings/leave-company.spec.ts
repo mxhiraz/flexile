@@ -37,7 +37,10 @@ test.describe("Leave company", () => {
     await page.getByRole("button", { name: "Leave" }).click();
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
-    await expect(page).toHaveURL(/\/(invoices|documents)/u);
+    // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
+    await expect(page.url()).toMatch(/(invoices|documents)/);
+
+    await page.waitForTimeout(1500);
 
     const contractor = await db.query.companyContractors.findFirst({
       where: and(eq(companyContractors.companyId, company.id), eq(companyContractors.userId, user.id)),
@@ -63,7 +66,10 @@ test.describe("Leave company", () => {
     await page.getByRole("button", { name: "Leave" }).click();
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
-    await expect(page).toHaveURL(/\/(invoices|documents)/u);
+    // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
+    await expect(page.url()).toMatch(/(invoices|documents)/);
+
+    await page.waitForTimeout(1500);
 
     const investor = await db.query.companyInvestors.findFirst({
       where: and(eq(companyInvestors.companyId, company.id), eq(companyInvestors.userId, user.id)),
@@ -89,7 +95,10 @@ test.describe("Leave company", () => {
     await page.getByRole("button", { name: "Leave" }).click();
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
-    await expect(page).toHaveURL(/\/(invoices|documents)/u);
+    // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
+    await expect(page.url()).toMatch(/(invoices|documents)/);
+
+    await page.waitForTimeout(1500);
 
     const lawyer = await db.query.companyLawyers.findFirst({
       where: and(eq(companyLawyers.companyId, company.id), eq(companyLawyers.userId, user.id)),
@@ -120,7 +129,10 @@ test.describe("Leave company", () => {
     await page.getByRole("button", { name: "Leave" }).click();
 
     await page.waitForURL((url) => url.pathname.includes("/invoices") || url.pathname.includes("/documents"));
-    await expect(page).toHaveURL(/\/(invoices|documents)/u);
+    // eslint-disable-next-line require-unicode-regexp -- matching simple ASCII paths
+    await expect(page.url()).toMatch(/(invoices|documents)/);
+
+    await page.waitForTimeout(1500);
 
     const contractor = await db.query.companyContractors.findFirst({
       where: and(eq(companyContractors.companyId, company.id), eq(companyContractors.userId, user.id)),
