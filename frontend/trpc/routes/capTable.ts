@@ -36,7 +36,6 @@ export const capTableRouter = createRouter({
           name: companyInvestorEntities.name,
           outstandingShares: companyInvestorEntities.totalShares,
           fullyDilutedShares: sql<bigint>`${companyInvestorEntities.totalShares} + ${companyInvestorEntities.totalOptions}`,
-          notes: companyInvestorEntities.capTableNotes,
           email: companyInvestorEntities.email,
         })
         .from(companyInvestorEntities)
