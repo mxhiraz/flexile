@@ -12,7 +12,7 @@ export const companyInvestorEntitiesFactory = {
         companyId: overrides.companyId || (await companiesFactory.create()).company.id,
         name: overrides.name || faker.person.fullName(),
         email: overrides.email || faker.internet.email().toLowerCase(),
-        investmentAmountCents: overrides.investmentAmountCents || 0n,
+        investmentAmountCents: overrides.investmentAmountCents || BigInt(0),
         ...overrides,
       })
       .returning();
