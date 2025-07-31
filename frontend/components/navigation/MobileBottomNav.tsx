@@ -70,37 +70,6 @@ const NavIcon: React.FC<NavIconProps> = ({ icon: Icon, label, badge, isActive, c
   </div>
 );
 
-interface NavLinkProps {
-  item: NavItem;
-  className?: string;
-  onClick?: () => void;
-}
-
-const NavLink: React.FC<NavLinkProps> = ({ item, className, onClick }) => {
-  if (!item.href) return null;
-
-  const linkProps = {
-    href: typeof item.href === "string" ? { pathname: item.href } : item.href,
-    className,
-    "aria-label": `Navigate to ${item.label}`,
-    "aria-current": item.isActive ? ("page" as const) : undefined,
-  };
-
-  if (onClick) {
-    return (
-      <Link {...linkProps} onClick={onClick}>
-        <NavIcon {...item} />
-      </Link>
-    );
-  }
-
-  return (
-    <Link {...linkProps}>
-      <NavIcon {...item} />
-    </Link>
-  );
-};
-
 interface NavSheetProps {
   trigger: React.ReactNode;
   title: string;
@@ -440,7 +409,13 @@ export function MobileBottomNav() {
       <ul role="list" className="flex items-center justify-around">
         {mainItems.map((item) => (
           <li key={item.label} className="flex-1">
-            {hasSubItems(item) ? <NavWithSubmenu item={item} /> : <NavLink item={item} />}
+            {hasSubItems(item) ? (
+              <NavWithSubmenu item={item} />
+            ) : (
+              <Link href={item.href}>
+                <NavIcon {...item} />
+              </Link>
+            )}
           </li>
         ))}
         <li className="flex-1">
