@@ -1,17 +1,21 @@
 "use client";
 
 import { SignOutButton } from "@clerk/nextjs";
-import { ChevronRight, LogOut, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, MoreHorizontal } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useMemo, useState } from "react";
-import { CompanySwitcherList } from "@/components/navigation/CompanySwitcher";
+import ReactDOM from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/global";
+import defaultCompanyLogo from "@/images/default-company-logo.svg";
+import { useCompanySwitcher } from "@/lib/useCompanySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
 import { cn } from "@/utils/index";
 
+// Constants
 const NAV_PRIORITIES: Record<string, number> = {
   Invoices: 1,
   People: 2,
@@ -26,213 +30,403 @@ const NAV_PRIORITIES: Record<string, number> = {
 const DEFAULT_PRIORITY = 99;
 const MAX_VISIBLE_ITEMS = 4;
 
+// Types
 interface NavItem extends NavLinkInfo {
   priority: number;
 }
 
-const NavIconButton = ({ icon: Icon, label, isActive, badge, className }: NavItem & { className?: string }) => (
+type SheetView = "main" | "submenu" | "companies";
+
+interface NavigationState {
+  view: SheetView;
+  selectedItem?: NavItem | undefined;
+}
+
+// Reusable Components
+interface NavIconProps {
+  icon: React.ElementType;
+  label: string;
+  badge?: number;
+  isActive?: boolean;
+  className?: string;
+}
+
+const NavIcon: React.FC<NavIconProps> = ({ icon: Icon, label, badge, isActive, className }) => (
   <div
     className={cn(
-      "flex h-full flex-col items-center justify-center p-2",
+      "flex h-full flex-col items-center justify-center p-2 pt-3",
       "text-muted-foreground transition-all duration-200",
-      "hover:text-foreground active:scale-95",
+      "hover:text-foreground",
       "group relative",
       isActive && "text-primary",
       className,
     )}
   >
-    <Icon className={cn("mb-1 h-5 w-5 transition-transform duration-200", isActive && "scale-110")} />
-    <span className="text-xs font-medium">{label}</span>
-
-    {!!badge && (
-      <span className="absolute top-2 right-1/2 flex h-5 w-5 translate-x-4 -translate-y-1 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
-        {badge > 10 ? "10+" : badge}
-      </span>
-    )}
-
-    {isActive ? (
-      <span className="bg-primary absolute -bottom-[1px] left-1/2 h-0.5 w-12 -translate-x-1/2 rounded-t-full" />
+    <Icon className={cn("mb-1 h-5 w-5 transition-transform duration-200")} />
+    <span className="text-xs font-normal">{label}</span>
+    {badge && badge > 0 ? (
+      <span className="absolute top-2 right-1/2 flex h-3.5 w-3.5 translate-x-4 -translate-y-1 rounded-full border-3 border-white bg-blue-500" />
     ) : null}
   </div>
 );
 
-const SimpleNavItem = ({ item }: { item: NavItem }) => {
+interface NavLinkProps {
+  item: NavItem;
+  className?: string;
+  onClick?: () => void;
+}
+
+const NavLink: React.FC<NavLinkProps> = ({ item, className, onClick }) => {
   if (!item.href) return null;
 
+  const linkProps = {
+    href: typeof item.href === "string" ? { pathname: item.href } : item.href,
+    className,
+    "aria-label": `Navigate to ${item.label}`,
+    "aria-current": item.isActive ? ("page" as const) : undefined,
+  };
+
+  if (onClick) {
+    return (
+      <Link {...linkProps} onClick={onClick}>
+        <NavIcon {...item} />
+      </Link>
+    );
+  }
+
   return (
-    <Link
-      href={typeof item.href === "string" ? { pathname: item.href } : item.href}
-      aria-label={`Navigate to ${item.label}`}
-      aria-current={item.isActive ? "page" : undefined}
-    >
-      <NavIconButton {...item} />
+    <Link {...linkProps}>
+      <NavIcon {...item} />
     </Link>
   );
 };
 
-// Generic mobile nav sheet component
-const MobileNavSheet = ({
-  trigger,
-  title,
-  children,
-}: {
+interface NavSheetProps {
   trigger: React.ReactNode;
   title: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onBack?: () => void;
   children: React.ReactNode;
-}) => (
-  <Sheet>
-    <SheetTrigger asChild>{trigger}</SheetTrigger>
-    <SheetContent side="bottom" className="z-50 rounded-t-2xl border-t-0 pb-16">
-      <SheetHeader>
-        <SheetTitle>{title}</SheetTitle>
-      </SheetHeader>
-      <div className="max-h-[60vh] overflow-y-auto">
-        <div className="transition-all duration-300">{children}</div>
-      </div>
-    </SheetContent>
-  </Sheet>
+}
+
+// Portal overlay component
+const SheetOverlay: React.FC<{ open: boolean }> = ({ open }) =>
+  ReactDOM.createPortal(
+    <div
+      className={cn(
+        "pointer-events-none fixed inset-0 z-35 bg-black/50 transition-opacity duration-300",
+        open ? "opacity-100" : "opacity-0",
+      )}
+      aria-hidden="true"
+    />,
+    document.getElementById("sidebar-wrapper") ?? document.body,
+  );
+
+const NavSheet: React.FC<NavSheetProps> = ({ trigger, title, open, onOpenChange, onBack, children }) => (
+  <>
+    <SheetOverlay open={!!open} />
+    <Sheet modal={false} open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      <SheetContent side="bottom" className="bottom-14 z-50 rounded-t-2xl not-print:border-t-0">
+        <SheetHeader className="pb-0">
+          <SheetTitle className="flex items-center gap-2">
+            {onBack ? (
+              <button
+                onClick={onBack}
+                className="hover:bg-accent -ml-2 rounded-md p-1 transition-colors"
+                aria-label="Go back"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            ) : null}
+            <span>{title}</span>
+          </SheetTitle>
+        </SheetHeader>
+        <div className="overflow-y-auto" style={{ maxHeight: "60vh" }}>
+          {children}
+        </div>
+      </SheetContent>
+    </Sheet>
+  </>
 );
 
-const NavItemWithSubmenu = ({ item }: { item: NavItem & { subItems: NonNullable<NavItem["subItems"]> } }) => {
+// Navigation Sheet Items
+interface SheetNavItemProps {
+  item: NavItem;
+  onClick?: () => void;
+  showChevron?: boolean;
+  pathname?: string;
+}
+
+const SheetNavItem: React.FC<SheetNavItemProps> = ({ item, onClick, showChevron, pathname }) => {
+  const isActive = pathname === item.href || item.isActive;
+
+  if (item.href && !showChevron) {
+    return (
+      <Link
+        href={item.href}
+        className={cn(
+          "hover:bg-accent flex items-center px-6 py-4 transition-colors",
+          "gap-3 rounded-md py-3",
+          isActive && "bg-accent text-accent-foreground font-medium",
+        )}
+        onClick={onClick}
+      >
+        <item.icon className="h-5 w-5" />
+        <span className="font-normal">{item.label}</span>
+        {item.badge ? (
+          <Badge className="ml-auto bg-blue-500 text-white">{item.badge > 10 ? "10+" : item.badge}</Badge>
+        ) : null}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
+    >
+      <item.icon className="h-5 w-5" />
+      <span className="font-normal">{item.label}</span>
+      {showChevron ? <ChevronRight className="ml-auto h-4 w-4" /> : null}
+    </button>
+  );
+};
+
+// Submenu Navigation
+interface NavWithSubmenuProps {
+  item: NavItem & { subItems: NonNullable<NavItem["subItems"]> };
+}
+
+const NavWithSubmenu: React.FC<NavWithSubmenuProps> = ({ item }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <MobileNavSheet
+    <NavSheet
       trigger={
-        <button aria-label={`${item.label} menu`} aria-current={item.isActive ? "page" : undefined} className="w-full">
-          <NavIconButton {...item} />
+        <button
+          aria-label={`${item.label} menu`}
+          aria-current={item.isActive || isOpen ? "page" : undefined}
+          className="w-full"
+        >
+          <NavIcon {...item} isActive={item.isActive || isOpen} />
         </button>
       }
       title={item.label}
+      open={isOpen}
+      onOpenChange={setIsOpen}
     >
       <div className="flex flex-col gap-1">
         {item.subItems.map((subItem) => (
           <Link
             key={subItem.label}
             href={{ pathname: subItem.route }}
+            onClick={() => setIsOpen(false)}
             className={cn(
-              "flex items-center px-6 py-2",
-              pathname === subItem.route && "bg-accent text-accent-foreground",
+              "hover:bg-accent flex items-center px-6 py-4 transition-colors",
+              pathname === subItem.route && "bg-accent text-accent-foreground font-medium",
             )}
           >
             <span className="font-normal">{subItem.label}</span>
           </Link>
         ))}
       </div>
-    </MobileNavSheet>
+    </NavSheet>
   );
 };
 
-const OverflowMenu = ({ items }: { items: NavItem[] }) => {
-  const pathname = usePathname();
+// Company Switcher
+interface CompanySwitcherProps {
+  onSelect: () => void;
+}
+
+const CompanySwitcher = ({ onSelect }: CompanySwitcherProps) => {
   const user = useCurrentUser();
+  const { switchCompany } = useCompanySwitcher();
+
+  const handleCompanySwitch = async (companyId: string) => {
+    if (user.currentCompanyId !== companyId) {
+      await switchCompany(companyId);
+    }
+    onSelect();
+  };
+
+  return user.companies.map((company) => (
+    <button
+      key={company.id}
+      onClick={() => void handleCompanySwitch(company.id)}
+      className={cn(
+        "hover:bg-accent flex w-full items-center gap-3 px-6 py-3 text-left transition-colors",
+        company.id === user.currentCompanyId && "bg-accent text-accent-foreground font-medium",
+      )}
+      aria-label={`Switch to ${company.name}`}
+      aria-current={company.id === user.currentCompanyId ? "true" : undefined}
+    >
+      <Image src={company.logo_url || defaultCompanyLogo} width={20} height={20} className="rounded-xs" alt="" />
+      <span className="line-clamp-1 flex-1 text-left font-normal">{company.name}</span>
+    </button>
+  ));
+};
+
+// Overflow Menu
+interface OverflowMenuProps {
+  items: NavItem[];
+}
+
+const OverflowMenu: React.FC<OverflowMenuProps> = ({ items }) => {
+  const user = useCurrentUser();
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const [navState, setNavState] = useState<NavigationState>({ view: "main" });
+
+  const handleNavigation = (view: SheetView, item?: NavItem) => {
+    setNavState({ view, selectedItem: item });
+  };
+
+  const handleBack = () => {
+    setNavState({ view: "main" });
+  };
+
+  const handleClose = () => {
+    setNavState({ view: "main" });
+    setIsOpen(false);
+  };
+
+  const currentCompany = useMemo(
+    () => user.companies.find((c) => c.id === user.currentCompanyId),
+    [user.companies, user.currentCompanyId],
+  );
+
+  const title =
+    navState.view === "companies"
+      ? "Companies"
+      : navState.view === "submenu"
+        ? navState.selectedItem?.label || "Submenu"
+        : "More";
 
   return (
-    <MobileNavSheet
+    <NavSheet
       trigger={
-        <button
-          aria-label="More navigation options"
-          className="text-muted-foreground hover:text-foreground flex h-full w-full flex-col items-center justify-center p-2 transition-colors active:scale-95"
-        >
-          <MoreHorizontal className="mb-1 h-5 w-5" />
-          <span className="text-xs font-medium">More</span>
+        <button aria-label="More" className="w-full">
+          <NavIcon icon={MoreHorizontal} label="More" isActive={isOpen} />
         </button>
       }
-      title="More Options"
+      title={title}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) setNavState({ view: "main" });
+      }}
+      {...(navState.view !== "main" && { onBack: handleBack })}
     >
-      {user.companies.length > 0 && <CompanySwitcherList itemClassName="px-6 py-3 font-normal" />}
-      {items.map((item) => (
-        <React.Fragment key={item.label}>
-          {item.subItems ? (
-            <SubmenuSection item={item} pathname={pathname} />
-          ) : item.href ? (
-            <OverflowLink item={item} />
-          ) : null}
-        </React.Fragment>
-      ))}
-      <SignOutButton>
-        <button
-          className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
-          aria-label="Log out"
+      <div className="relative overflow-hidden">
+        {/* Main menu */}
+        <div
+          className={cn(
+            "transition-transform duration-200 ease-in-out",
+            navState.view === "main" ? "translate-x-0 opacity-100" : "absolute inset-0 -translate-x-full opacity-0",
+          )}
         >
-          <LogOut className="h-5 w-5" />
-          <span className="font-normal">Log out</span>
-        </button>
-      </SignOutButton>
-    </MobileNavSheet>
-  );
-};
+          {user.companies.length > 0 && (
+            <button
+              onClick={() => handleNavigation("companies")}
+              className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
+              aria-label="Switch company"
+            >
+              <Image
+                src={currentCompany?.logo_url || defaultCompanyLogo}
+                width={20}
+                height={20}
+                className="rounded-xs object-contain"
+                alt="company logo"
+              />
+              <span className="font-normal">{currentCompany?.name || "Select Company"}</span>
+              <ChevronRight className="ml-auto h-4 w-4" />
+            </button>
+          )}
 
-const SubmenuSection = ({ item, pathname }: { item: NavItem; pathname: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
+          {items.map((item) => {
+            const itemClick = item.subItems
+              ? () => handleNavigation("submenu", item)
+              : item.href
+                ? handleClose
+                : undefined;
 
-  return (
-    <div className="overflow-hidden">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
-      >
-        <item.icon className="h-5 w-5" />
-        <span className="font-normal">{item.label}</span>
-        <ChevronRight className={cn("ml-auto h-4 w-4 transition-transform duration-200", isOpen && "rotate-90")} />
-      </button>
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-300 ease-in-out",
-          isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
-        )}
-      >
-        <div className="space-y-1 pb-2">
-          {item.subItems?.map((subItem) => (
+            return (
+              <SheetNavItem
+                key={item.label}
+                item={item}
+                pathname={pathname}
+                {...(itemClick && { onClick: itemClick })}
+                showChevron={!!item.subItems}
+              />
+            );
+          })}
+
+          <SignOutButton>
+            <button
+              className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
+              aria-label="Log out"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="font-normal">Log out</span>
+            </button>
+          </SignOutButton>
+        </div>
+
+        {/* Submenu */}
+        <div
+          className={cn(
+            "transition-transform duration-200 ease-in-out",
+            navState.view === "submenu" ? "translate-x-0 opacity-100" : "absolute inset-0 translate-x-full opacity-0",
+          )}
+        >
+          {navState.selectedItem?.subItems?.map((subItem) => (
             <Link
               key={subItem.label}
               href={{ pathname: subItem.route }}
+              onClick={handleClose}
               className={cn(
-                "hover:bg-accent block rounded-md py-2 pl-14 text-sm transition-colors",
-                pathname === subItem.route && "bg-accent text-accent-foreground",
+                "hover:bg-accent flex items-center px-6 py-4 transition-colors",
+                pathname === subItem.route && "bg-accent text-accent-foreground font-medium",
               )}
             >
-              {subItem.label}
+              <span className="font-normal">{subItem.label}</span>
             </Link>
           ))}
         </div>
+
+        {/* Companies */}
+        <div
+          className={cn(
+            "transition-transform duration-200 ease-in-out",
+            navState.view === "companies" ? "translate-x-0" : "absolute inset-0 translate-x-full",
+            navState.view !== "companies" && "invisible",
+          )}
+        >
+          <CompanySwitcher onSelect={handleClose} />
+        </div>
       </div>
-    </div>
+    </NavSheet>
   );
 };
 
-const OverflowLink = ({ item }: { item: NavItem }) => (
-  <Link
-    href={item.href ? (typeof item.href === "string" ? { pathname: item.href } : item.href) : {}}
-    className={cn(
-      "hover:bg-accent flex items-center gap-3 rounded-md px-6 py-3 transition-colors",
-      item.isActive && "bg-accent text-accent-foreground",
-    )}
-  >
-    <item.icon className="h-5 w-5" />
-    <span className="font-medium">{item.label}</span>
-    {item.badge ? (
-      <Badge className="ml-auto bg-blue-500 text-white">{item.badge > 10 ? "10+" : item.badge}</Badge>
-    ) : null}
-  </Link>
-);
-
-const getItemPriority = (label: string): number => NAV_PRIORITIES[label] ?? DEFAULT_PRIORITY;
-
-// Main navigation component
+// Main Component
 export function MobileBottomNav() {
   const allNavLinks = useNavLinks();
 
-  const { mainNavItems, overflowItems } = useMemo(() => {
-    const navItemsWithPriority: NavItem[] = allNavLinks.map((link) => ({
+  const { mainItems, overflowItems } = useMemo(() => {
+    const prioritizedItems: NavItem[] = allNavLinks.map((link) => ({
       ...link,
-      priority: getItemPriority(link.label),
+      priority: NAV_PRIORITIES[link.label] ?? DEFAULT_PRIORITY,
     }));
 
-    const sorted = navItemsWithPriority.sort((a, b) => a.priority - b.priority);
+    const sorted = prioritizedItems.sort((a, b) => a.priority - b.priority);
 
     return {
-      mainNavItems: sorted.slice(0, Math.min(MAX_VISIBLE_ITEMS, sorted.length)),
+      mainItems: sorted.slice(0, Math.min(MAX_VISIBLE_ITEMS, sorted.length)),
       overflowItems: sorted.slice(MAX_VISIBLE_ITEMS),
     };
   }, [allNavLinks]);
@@ -241,12 +435,12 @@ export function MobileBottomNav() {
     <nav
       role="navigation"
       aria-label="Mobile navigation"
-      className="bg-background border-border fixed right-0 bottom-0 left-0 z-60 border-t"
+      className="bg-background border-border fixed right-0 bottom-0 left-0 z-60 h-15 border-t"
     >
       <ul role="list" className="flex items-center justify-around">
-        {mainNavItems.map((item) => (
+        {mainItems.map((item) => (
           <li key={item.label} className="flex-1">
-            {hasSubItems(item) ? <NavItemWithSubmenu item={item} /> : <SimpleNavItem item={item} />}
+            {hasSubItems(item) ? <NavWithSubmenu item={item} /> : <NavLink item={item} />}
           </li>
         ))}
         <li className="flex-1">

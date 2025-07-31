@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import {
   Sidebar,
   SidebarContent,
@@ -30,7 +31,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <Sidebar collapsible="offcanvas">
+        <Sidebar collapsible="offcanvas" mobileSidebar={<MobileBottomNav />}>
           <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 import { GettingStarted } from "@/components/GettingStarted";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -45,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="offcanvas">
+      <Sidebar collapsible="offcanvas" mobileSidebar={<MobileBottomNav />}>
         <SidebarHeader>
           {user.companies.length > 1 ? (
             <SidebarMenu>
