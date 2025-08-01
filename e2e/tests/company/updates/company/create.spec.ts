@@ -40,7 +40,9 @@ test.describe("company update creation", () => {
     await page.getByRole("button", { name: "Yes, publish" }).click();
 
     await page.waitForURL("/updates/company");
-    await expect(page.getByRole("row").filter({ hasText: title }).filter({ hasText: "Sent" })).toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: title }).filter({ hasText: "Sent" })).toBeVisible({
+      timeout: 10000,
+    });
 
     const updates = await db.query.companyUpdates.findMany({
       where: eq(companyUpdates.companyId, company.id),

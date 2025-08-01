@@ -10,7 +10,7 @@ import { usersFactory } from "@test/factories/users";
 import { fillDatePicker, selectComboboxOption } from "@test/helpers";
 import { login } from "@test/helpers/auth";
 import { mockDocuseal } from "@test/helpers/docuseal";
-import { expect, test, withinModal } from "@test/index";
+import { expect, test, withinAlertDialog, withinModal } from "@test/index";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { DocumentTemplateType } from "@/db/enums";
 import { companyInvestors, documents, documentSignatures, equityGrants } from "@/db/schema";
@@ -153,7 +153,7 @@ test.describe("New Contractor", () => {
     await page.getByRole("button", { name: "Equity" }).click();
     await page.getByRole("link", { name: "Equity grants" }).click();
     await page.getByRole("button", { name: "Cancel" }).click();
-    await withinModal(
+    await withinAlertDialog(
       async (modal) => {
         await modal.getByRole("button", { name: "Confirm cancellation" }).click();
       },
