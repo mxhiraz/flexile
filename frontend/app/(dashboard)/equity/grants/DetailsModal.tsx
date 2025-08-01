@@ -124,7 +124,7 @@ const DetailsModal = ({
           />
           <Item label="Role type" value={relationshipDisplayNames[equityGrant.issueDateRelationship]} />
 
-          {detailedGrant.vestingEvents && detailedGrant.vestingEvents.length > 0 ? (
+          {detailedGrant.vestingEvents.length > 0 ? (
             <>
               <Separator />
               <h3 className="text-md px-6 font-medium">Vesting events</h3>
