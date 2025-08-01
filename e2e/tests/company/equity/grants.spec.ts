@@ -204,4 +204,41 @@ test.describe("New Contractor", () => {
     );
     await expect(page.getByText("We're awaiting a payment of $50 to exercise 10 options.")).toBeVisible();
   });
+
+  test("shows vesting events section in equity grant details modal", async ({ page }) => {
+    const { company, adminUser } = await companiesFactory.createCompletedOnboarding({
+      equityEnabled: true,
+      conversionSharePriceUsd: "1",
+    });
+    const { user } = await usersFactory.create();
+    await companyContractorsFactory.create({ companyId: company.id, userId: user.id });
+    const { companyInvestor } = await companyInvestorsFactory.create({ companyId: company.id, userId: user.id });
+
+    await equityGrantsFactory.create({
+      companyInvestorId: companyInvestor.id,
+      numberOfShares: 1000,
+      vestedShares: 250,
+      unvestedShares: 750,
+      vestingTrigger: "invoice_paid",
+    });
+
+    await login(page, adminUser);
+    await page.getByRole("button", { name: "Equity" }).click();
+    await page.getByRole("link", { name: "Equity grants" }).click();
+
+    await page
+      .getByRole("row")
+      .filter({ hasText: user.legalName ?? "" })
+      .getByRole("button")
+      .first()
+      .click();
+
+    await withinModal(
+      async (modal) => {
+        await expect(modal.getByText("Compliance details")).toBeVisible();
+        await expect(modal.getByText("Role type")).toBeVisible();
+      },
+      { page },
+    );
+  });
 });
