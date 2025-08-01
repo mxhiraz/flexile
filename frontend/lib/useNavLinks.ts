@@ -20,14 +20,15 @@ import { useCurrentCompany, useCurrentUser } from "@/global";
 import { getVisibleSettingsLinks } from "@/lib/settingsNavLinks";
 import { storageKeys } from "@/models/constants";
 import { trpc } from "@/trpc/client";
+import { useIsMobile } from "@/utils/use-mobile";
 
 export interface NavLinkInfo {
   label: string;
-  href?: string;
-  icon: LucideIcon;
-  isActive: boolean;
+  route?: string;
+  icon?: LucideIcon | React.ComponentType;
+  isActive?: boolean;
   badge?: number;
-  subItems?: { label: string; route: string }[];
+  subItems?: { label: string; route: string; icon?: LucideIcon }[];
   isOpen?: boolean;
   onToggle?: (isOpen: boolean) => void;
 }
@@ -38,6 +39,7 @@ export const hasSubItems = (
   !!item.subItems && item.subItems.length > 0;
 
 export const useNavLinks = (): NavLinkInfo[] => {
+  const isMobile = useIsMobile();
   const pathname = usePathname();
   const user = useCurrentUser();
   const company = useCurrentCompany();
@@ -88,7 +90,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (updatesPath) {
     navLinks.push({
       label: "Updates",
-      href: "/updates/company" as const,
+      route: "/updates/company" as const,
       icon: Rss,
       isActive: pathname.startsWith("/updates"),
     });
@@ -97,7 +99,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Invoices")) {
     navLinks.push({
       label: "Invoices",
-      href: "/invoices" as const,
+      route: "/invoices" as const,
       icon: ReceiptIcon,
       isActive: pathname.startsWith("/invoices"),
       badge: invoicesData?.filter(isInvoiceActionable).length ?? 0,
@@ -107,7 +109,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Expenses") && company.id) {
     navLinks.push({
       label: "Expenses",
-      href: `/companies/${company.id}/expenses` as const,
+      route: `/companies/${company.id}/expenses` as const,
       icon: CircleDollarSign,
       isActive: pathname.startsWith(`/companies/${company.id}/expenses`),
     });
@@ -116,7 +118,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Documents")) {
     navLinks.push({
       label: "Documents",
-      href: "/documents" as const,
+      route: "/documents" as const,
       icon: Files,
       isActive: pathname.startsWith("/documents") || pathname.startsWith("/document_templates"),
       badge: documentsData?.length ?? 0,
@@ -126,7 +128,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("People")) {
     navLinks.push({
       label: "People",
-      href: "/people" as const,
+      route: "/people" as const,
       icon: Users,
       isActive: pathname.startsWith("/people") || pathname.includes("/investor_entities/"),
     });
@@ -135,7 +137,7 @@ export const useNavLinks = (): NavLinkInfo[] => {
   if (routes.has("Roles")) {
     navLinks.push({
       label: "Roles",
-      href: "/roles" as const,
+      route: "/roles" as const,
       icon: BookUser,
       isActive: pathname.startsWith("/roles"),
     });
@@ -152,16 +154,16 @@ export const useNavLinks = (): NavLinkInfo[] => {
     });
   }
 
-  const settingsLinks = getVisibleSettingsLinks(user);
-  navLinks.push({
-    label: "Settings",
-    href: "/settings" as const,
-    icon: Settings,
-    isActive: pathname.startsWith("/settings"),
-    subItems: settingsLinks,
-    isOpen: openStates.Settings ?? false,
-    onToggle: createToggleHandler("Settings", storageKeys.SETTINGS_MENU_STATE),
-  });
+  const settingsNavLinks = getVisibleSettingsLinks(user);
+  if (isMobile && settingsNavLinks.length > 0) {
+    navLinks.push({
+      label: "Settings",
+      icon: Settings,
+      isActive: pathname.startsWith("/settings"),
+      subItems: settingsNavLinks,
+      isOpen: openStates.Settings ?? false,
+    });
+  }
 
   return navLinks;
 };

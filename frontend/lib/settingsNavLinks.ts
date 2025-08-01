@@ -62,5 +62,4 @@ export const settingsNavLinks = [
   },
 ];
 
-export const getVisibleSettingsLinks = (user: CurrentUser) =>
-  settingsNavLinks.filter((link) => link.isVisible(user)).map(({ label, route }) => ({ label, route }));
+export const getVisibleSettingsLinks = (user: CurrentUser) => settingsNavLinks.filter((link) => link.isVisible(user));

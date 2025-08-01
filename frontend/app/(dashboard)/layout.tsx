@@ -2,7 +2,7 @@
 
 import { SignOutButton } from "@clerk/nextjs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { ChevronRight, ChevronsUpDown, LogOut, Sparkles, X } from "lucide-react";
+import { ChevronRight, ChevronsUpDown, LogOut, Settings, Sparkles, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -34,7 +34,7 @@ import {
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { useCompanySwitcher } from "@/lib/useCompanySwitcher";
-import { hasSubItems, useNavLinks } from "@/lib/useNavLinks";
+import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
 import { cn } from "@/utils";
 import { useIsMobile } from "@/utils/use-mobile";
 
@@ -163,7 +163,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
-          <main className={cn("flex flex-1 flex-col p-4 not-print:overflow-y-auto", isMobile && "pb-20")}>
+          <main className={cn("flex flex-1 flex-col pb-4 not-print:overflow-y-auto", isMobile && "pb-20")}>
             <div className="mx-3 flex flex-col gap-6">{children}</div>
           </main>
         </div>
@@ -208,7 +208,7 @@ const NavLinks = () => {
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton>
-                    <link.icon />
+                    {link.icon ? <link.icon /> : null}
                     <span>{link.label}</span>
                     <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
@@ -229,40 +229,32 @@ const NavLinks = () => {
           );
         }
 
-        return link.href ? (
-          <NavItem key={link.label} href={link.href} icon={link.icon} active={link.isActive} badge={link.badge}>
-            {link.label}
-          </NavItem>
-        ) : null;
+        return link.route ? <NavItem key={link.label} {...link} /> : null;
       })}
+      <NavItem route="/settings" label="Settings" icon={Settings} isActive={pathname.startsWith("/settings")} />
     </SidebarMenu>
   );
 };
 
 const NavItem = ({
-  children,
+  label,
   className,
-  href,
+  route,
   icon,
   filledIcon,
-  active,
+  isActive,
   badge,
-}: {
-  children: React.ReactNode;
+}: NavLinkInfo & {
   className?: string;
-  href: string;
-  icon: React.ComponentType;
   filledIcon?: React.ComponentType;
-  active?: boolean;
-  badge?: number | undefined;
 }) => {
-  const Icon = active && filledIcon ? filledIcon : icon;
+  const Icon = isActive && filledIcon ? filledIcon : icon;
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active ?? false} className={className}>
-        <Link href={{ pathname: href }}>
-          <Icon />
-          <span>{children}</span>
+      <SidebarMenuButton asChild isActive={isActive ?? false} className={className}>
+        <Link href={{ pathname: route }}>
+          {Icon ? <Icon /> : null}
+          <span>{label}</span>
           {badge && badge > 0 ? (
             <Badge role="status" className="ml-auto h-4 w-auto min-w-4 bg-blue-500 px-1 text-xs text-white">
               {badge > 10 ? "10+" : badge}
