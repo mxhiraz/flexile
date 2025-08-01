@@ -84,6 +84,9 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
       if (update) {
         id = update.id;
         await updateMutation.mutateAsync({ ...data, id });
+      } else if (previewUpdateId) {
+        id = previewUpdateId;
+        await updateMutation.mutateAsync({ ...data, id });
       } else {
         id = await createMutation.mutateAsync(data);
       }
@@ -258,7 +261,6 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
           updateId={previewUpdateId}
           onOpenChange={() => {
             setViewPreview(false);
-            setPreviewUpdateId(null);
           }}
         />
       ) : null}
