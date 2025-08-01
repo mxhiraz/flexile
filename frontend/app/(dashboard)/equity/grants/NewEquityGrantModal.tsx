@@ -83,6 +83,13 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       vestingCommencementDate: today(getLocalTimeZone()),
       vestingTrigger: "invoice_paid" as const,
       boardApprovalDate: today(getLocalTimeZone()),
+      optionExpiryMonths: data.optionPools[0]?.defaultOptionExpiryMonths ?? 120,
+      voluntaryTerminationExerciseMonths: data.optionPools[0]?.voluntaryTerminationExerciseMonths ?? 3,
+      involuntaryTerminationExerciseMonths: data.optionPools[0]?.involuntaryTerminationExerciseMonths ?? 3,
+      terminationWithCauseExerciseMonths: data.optionPools[0]?.terminationWithCauseExerciseMonths ?? 3,
+      deathExerciseMonths: data.optionPools[0]?.deathExerciseMonths ?? 12,
+      disabilityExerciseMonths: data.optionPools[0]?.disabilityExerciseMonths ?? 12,
+      retirementExerciseMonths: data.optionPools[0]?.retirementExerciseMonths ?? 12,
     },
     context: {
       optionPools: data.optionPools,
@@ -96,7 +103,9 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
   const recipient = data.workers.find(({ id }) => id === recipientId);
 
   const estimatedValue =
-    data.sharePriceUsd && numberOfShares ? (Number(data.sharePriceUsd) * numberOfShares).toFixed(2) : null;
+    data.sharePriceUsd && numberOfShares && !isNaN(Number(data.sharePriceUsd))
+      ? (Number(data.sharePriceUsd) * numberOfShares).toFixed(2)
+      : null;
 
   const isFormValid = form.formState.isValid;
 
@@ -111,7 +120,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       form.setValue("optionGrantType", lastGrant?.optionGrantType ?? "nso");
       form.setValue("issueDateRelationship", lastGrant?.issueDateRelationship ?? "employee");
     }
-  }, [recipientId]);
+  }, [recipientId, recipient, form]);
 
   useEffect(() => {
     if (!optionPool) return;
@@ -123,7 +132,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
     form.setValue("deathExerciseMonths", optionPool.deathExerciseMonths);
     form.setValue("disabilityExerciseMonths", optionPool.disabilityExerciseMonths);
     form.setValue("retirementExerciseMonths", optionPool.retirementExerciseMonths);
-  }, [optionPoolId]);
+  }, [optionPoolId, optionPool, form]);
 
   const createEquityGrant = trpc.equityGrants.create.useMutation({
     onSuccess: async () => {
@@ -131,9 +140,8 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       await trpcUtils.equityGrants.totals.invalidate();
       await trpcUtils.capTable.show.invalidate();
       await trpcUtils.documents.list.invalidate();
-      setShowExercisePeriods(false);
-      onOpenChange(false);
-      form.reset();
+
+      handleClose(false);
     },
     onError: (error) => {
       const fieldNames = Object.keys(formSchema.shape);
@@ -192,9 +200,12 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
     });
   });
 
-  const handleClose = () => {
-    onOpenChange(false);
-    form.reset();
+  const handleClose = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowExercisePeriods(false);
+      form.reset();
+    }
+    onOpenChange(isOpen);
   };
 
   return (
