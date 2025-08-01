@@ -125,7 +125,7 @@ export default function PeoplePage() {
           ),
       }),
     ],
-    [],
+    [workers.map((worker) => worker.role).join(",")],
   );
   const mobileColumns = useMemo(
     () => [
@@ -170,7 +170,7 @@ export default function PeoplePage() {
 
           return (
             <div className="absolute inset-0 flex w-0 flex-col items-end justify-between py-2">
-              <div className="relative z-1">
+              <div className="flex h-5 w-4 items-center justify-center">
                 <Status variant={variant} />
               </div>
             </div>
@@ -207,7 +207,7 @@ export default function PeoplePage() {
         },
       }),
     ],
-    [],
+    [workers.map((worker) => worker.role).join(",")],
   );
 
   const columns = isMobile ? mobileColumns : desktopColumns;

@@ -241,7 +241,7 @@ export default function InvoicesPage() {
         },
       }),
     ],
-    [],
+    [data, user.roles.administrator],
   );
 
   const mobileColumns = useMemo(
@@ -258,7 +258,7 @@ export default function InvoicesPage() {
                 <div className="truncate text-base font-medium">{invoice.billFrom}</div>
                 <div className="text-gray-600">{invoice.contractor.role}</div>
               </div>
-              <div className="text-base text-sm">{amount}</div>
+              <div className="text-sm">{amount}</div>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -268,7 +268,7 @@ export default function InvoicesPage() {
               >
                 {invoice.invoiceNumber}
               </Link>
-              <div className="text-base text-sm">{amount}</div>
+              <div className="text-sm">{amount}</div>
             </div>
           );
         },
@@ -285,7 +285,7 @@ export default function InvoicesPage() {
 
           return (
             <div className="absolute inset-0 flex w-0 flex-col items-end justify-between py-2">
-              <div className="relative z-1">
+              <div className="flex h-5 w-4 items-center justify-center">
                 <Status invoice={invoice} iconOnly />
               </div>
               <div className="self-end text-gray-600">{sentOn}</div>
@@ -320,7 +320,7 @@ export default function InvoicesPage() {
         },
       }),
     ],
-    [],
+    [data],
   );
 
   const columns = isMobile ? mobileColumns : desktopColumns;

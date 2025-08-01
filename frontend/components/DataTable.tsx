@@ -152,9 +152,9 @@ export default function DataTable<T extends RowData>({
   const filterable = !!table.options.getFilteredRowModel;
   const selectable = !!table.options.enableRowSelection;
   const filterableColumns = table.getAllColumns().filter((column) => column.columnDef.meta?.filterOptions);
-  const tabFilterColumns = tabsColumnName
-    ? table.getAllColumns().filter((column) => column.id === tabsColumnName && column.columnDef.meta?.filterOptions)
-    : [];
+  const tabFilterColumn = tabsColumnName
+    ? table.getAllColumns().filter((column) => column.id === tabsColumnName && column.columnDef.meta?.filterOptions)[0]
+    : null;
   const dropdownFilterColumns = filterableColumns.filter((column) =>
     tabsColumnName && isMobile ? column.id !== tabsColumnName : true,
   );
@@ -170,7 +170,7 @@ export default function DataTable<T extends RowData>({
     [table.getState().columnFilters],
   );
 
-  const rowClasses = `px-1 py-2 md:px-0 ${isMobile ? "min-h-15" : ""}`;
+  const rowClasses = `px-1 py-2 md:px-0 ${isMobile ? "min-h-16" : ""}`;
   const cellClasses = (column: Column<T> | null, type?: "header" | "footer") => {
     const numeric = column?.columnDef.meta?.numeric;
     return cn(
@@ -186,12 +186,13 @@ export default function DataTable<T extends RowData>({
     typeof column.columnDef.header === "string" ? column.columnDef.header : "";
   const selectedRows = table.getSelectedRowModel().rows.map((row) => row.original);
   const selectedRowCount = selectedRows.length;
+  const tabFilterValue = filterValueSchema.optional().parse(tabFilterColumn?.getFilterValue());
 
   return (
     <div className="grid gap-3 md:gap-4">
       {filterable || actions ? (
         <div className="mx-3 grid gap-2 md:flex md:justify-between">
-          <div className="flex flex-col gap-3 md:flex-row">
+          <div className="flex flex-col gap-3 overflow-x-hidden md:flex-row">
             <div className="flex gap-2">
               {table.options.enableGlobalFilter !== false ? (
                 <div className="relative w-full md:w-60">
@@ -307,43 +308,36 @@ export default function DataTable<T extends RowData>({
             </div>
 
             {/* Mobile tab filter chips */}
-            {isMobile && tabFilterColumns.length > 0 ? (
-              <div className="flex gap-2 overflow-x-auto">
-                {tabFilterColumns.map((column) => {
-                  const filterValue = filterValueSchema.optional().parse(column.getFilterValue());
-                  return (
-                    <div key={column.id} className="flex shrink-0 gap-1">
-                      <button
-                        onClick={() => column.setFilterValue(undefined)}
-                        className={`bg-secondary h-9 rounded-full border px-4 text-sm leading-5 font-medium ${
-                          !filterValue?.length ? "border-blue-600 !bg-blue-600/5" : "border-border"
-                        }`}
-                      >
-                        All
-                      </button>
-                      {column.columnDef.meta?.filterOptions?.map((option: string) => (
-                        <button
-                          key={option}
-                          onClick={() => {
-                            const currentValue = filterValue;
-                            column.setFilterValue(
-                              currentValue?.includes(option)
-                                ? currentValue && currentValue.length > 1
-                                  ? currentValue.filter((o) => o !== option)
-                                  : undefined
-                                : [...(currentValue ?? []), option],
-                            );
-                          }}
-                          className={`bg-secondary h-9 rounded-full border px-4 text-sm leading-5 font-medium ${
-                            filterValue?.includes(option) ? "border-blue-600 !bg-blue-600/5" : "border-border"
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })}
+            {isMobile && tabFilterColumn ? (
+              <div className="no-scrollbar flex gap-1 overflow-x-auto">
+                <button
+                  onClick={() => tabFilterColumn.setFilterValue(undefined)}
+                  className={`bg-secondary h-9 rounded-full border px-4 text-sm leading-5 font-medium ${
+                    !tabFilterValue?.length ? "border-blue-600 !bg-blue-600/5" : "border-border"
+                  }`}
+                >
+                  All
+                </button>
+                {tabFilterColumn.columnDef.meta?.filterOptions?.map((option: string) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      const currentValue = tabFilterValue;
+                      tabFilterColumn.setFilterValue(
+                        currentValue?.includes(option)
+                          ? currentValue && currentValue.length > 1
+                            ? currentValue.filter((o) => o !== option)
+                            : undefined
+                          : [...(currentValue ?? []), option],
+                      );
+                    }}
+                    className={`bg-secondary h-9 rounded-full border px-4 text-sm leading-5 font-medium whitespace-nowrap ${
+                      tabFilterValue?.includes(option) ? "border-blue-600 !bg-blue-600/5" : "border-border"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
               </div>
             ) : null}
           </div>

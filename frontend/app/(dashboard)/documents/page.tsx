@@ -322,7 +322,7 @@ export default function DocumentsPage() {
           },
         }),
       ].filter((column) => !!column),
-    [userId],
+    [documents, isCompanyRepresentative, isSignable, canSign, setSignDocumentId, setDownloadDocument],
   );
 
   const mobileColumns = useMemo(
@@ -356,7 +356,7 @@ export default function DocumentsPage() {
 
             return (
               <div className="absolute inset-0 flex w-0 flex-col items-end justify-between py-2">
-                <div className="relative z-1">
+                <div className="flex h-5 w-4 items-center justify-center">
                   <Status variant={variant} />
                 </div>
                 <div className="self-end text-gray-600">{sentOn}</div>
@@ -371,15 +371,17 @@ export default function DocumentsPage() {
           id: "status",
           meta: { filterOptions: [...new Set(documents.map((document) => getStatus(document).name))], hidden: true },
         }),
-        columnHelper.accessor(
-          (row) =>
-            assertDefined(row.signatories.find((signatory) => signatory.title !== "Company Representative")).name,
-          {
-            id: "signer",
-            header: "Signer",
-            meta: { hidden: true },
-          },
-        ),
+        isCompanyRepresentative
+          ? columnHelper.accessor(
+              (row) =>
+                assertDefined(row.signatories.find((signatory) => signatory.title !== "Company Representative")).name,
+              {
+                id: "signer",
+                header: "Signer",
+                meta: { hidden: true },
+              },
+            )
+          : null,
         columnHelper.accessor("createdAt", {
           id: "createdAt",
           header: "Date",
@@ -396,7 +398,7 @@ export default function DocumentsPage() {
           meta: { filterOptions: [...new Set(documents.map((document) => typeLabels[document.type]))], hidden: true },
         }),
       ].filter((column) => !!column),
-    [],
+    [documents, isCompanyRepresentative],
   );
 
   const columns = isMobile ? mobileColumns : desktopColumns;
