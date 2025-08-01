@@ -106,13 +106,20 @@ test.describe("company update creation", () => {
 
     await withinModal(
       async (modal) => {
+        await modal.getByLabel("Title").fill("Important update");
+      },
+      { page, title: "New company update" },
+    );
+
+    await withinModal(
+      async (modal) => {
         await modal.getByRole("button", { name: "Preview" }).click();
         await expect(modal.locator('[data-slot="form-message"]').first()).toBeVisible();
       },
       { page, title: "New company update" },
     );
 
-    await expect(page.getByRole("dialog", { name: "Publish update?" })).not.toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Previewing: Important update" })).not.toBeVisible();
 
     await withinModal(
       async (modal) => {
