@@ -36,7 +36,7 @@ const DetailsModal = ({
 }) => {
   const company = useCurrentCompany();
   const [user] = trpc.users.get.useSuspenseQuery({ companyId: company.id, id: userId });
-  const [detailedGrant] = trpc.equityGrants.get.useSuspenseQuery({ companyId: company.id, id: equityGrant.id });
+  const [detailedGrant] = trpc.equityGrants.get.useSuspenseQuery({ companyId: company.id, id: equityGrant.externalId });
 
   return (
     <Sheet open onOpenChange={onClose}>
