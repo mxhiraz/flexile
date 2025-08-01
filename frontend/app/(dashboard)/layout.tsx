@@ -179,7 +179,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        {user.currentCompanyId && (user.roles.administrator || user.roles.worker) ? (
+        {company.checklistItems.length > 0 ? (
           <SidebarGroup className="mt-auto px-0 py-0">
             <SidebarGroupContent>
               <SidebarMenu>
@@ -191,8 +191,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
-          <main className="flex flex-1 flex-col pb-4 not-print:overflow-y-auto">
-            <div className="flex flex-col gap-1 md:mx-3 md:gap-6">{children}</div>
+          <main className="flex flex-1 flex-col pb-4 not-print:overflow-y-auto md:p-4">
+            <div className="flex flex-col gap-1 md:gap-4">{children}</div>
           </main>
         </div>
       </SidebarInset>
