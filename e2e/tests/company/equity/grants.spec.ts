@@ -13,7 +13,7 @@ import { mockDocuseal } from "@test/helpers/docuseal";
 import { expect, test, withinModal } from "@test/index";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { DocumentTemplateType } from "@/db/enums";
-import { companyInvestors, documents, documentSignatures, equityGrants } from "@/db/schema";
+import { companyInvestors, documents, documentSignatures, equityGrants, vestingEvents } from "@/db/schema";
 import { assertDefined } from "@/utils/assert";
 
 test.describe("New Contractor", () => {
@@ -214,13 +214,26 @@ test.describe("New Contractor", () => {
     await companyContractorsFactory.create({ companyId: company.id, userId: user.id });
     const { companyInvestor } = await companyInvestorsFactory.create({ companyId: company.id, userId: user.id });
 
-    await equityGrantsFactory.create({
+    const { equityGrant } = await equityGrantsFactory.create({
       companyInvestorId: companyInvestor.id,
       numberOfShares: 1000,
       vestedShares: 250,
       unvestedShares: 750,
       vestingTrigger: "invoice_paid",
     });
+
+    await db.insert(vestingEvents).values([
+      {
+        equityGrantId: equityGrant.id,
+        vestingDate: new Date("2025-02-28"),
+        vestedShares: 1123n,
+      },
+      {
+        equityGrantId: equityGrant.id,
+        vestingDate: new Date("2025-05-28"),
+        vestedShares: 500n,
+      },
+    ]);
 
     await login(page, adminUser);
     await page.getByRole("button", { name: "Equity" }).click();
@@ -235,8 +248,11 @@ test.describe("New Contractor", () => {
 
     await withinModal(
       async (modal) => {
-        await expect(modal.getByText("Compliance details")).toBeVisible();
-        await expect(modal.getByText("Role type")).toBeVisible();
+        await expect(modal.getByRole("heading", { name: "Vesting events" })).toBeVisible();
+        await expect(modal.getByText("Feb 28, 2025")).toBeVisible();
+        await expect(modal.getByText("1,123 shares")).toBeVisible();
+        await expect(modal.getByText("May 28, 2025")).toBeVisible();
+        await expect(modal.getByText("500 shares")).toBeVisible();
       },
       { page },
     );
