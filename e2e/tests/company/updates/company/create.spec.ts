@@ -21,13 +21,13 @@ test.describe("company update creation", () => {
     await companyInvestorsFactory.create({ companyId: company.id });
   });
 
-  async function fillFormInModal(page: Page, title: string, body: string) {
+  async function fillFormInModal(page: Page, title: string, body: string, modalTitle: string) {
     await withinModal(
       async (modal) => {
         await modal.getByLabel("Title").fill(title);
         await modal.locator('[contenteditable="true"]').fill(body);
       },
-      { page, title: "New company update" },
+      { page, title: modalTitle },
     );
   }
 
@@ -41,7 +41,7 @@ test.describe("company update creation", () => {
     await page.getByRole("button", { name: "New update" }).click();
     await expect(page.getByRole("dialog", { name: "New company update" })).toBeVisible();
 
-    await fillFormInModal(page, title, content);
+    await fillFormInModal(page, title, content, "New company update");
 
     await withinModal(
       async (modal) => {
@@ -73,7 +73,7 @@ test.describe("company update creation", () => {
     await page.getByRole("button", { name: "New update" }).click();
     await expect(page.getByRole("dialog", { name: "New company update" })).toBeVisible();
 
-    await fillFormInModal(page, title, content);
+    await fillFormInModal(page, title, content, "New company update");
 
     await withinModal(
       async (modal) => {

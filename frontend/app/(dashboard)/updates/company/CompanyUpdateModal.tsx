@@ -79,6 +79,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
       const data = {
         companyId: company.id,
         ...values,
+        videoUrl: values.videoUrl ?? null,
       };
       let id;
       if (update) {
