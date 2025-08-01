@@ -21,7 +21,7 @@ import { pluralize } from "@/utils/pluralize";
 const formSchema = z.object({
   title: z.string().trim().min(1, "This field is required."),
   body: z.string().regex(/>\w/u, "This field is required."),
-  videoUrl: z.string().nullable(),
+  videoUrl: z.string(),
 });
 
 interface CompanyUpdateModalProps {
@@ -53,7 +53,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
       form.reset({
         title: update.title,
         body: update.body,
-        videoUrl: update.videoUrl,
+        videoUrl: update.videoUrl ?? "",
       });
     } else if (!updateId) {
       form.reset({
