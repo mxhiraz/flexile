@@ -21,7 +21,7 @@ import { pluralize } from "@/utils/pluralize";
 const formSchema = z.object({
   title: z.string().trim().min(1, "This field is required."),
   body: z.string().regex(/>\w/u, "This field is required."),
-  videoUrl: z.string().nullable(),
+  videoUrl: z.string().optional(),
 });
 
 interface CompanyUpdateModalProps {
@@ -44,7 +44,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
     defaultValues: {
       title: update?.title ?? "",
       body: update?.body ?? "",
-      videoUrl: update?.videoUrl ?? null,
+      videoUrl: update?.videoUrl ?? "",
     },
   });
 
@@ -53,13 +53,13 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
       form.reset({
         title: update.title,
         body: update.body,
-        videoUrl: update.videoUrl ?? null,
+        videoUrl: update.videoUrl ?? "",
       });
     } else if (!updateId) {
       form.reset({
         title: "",
         body: "",
-        videoUrl: null,
+        videoUrl: "",
       });
     }
   }, [update, updateId, form]);
@@ -92,8 +92,8 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
       }
       if (!preview && !update?.sentAt) await publishMutation.mutateAsync({ companyId: company.id, id });
       void trpcUtils.companyUpdates.list.invalidate();
+      await trpcUtils.companyUpdates.get.invalidate({ companyId: company.id, id });
       if (preview) {
-        await trpcUtils.companyUpdates.get.invalidate({ companyId: company.id, id });
         setPreviewUpdateId(id);
         setViewPreview(true);
       } else {
