@@ -131,6 +131,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       await trpcUtils.equityGrants.totals.invalidate();
       await trpcUtils.capTable.show.invalidate();
       await trpcUtils.documents.list.invalidate();
+      setShowExercisePeriods(false);
       onOpenChange(false);
       form.reset();
     },
