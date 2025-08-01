@@ -122,7 +122,7 @@ const DetailsModal = ({
                 : (countries.get(user.address.countryCode ?? "") ?? user.address.countryCode ?? "N/A")
             }
           />
-          <Item label="Role type" value={relationshipDisplayNames[equityGrant.issueDateRelationship]} />
+          <Item label="Role type" value={relationshipDisplayNames[detailedGrant.issueDateRelationship]} />
 
           {detailedGrant.vestingEvents.length > 0 ? (
             <>
