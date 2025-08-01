@@ -160,7 +160,7 @@ test.describe("New Contractor", () => {
       { page },
     );
 
-    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(page.getByRole("alertdialog")).not.toBeVisible();
     await expect(page.getByRole("button", { name: "Cancel" })).not.toBeVisible();
     expect(
       (await db.query.equityGrants.findFirst({ where: eq(equityGrants.id, equityGrant.id) }).then(takeOrThrow))

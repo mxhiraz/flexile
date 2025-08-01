@@ -182,7 +182,7 @@ test.describe("Invoices admin flow", () => {
         { page },
       );
 
-      await expect(page.getByRole("dialog")).not.toBeVisible();
+      await expect(page.getByRole("alertdialog")).not.toBeVisible();
       expect(await countInvoiceApprovals(company.id)).toBe(2);
 
       const pendingInvoices = await db.$count(
@@ -259,7 +259,7 @@ test.describe("Invoices admin flow", () => {
           },
           { page },
         );
-        await expect(page.getByRole("dialog")).not.toBeVisible();
+        await expect(page.getByRole("alertdialog")).not.toBeVisible();
 
         const consolidatedInvoicesCountAfter = await db.$count(
           consolidatedInvoices,
@@ -429,7 +429,7 @@ test.describe("Invoices contractor flow", () => {
       const deletableInvoiceRow = page.getByRole("row").getByText("Awaiting approval").first();
       await deletableInvoiceRow.click({ button: "right" });
       await page.getByRole("menuitem", { name: "Delete" }).click();
-      await page.getByRole("dialog").waitFor();
+      await page.getByRole("alertdialog").waitFor();
       await page.getByRole("button", { name: "Delete" }).click();
 
       await expect(page.locator("tbody tr")).toHaveCount(2);
