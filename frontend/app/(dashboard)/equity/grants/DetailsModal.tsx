@@ -12,7 +12,7 @@ import { formatMoney } from "@/utils/formatMoney";
 import { formatDate, humanizeMonths } from "@/utils/time";
 import { optionGrantTypeDisplayNames, relationshipDisplayNames } from ".";
 
-type EquityGrant = RouterOutput["equityGrants"]["list"][number];
+type EquityGrant = RouterOutput["equityGrants"]["get"];
 
 const Item = ({ label, value }: { label: string; value: string }) => (
   <div className="flex justify-between gap-4 px-6">
@@ -37,6 +37,8 @@ const DetailsModal = ({
   const company = useCurrentCompany();
   const [user] = trpc.users.get.useSuspenseQuery({ companyId: company.id, id: userId });
   const [detailedGrant] = trpc.equityGrants.get.useSuspenseQuery({ companyId: company.id, id: equityGrant.id });
+
+  if (!detailedGrant) return null;
 
   return (
     <Sheet open onOpenChange={onClose}>

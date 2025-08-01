@@ -226,12 +226,12 @@ test.describe("New Contractor", () => {
       {
         equityGrantId: equityGrant.id,
         vestingDate: new Date("2025-02-28"),
-        vestedShares: 1123n,
+        vestedShares: BigInt(1123),
       },
       {
         equityGrantId: equityGrant.id,
         vestingDate: new Date("2025-05-28"),
-        vestedShares: 500n,
+        vestedShares: BigInt(500),
       },
     ]);
 
