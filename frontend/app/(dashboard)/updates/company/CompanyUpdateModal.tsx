@@ -1,9 +1,8 @@
 "use client";
 
-import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { FileScan, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useCurrentCompany } from "@/global";
 import { trpc } from "@/trpc/client";
 import { pluralize } from "@/utils/pluralize";
@@ -79,7 +79,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
       const data = {
         companyId: company.id,
         ...values,
-        videoUrl: values.videoUrl ?? null,
+        videoUrl: values.videoUrl || null,
       };
       let id;
       if (update) {
@@ -127,55 +127,53 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
             ) : (
               <Form {...form}>
                 <form onSubmit={(e) => void submit(e)} className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto]">
-                    <div className="grid gap-4">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Title</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={form.control}
-                        name="body"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Update</FormLabel>
-                            <FormControl>
-                              <RichTextEditor {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+                      control={form.control}
+                      name="body"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Update</FormLabel>
+                          <FormControl>
+                            <RichTextEditor {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={form.control}
-                        name="videoUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Video URL (optional)</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="videoUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Video URL (optional)</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                    <div className="flex flex-col gap-2">
-                      <div className="mb-1 text-xs text-gray-500 uppercase">
-                        Recipients ({recipientCount.toLocaleString()})
-                      </div>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Recipients ({recipientCount.toLocaleString()})</Label>
+                    <div className="space-y-2">
                       {company.investorCount ? (
                         <div className="flex items-center gap-2">
                           <Users className="size-4" />
@@ -198,10 +196,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
 
                   <div className="flex justify-end gap-3 pt-4">
                     {update?.sentAt ? (
-                      <Button type="submit">
-                        <EnvelopeIcon className="size-4" />
-                        Update
-                      </Button>
+                      <Button type="submit">Update</Button>
                     ) : (
                       <>
                         <MutationStatusButton
@@ -213,13 +208,9 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
                             void form.handleSubmit((values) => saveMutation.mutateAsync({ values, preview: true }))()
                           }
                         >
-                          <FileScan className="size-4" />
                           Preview
                         </MutationStatusButton>
-                        <Button type="submit">
-                          <EnvelopeIcon className="size-4" />
-                          Publish
-                        </Button>
+                        <Button type="submit">Publish</Button>
                       </>
                     )}
                   </div>
