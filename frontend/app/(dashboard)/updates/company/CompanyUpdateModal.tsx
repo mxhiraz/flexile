@@ -21,7 +21,7 @@ import { pluralize } from "@/utils/pluralize";
 const formSchema = z.object({
   title: z.string().trim().min(1, "This field is required."),
   body: z.string().regex(/>\w/u, "This field is required."),
-  videoUrl: z.string().optional(),
+  videoUrl: z.string().nullable(),
 });
 
 interface CompanyUpdateModalProps {
@@ -171,9 +171,9 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Recipients ({recipientCount.toLocaleString()})</Label>
-                    <div className="space-y-2">
+                  <div className="space-y-4">
+                    <Label>Recipients ({recipientCount.toLocaleString()})</Label>
+                    <div className="mt-2 space-y-2">
                       {company.investorCount ? (
                         <div className="flex items-center gap-2">
                           <Users className="size-4" />
@@ -193,30 +193,32 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
                       ) : null}
                     </div>
                   </div>
-
-                  <div className="flex justify-end gap-3 pt-4">
-                    {update?.sentAt ? (
-                      <Button type="submit">Update</Button>
-                    ) : (
-                      <>
-                        <MutationStatusButton
-                          type="button"
-                          mutation={saveMutation}
-                          idleVariant="outline"
-                          loadingText="Saving..."
-                          onClick={() =>
-                            void form.handleSubmit((values) => saveMutation.mutateAsync({ values, preview: true }))()
-                          }
-                        >
-                          Preview
-                        </MutationStatusButton>
-                        <Button type="submit">Publish</Button>
-                      </>
-                    )}
-                  </div>
                 </form>
               </Form>
             )}
+          </div>
+
+          <div className="pt-4">
+            <div className="flex justify-end gap-3">
+              {update?.sentAt ? (
+                <Button onClick={() => void submit()}>Update</Button>
+              ) : (
+                <>
+                  <MutationStatusButton
+                    type="button"
+                    mutation={saveMutation}
+                    idleVariant="outline"
+                    loadingText="Saving..."
+                    onClick={() =>
+                      void form.handleSubmit((values) => saveMutation.mutateAsync({ values, preview: true }))()
+                    }
+                  >
+                    Preview
+                  </MutationStatusButton>
+                  <Button onClick={() => void submit()}>Publish</Button>
+                </>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
