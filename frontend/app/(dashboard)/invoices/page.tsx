@@ -652,6 +652,7 @@ const InvoiceBulkActionsBar = ({
   const rowsSelected = visibleInvoices.length;
   const rejectAction = visibleActions.find((action) => action.key === "reject");
   const approveAction = visibleActions.find((action) => action.key === "approve");
+  const deleteAction = visibleActions.find((action) => action.key === "delete");
 
   return (
     <Dialog open={selectedInvoices.length > 0} modal={false}>
@@ -692,6 +693,15 @@ const InvoiceBulkActionsBar = ({
               >
                 <CircleCheckBig className="size-3.5" strokeWidth={2.5} />
                 Approve
+              </Button>
+            ) : null}
+            {deleteAction ? (
+              <Button
+                variant="outline"
+                className="flex h-9 items-center"
+                onClick={() => deleteAction.action && onAction(deleteAction.action, selectedInvoices)}
+              >
+                <Trash2 className="size-3.5" strokeWidth={2.5} />
               </Button>
             ) : null}
           </CardContent>
