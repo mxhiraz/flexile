@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
-import { useCompanySwitcher } from "@/lib/useCompanySwitcher";
+import { switchCompany } from "@/lib/companySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
 import { cn } from "@/utils";
 import { useIsMobile } from "@/utils/use-mobile";
@@ -41,7 +41,6 @@ import { useIsMobile } from "@/utils/use-mobile";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = useCurrentUser();
   const isMobile = useIsMobile();
-  const { switchCompany } = useCompanySwitcher();
   const company = useCurrentCompany();
   const router = useRouter();
   const [showTryEquity, setShowTryEquity] = React.useState(true);
