@@ -318,9 +318,29 @@ test.describe("Equity Grants", () => {
     await page.getByLabel("Number of options").fill("10000");
     await expect(page.getByText("Estimated value: $10000.00, based on a $1")).toBeVisible();
 
-    // Test form completion enables submit button
+    // Test form completion enables submit button only after filling in all required fields
     await selectComboboxOption(page, "Recipient", contractorUser.preferredName ?? "");
     await selectComboboxOption(page, "Relationship to company", "Consultant");
+
+    // Fill in required grant type
+    await selectComboboxOption(page, "Grant type", "NSO");
+
+    // Fill in required vesting details
+    await selectComboboxOption(page, "Shares will vest", "As invoices are paid");
+
+    // Fill in required board approval date (using today's date)
+    await fillDatePicker(page, "Board approval date", new Date().toLocaleDateString("en-US"));
+
+    // Fill in required exercise period fields
+    await page.getByRole("button", { name: "Customize post-termination exercise period" }).click();
+    await page.locator('input[name="voluntaryTerminationExerciseMonths"]').fill("3");
+    await page.locator('input[name="involuntaryTerminationExerciseMonths"]').fill("3");
+    await page.locator('input[name="terminationWithCauseExerciseMonths"]').fill("3");
+    await page.locator('input[name="deathExerciseMonths"]').fill("12");
+    await page.locator('input[name="disabilityExerciseMonths"]').fill("12");
+    await page.locator('input[name="retirementExerciseMonths"]').fill("12");
+
+    // Now verify the button is enabled
     await expect(page.getByRole("button", { name: "Create grant" })).toBeEnabled();
 
     // Test modal closes after successful submission
