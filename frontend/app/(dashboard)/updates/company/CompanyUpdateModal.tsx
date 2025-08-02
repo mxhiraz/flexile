@@ -1,9 +1,9 @@
 "use client";
 
-import { EnvelopeIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { FileScan } from "lucide-react";
+import { FileScan, Users } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -121,7 +121,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
             <DialogTitle>{update ? "Edit company update" : "New company update"}</DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 space-y-6 overflow-y-auto">
+          <div className="-mx-1 flex-1 space-y-6 overflow-y-auto px-1 py-1">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">Loading...</div>
             ) : (
@@ -178,7 +178,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
                       </div>
                       {company.investorCount ? (
                         <div className="flex items-center gap-2">
-                          <UsersIcon className="size-4" />
+                          <Users className="size-4" />
                           <span>
                             {company.investorCount.toLocaleString()} {pluralize("investor", company.investorCount)}
                           </span>
@@ -186,7 +186,7 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
                       ) : null}
                       {company.contractorCount ? (
                         <div className="flex items-center gap-2">
-                          <UsersIcon className="size-4" />
+                          <Users className="size-4" />
                           <span>
                             {company.contractorCount.toLocaleString()} active{" "}
                             {pluralize("contractor", company.contractorCount)}
