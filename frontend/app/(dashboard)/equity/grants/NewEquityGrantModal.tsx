@@ -107,16 +107,25 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       ? (Number(data.sharePriceUsd) * numberOfShares).toFixed(2)
       : null;
 
-  const hasRequiredFields = Boolean(
-    form.watch("companyWorkerId") &&
-      form.watch("optionPoolId") &&
-      form.watch("numberOfShares") > 0 &&
-      form.watch("issueDateRelationship") &&
-      form.watch("optionGrantType") &&
-      form.watch("vestingTrigger") &&
-      form.watch("boardApprovalDate") &&
-      form.watch("docusealTemplateId"),
-  );
+  const hasRequiredFields = () => {
+    const values = form.getValues();
+    const basicFieldsValid = Boolean(
+      values.companyWorkerId &&
+        values.optionPoolId &&
+        values.numberOfShares > 0 &&
+        values.issueDateRelationship &&
+        values.optionGrantType &&
+        values.vestingTrigger &&
+        values.boardApprovalDate &&
+        values.docusealTemplateId,
+    );
+
+    if (values.optionGrantType === "iso" && !["employee", "founder"].includes(values.issueDateRelationship)) {
+      return false;
+    }
+
+    return basicFieldsValid;
+  };
 
   useEffect(() => {
     if (!recipientId) return;
@@ -129,7 +138,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       form.setValue("optionGrantType", lastGrant?.optionGrantType ?? "nso");
       form.setValue("issueDateRelationship", lastGrant?.issueDateRelationship ?? "employee");
     }
-  }, [recipientId, recipient]);
+  }, [recipientId]);
 
   useEffect(() => {
     if (!optionPool) return;
@@ -141,7 +150,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
     form.setValue("deathExerciseMonths", optionPool.deathExerciseMonths);
     form.setValue("disabilityExerciseMonths", optionPool.disabilityExerciseMonths);
     form.setValue("retirementExerciseMonths", optionPool.retirementExerciseMonths);
-  }, [optionPoolId, optionPool]);
+  }, [optionPool]);
 
   const createEquityGrant = trpc.equityGrants.create.useMutation({
     onSuccess: async () => {
@@ -606,7 +615,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
               <MutationStatusButton
                 type="submit"
                 mutation={createEquityGrant}
-                disabled={!hasRequiredFields || createEquityGrant.isPending}
+                disabled={!hasRequiredFields() || createEquityGrant.isPending}
               >
                 Create grant
               </MutationStatusButton>
