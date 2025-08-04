@@ -97,48 +97,48 @@ RSpec.describe EquityGrant::Vesting do
           it "builds cliff vesting event followed by monthly vesting events" do
             events = equity_grant.build_vesting_events
             expect(events.pluck(:vesting_date, :vested_shares)).to eq([
-                                                                        [Date.new(2025, 1, 1), 240], # cliff vesting (monthly vesting * 12 months)
-                                                                        [Date.new(2025, 2, 1), 20], # monthly vesting after cliff (number of shares / total vesting duration months)
-                                                                        [Date.new(2025, 3, 1), 20],
-                                                                        [Date.new(2025, 4, 1), 20],
-                                                                        [Date.new(2025, 5, 1), 20],
-                                                                        [Date.new(2025, 6, 1), 20],
-                                                                        [Date.new(2025, 7, 1), 20],
-                                                                        [Date.new(2025, 8, 1), 20],
-                                                                        [Date.new(2025, 9, 1), 20],
-                                                                        [Date.new(2025, 10, 1), 20],
-                                                                        [Date.new(2025, 11, 1), 20],
-                                                                        [Date.new(2025, 12, 1), 20],
-                                                                        [Date.new(2026, 1, 1), 20],
-                                                                        [Date.new(2026, 2, 1), 20],
-                                                                        [Date.new(2026, 3, 1), 20],
-                                                                        [Date.new(2026, 4, 1), 20],
-                                                                        [Date.new(2026, 5, 1), 20],
-                                                                        [Date.new(2026, 6, 1), 20],
-                                                                        [Date.new(2026, 7, 1), 20],
-                                                                        [Date.new(2026, 8, 1), 20],
-                                                                        [Date.new(2026, 9, 1), 20],
-                                                                        [Date.new(2026, 10, 1), 20],
-                                                                        [Date.new(2026, 11, 1), 20],
-                                                                        [Date.new(2026, 12, 1), 20],
-                                                                        [Date.new(2027, 1, 1), 20],
-                                                                        [Date.new(2027, 2, 1), 20],
-                                                                        [Date.new(2027, 3, 1), 20],
-                                                                        [Date.new(2027, 4, 1), 20],
-                                                                        [Date.new(2027, 5, 1), 20],
-                                                                        [Date.new(2027, 6, 1), 20],
-                                                                        [Date.new(2027, 7, 1), 20],
-                                                                        [Date.new(2027, 8, 1), 20],
-                                                                        [Date.new(2027, 9, 1), 20],
-                                                                        [Date.new(2027, 10, 1), 20],
-                                                                        [Date.new(2027, 11, 1), 20],
-                                                                        [Date.new(2027, 12, 1), 20],
-                                                                        [Date.new(2028, 1, 1), 60],
+                                                                        [Date.new(2024, 12, 31), 240], # cliff vesting (monthly vesting * 12 months)
+                                                                        [Date.new(2025, 1, 31), 20], # monthly vesting after cliff (number of shares / total vesting duration months)
+                                                                        [Date.new(2025, 2, 28), 20],
+                                                                        [Date.new(2025, 3, 31), 20],
+                                                                        [Date.new(2025, 4, 30), 20],
+                                                                        [Date.new(2025, 5, 31), 20],
+                                                                        [Date.new(2025, 6, 30), 20],
+                                                                        [Date.new(2025, 7, 31), 20],
+                                                                        [Date.new(2025, 8, 31), 20],
+                                                                        [Date.new(2025, 9, 30), 20],
+                                                                        [Date.new(2025, 10, 31), 20],
+                                                                        [Date.new(2025, 11, 30), 20],
+                                                                        [Date.new(2025, 12, 31), 20],
+                                                                        [Date.new(2026, 1, 31), 20],
+                                                                        [Date.new(2026, 2, 28), 20],
+                                                                        [Date.new(2026, 3, 31), 20],
+                                                                        [Date.new(2026, 4, 30), 20],
+                                                                        [Date.new(2026, 5, 31), 20],
+                                                                        [Date.new(2026, 6, 30), 20],
+                                                                        [Date.new(2026, 7, 31), 20],
+                                                                        [Date.new(2026, 8, 31), 20],
+                                                                        [Date.new(2026, 9, 30), 20],
+                                                                        [Date.new(2026, 10, 31), 20],
+                                                                        [Date.new(2026, 11, 30), 20],
+                                                                        [Date.new(2026, 12, 31), 20],
+                                                                        [Date.new(2027, 1, 31), 20],
+                                                                        [Date.new(2027, 2, 28), 20],
+                                                                        [Date.new(2027, 3, 31), 20],
+                                                                        [Date.new(2027, 4, 30), 20],
+                                                                        [Date.new(2027, 5, 31), 20],
+                                                                        [Date.new(2027, 6, 30), 20],
+                                                                        [Date.new(2027, 7, 31), 20],
+                                                                        [Date.new(2027, 8, 31), 20],
+                                                                        [Date.new(2027, 9, 30), 20],
+                                                                        [Date.new(2027, 10, 31), 20],
+                                                                        [Date.new(2027, 11, 30), 20],
+                                                                        [Date.new(2027, 12, 31), 60],
                                                                       ])
             expect(events.size).to eq(37)
             expect(events.sum(&:vested_shares)).to eq(1000)
             expect(equity_grant.period_ended_at.to_date).to eq(Date.new(2028, 1, 1))
-            expect(events.last.vesting_date).to eq(equity_grant.period_ended_at.to_date)
+            expect(events.last.vesting_date).to eq(Date.new(2027, 12, 31))
           end
         end
 
@@ -148,59 +148,59 @@ RSpec.describe EquityGrant::Vesting do
           it "builds monthly vesting events" do
             events = equity_grant.build_vesting_events
             expect(events.pluck(:vesting_date, :vested_shares)).to eq([
-                                                                        [Date.new(2024, 2, 1), 20],  # monthly vesting starts immediately
-                                                                        [Date.new(2024, 3, 1), 20],
-                                                                        [Date.new(2024, 4, 1), 20],
-                                                                        [Date.new(2024, 5, 1), 20],
-                                                                        [Date.new(2024, 6, 1), 20],
-                                                                        [Date.new(2024, 7, 1), 20],
-                                                                        [Date.new(2024, 8, 1), 20],
-                                                                        [Date.new(2024, 9, 1), 20],
-                                                                        [Date.new(2024, 10, 1), 20],
-                                                                        [Date.new(2024, 11, 1), 20],
-                                                                        [Date.new(2024, 12, 1), 20],
-                                                                        [Date.new(2025, 1, 1), 20],
-                                                                        [Date.new(2025, 2, 1), 20],
-                                                                        [Date.new(2025, 3, 1), 20],
-                                                                        [Date.new(2025, 4, 1), 20],
-                                                                        [Date.new(2025, 5, 1), 20],
-                                                                        [Date.new(2025, 6, 1), 20],
-                                                                        [Date.new(2025, 7, 1), 20],
-                                                                        [Date.new(2025, 8, 1), 20],
-                                                                        [Date.new(2025, 9, 1), 20],
-                                                                        [Date.new(2025, 10, 1), 20],
-                                                                        [Date.new(2025, 11, 1), 20],
-                                                                        [Date.new(2025, 12, 1), 20],
-                                                                        [Date.new(2026, 1, 1), 20],
-                                                                        [Date.new(2026, 2, 1), 20],
-                                                                        [Date.new(2026, 3, 1), 20],
-                                                                        [Date.new(2026, 4, 1), 20],
-                                                                        [Date.new(2026, 5, 1), 20],
-                                                                        [Date.new(2026, 6, 1), 20],
-                                                                        [Date.new(2026, 7, 1), 20],
-                                                                        [Date.new(2026, 8, 1), 20],
-                                                                        [Date.new(2026, 9, 1), 20],
-                                                                        [Date.new(2026, 10, 1), 20],
-                                                                        [Date.new(2026, 11, 1), 20],
-                                                                        [Date.new(2026, 12, 1), 20],
-                                                                        [Date.new(2027, 1, 1), 20],
-                                                                        [Date.new(2027, 2, 1), 20],
-                                                                        [Date.new(2027, 3, 1), 20],
-                                                                        [Date.new(2027, 4, 1), 20],
-                                                                        [Date.new(2027, 5, 1), 20],
-                                                                        [Date.new(2027, 6, 1), 20],
-                                                                        [Date.new(2027, 7, 1), 20],
-                                                                        [Date.new(2027, 8, 1), 20],
-                                                                        [Date.new(2027, 9, 1), 20],
-                                                                        [Date.new(2027, 10, 1), 20],
-                                                                        [Date.new(2027, 11, 1), 20],
-                                                                        [Date.new(2027, 12, 1), 20],
-                                                                        [Date.new(2028, 1, 1), 60],
+                                                                        [Date.new(2024, 1, 31), 20],  # monthly vesting starts immediately
+                                                                        [Date.new(2024, 2, 29), 20],
+                                                                        [Date.new(2024, 3, 31), 20],
+                                                                        [Date.new(2024, 4, 30), 20],
+                                                                        [Date.new(2024, 5, 31), 20],
+                                                                        [Date.new(2024, 6, 30), 20],
+                                                                        [Date.new(2024, 7, 31), 20],
+                                                                        [Date.new(2024, 8, 31), 20],
+                                                                        [Date.new(2024, 9, 30), 20],
+                                                                        [Date.new(2024, 10, 31), 20],
+                                                                        [Date.new(2024, 11, 30), 20],
+                                                                        [Date.new(2024, 12, 31), 20],
+                                                                        [Date.new(2025, 1, 31), 20],
+                                                                        [Date.new(2025, 2, 28), 20],
+                                                                        [Date.new(2025, 3, 31), 20],
+                                                                        [Date.new(2025, 4, 30), 20],
+                                                                        [Date.new(2025, 5, 31), 20],
+                                                                        [Date.new(2025, 6, 30), 20],
+                                                                        [Date.new(2025, 7, 31), 20],
+                                                                        [Date.new(2025, 8, 31), 20],
+                                                                        [Date.new(2025, 9, 30), 20],
+                                                                        [Date.new(2025, 10, 31), 20],
+                                                                        [Date.new(2025, 11, 30), 20],
+                                                                        [Date.new(2025, 12, 31), 20],
+                                                                        [Date.new(2026, 1, 31), 20],
+                                                                        [Date.new(2026, 2, 28), 20],
+                                                                        [Date.new(2026, 3, 31), 20],
+                                                                        [Date.new(2026, 4, 30), 20],
+                                                                        [Date.new(2026, 5, 31), 20],
+                                                                        [Date.new(2026, 6, 30), 20],
+                                                                        [Date.new(2026, 7, 31), 20],
+                                                                        [Date.new(2026, 8, 31), 20],
+                                                                        [Date.new(2026, 9, 30), 20],
+                                                                        [Date.new(2026, 10, 31), 20],
+                                                                        [Date.new(2026, 11, 30), 20],
+                                                                        [Date.new(2026, 12, 31), 20],
+                                                                        [Date.new(2027, 1, 31), 20],
+                                                                        [Date.new(2027, 2, 28), 20],
+                                                                        [Date.new(2027, 3, 31), 20],
+                                                                        [Date.new(2027, 4, 30), 20],
+                                                                        [Date.new(2027, 5, 31), 20],
+                                                                        [Date.new(2027, 6, 30), 20],
+                                                                        [Date.new(2027, 7, 31), 20],
+                                                                        [Date.new(2027, 8, 31), 20],
+                                                                        [Date.new(2027, 9, 30), 20],
+                                                                        [Date.new(2027, 10, 31), 20],
+                                                                        [Date.new(2027, 11, 30), 20],
+                                                                        [Date.new(2027, 12, 31), 60],
                                                                       ])
             expect(events.size).to eq(48)
             expect(events.sum(&:vested_shares)).to eq(1000)
             expect(equity_grant.period_ended_at.to_date).to eq(Date.new(2028, 1, 1))
-            expect(events.last.vesting_date).to eq(equity_grant.period_ended_at.to_date)
+            expect(events.last.vesting_date).to eq(Date.new(2027, 12, 31))
           end
         end
       end
@@ -212,24 +212,24 @@ RSpec.describe EquityGrant::Vesting do
           it "builds cliff vesting event followed by quarterly vesting events" do
             events = equity_grant.build_vesting_events
             expect(events.pluck(:vesting_date, :vested_shares)).to eq([
-                                                                        [Date.new(2025, 1, 1), 248], # cliff vesting
-                                                                        [Date.new(2025, 4, 1), 62],  # quarterly vesting after cliff
-                                                                        [Date.new(2025, 7, 1), 62],
-                                                                        [Date.new(2025, 10, 1), 62],
-                                                                        [Date.new(2026, 1, 1), 62],
-                                                                        [Date.new(2026, 4, 1), 62],
-                                                                        [Date.new(2026, 7, 1), 62],
-                                                                        [Date.new(2026, 10, 1), 62],
-                                                                        [Date.new(2027, 1, 1), 62],
-                                                                        [Date.new(2027, 4, 1), 62],
-                                                                        [Date.new(2027, 7, 1), 62],
-                                                                        [Date.new(2027, 10, 1), 62],
-                                                                        [Date.new(2028, 1, 1), 70],
+                                                                        [Date.new(2024, 12, 31), 248], # cliff vesting
+                                                                        [Date.new(2025, 3, 31), 62],  # quarterly vesting after cliff
+                                                                        [Date.new(2025, 6, 30), 62],
+                                                                        [Date.new(2025, 9, 30), 62],
+                                                                        [Date.new(2025, 12, 31), 62],
+                                                                        [Date.new(2026, 3, 31), 62],
+                                                                        [Date.new(2026, 6, 30), 62],
+                                                                        [Date.new(2026, 9, 30), 62],
+                                                                        [Date.new(2026, 12, 31), 62],
+                                                                        [Date.new(2027, 3, 31), 62],
+                                                                        [Date.new(2027, 6, 30), 62],
+                                                                        [Date.new(2027, 9, 30), 62],
+                                                                        [Date.new(2027, 12, 31), 70],
                                                                       ])
             expect(events.size).to eq(13)
             expect(events.sum(&:vested_shares)).to eq(1000)
             expect(equity_grant.period_ended_at.to_date).to eq(Date.new(2028, 1, 1))
-            expect(events.last.vesting_date).to eq(equity_grant.period_ended_at.to_date)
+            expect(events.last.vesting_date).to eq(Date.new(2027, 12, 31))
           end
         end
 
@@ -239,27 +239,27 @@ RSpec.describe EquityGrant::Vesting do
           it "builds quarterly vesting events starting immediately" do
             events = equity_grant.build_vesting_events
             expect(events.pluck(:vesting_date, :vested_shares)).to eq([
-                                                                        [Date.new(2024, 4, 1), 62],  # quarterly vesting starts immediately
-                                                                        [Date.new(2024, 7, 1), 62],
-                                                                        [Date.new(2024, 10, 1), 62],
-                                                                        [Date.new(2025, 1, 1), 62],
-                                                                        [Date.new(2025, 4, 1), 62],
-                                                                        [Date.new(2025, 7, 1), 62],
-                                                                        [Date.new(2025, 10, 1), 62],
-                                                                        [Date.new(2026, 1, 1), 62],
-                                                                        [Date.new(2026, 4, 1), 62],
-                                                                        [Date.new(2026, 7, 1), 62],
-                                                                        [Date.new(2026, 10, 1), 62],
-                                                                        [Date.new(2027, 1, 1), 62],
-                                                                        [Date.new(2027, 4, 1), 62],
-                                                                        [Date.new(2027, 7, 1), 62],
-                                                                        [Date.new(2027, 10, 1), 62],
-                                                                        [Date.new(2028, 1, 1), 70],
+                                                                        [Date.new(2024, 3, 31), 62],  # quarterly vesting starts immediately
+                                                                        [Date.new(2024, 6, 30), 62],
+                                                                        [Date.new(2024, 9, 30), 62],
+                                                                        [Date.new(2024, 12, 31), 62],
+                                                                        [Date.new(2025, 3, 31), 62],
+                                                                        [Date.new(2025, 6, 30), 62],
+                                                                        [Date.new(2025, 9, 30), 62],
+                                                                        [Date.new(2025, 12, 31), 62],
+                                                                        [Date.new(2026, 3, 31), 62],
+                                                                        [Date.new(2026, 6, 30), 62],
+                                                                        [Date.new(2026, 9, 30), 62],
+                                                                        [Date.new(2026, 12, 31), 62],
+                                                                        [Date.new(2027, 3, 31), 62],
+                                                                        [Date.new(2027, 6, 30), 62],
+                                                                        [Date.new(2027, 9, 30), 62],
+                                                                        [Date.new(2027, 12, 31), 70],
                                                                       ])
             expect(events.size).to eq(16)
             expect(events.sum(&:vested_shares)).to eq(1000)
             expect(equity_grant.period_ended_at.to_date).to eq(Date.new(2028, 1, 1))
-            expect(events.last.vesting_date).to eq(equity_grant.period_ended_at.to_date)
+            expect(events.last.vesting_date).to eq(Date.new(2027, 12, 31))
           end
         end
       end
@@ -273,15 +273,15 @@ RSpec.describe EquityGrant::Vesting do
           it "builds cliff vesting event followed by annual vesting events" do
             events = equity_grant.build_vesting_events
             expect(events.pluck(:vesting_date, :vested_shares)).to eq([
-                                                                        [Date.new(2025, 1, 1), 250], # cliff vesting
-                                                                        [Date.new(2026, 1, 1), 250], # annual vesting after cliff
-                                                                        [Date.new(2027, 1, 1), 250],
-                                                                        [Date.new(2028, 1, 1), 250],
+                                                                        [Date.new(2024, 6, 30), 250], # cliff vesting
+                                                                        [Date.new(2025, 12, 31), 250], # annual vesting after cliff
+                                                                        [Date.new(2026, 12, 31), 250],
+                                                                        [Date.new(2027, 12, 31), 250],
                                                                       ])
             expect(events.size).to eq(4)
             expect(events.sum(&:vested_shares)).to eq(1000)
             expect(equity_grant.period_ended_at.to_date).to eq(Date.new(2028, 1, 1))
-            expect(events.last.vesting_date).to eq(equity_grant.period_ended_at.to_date)
+            expect(events.last.vesting_date).to eq(Date.new(2027, 12, 31))
           end
         end
 
@@ -291,15 +291,15 @@ RSpec.describe EquityGrant::Vesting do
           it "builds annual vesting events starting immediately" do
             events = equity_grant.build_vesting_events
             expect(events.pluck(:vesting_date, :vested_shares)).to eq([
-                                                                        [Date.new(2025, 1, 1), 250], # annual vesting starts immediately
-                                                                        [Date.new(2026, 1, 1), 250],
-                                                                        [Date.new(2027, 1, 1), 250],
-                                                                        [Date.new(2028, 1, 1), 250],
+                                                                        [Date.new(2024, 12, 31), 250], # annual vesting starts immediately
+                                                                        [Date.new(2025, 12, 31), 250],
+                                                                        [Date.new(2026, 12, 31), 250],
+                                                                        [Date.new(2027, 12, 31), 250],
                                                                       ])
             expect(events.size).to eq(4)
             expect(events.sum(&:vested_shares)).to eq(1000)
             expect(equity_grant.period_ended_at.to_date).to eq(Date.new(2028, 1, 1))
-            expect(events.last.vesting_date).to eq(equity_grant.period_ended_at.to_date)
+            expect(events.last.vesting_date).to eq(Date.new(2027, 12, 31))
           end
         end
       end

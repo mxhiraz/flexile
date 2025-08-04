@@ -31,7 +31,7 @@ module EquityGrant::Vesting
 
     # Create all vesting events first
     total_vesting_events.times do |vesting_event_index|
-      vesting_date = period_started_at + ((vesting_event_index + 1) * vesting_schedule.vesting_frequency_months).months
+      vesting_date = (period_started_at + ((vesting_event_index + 1) * vesting_schedule.vesting_frequency_months).months - 1.day).end_of_month.to_date
       vested_shares = vesting_event_index == total_vesting_events - 1 ? remaining_shares : shares_per_period
 
       events << {
@@ -43,7 +43,7 @@ module EquityGrant::Vesting
 
     # Handle cliff by combining events within cliff period
     if vesting_schedule.cliff_duration_months > 0
-      cliff_date = period_started_at + vesting_schedule.cliff_duration_months.months
+      cliff_date = (period_started_at + vesting_schedule.cliff_duration_months.months - 1.day).end_of_month.to_date
       events_in_cliff, events_after_cliff = events.partition { _1[:vesting_date] <= cliff_date }
 
       if events_in_cliff.any?
@@ -52,6 +52,16 @@ module EquityGrant::Vesting
           vesting_date: cliff_date,
           vested_shares: total_cliff_shares,
         }] + events_after_cliff
+      else
+        # If no events fall within cliff period, the cliff should get the first vesting period's shares
+        # This handles cases where cliff is shorter than vesting frequency (e.g., 6-month cliff with annual vesting)
+        first_event = events.first
+        if first_event
+          events = [{
+            vesting_date: cliff_date,
+            vested_shares: first_event[:vested_shares],
+          }] + events[1..-1]
+        end
       end
     end
 

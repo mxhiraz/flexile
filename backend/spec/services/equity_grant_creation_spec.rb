@@ -111,9 +111,9 @@ RSpec.describe EquityGrantCreation do
     expect(result.equity_grant.vesting_trigger_scheduled?).to be(true)
     expect(result.equity_grant.vesting_events.count).to eq(37)
     expect(result.equity_grant.vesting_events.pluck(:vesting_date, :vested_shares)).to eq([
-                                                                                            [Date.new(2019, 1, 1), 240], # Cliff vesting
-                                                                                            *35.times.map { |i| [Date.new(2019, 1, 1) + (i + 1).months, 20] }, # Monthly vesting post cliff
-                                                                                            [Date.new(2022, 1, 1), 61], # Final vesting
+                                                                                            [Date.new(2018, 12, 31), 240], # Cliff vesting
+                                                                                            *35.times.map { |i| [Date.new(2018, 12, 31) + (i + 1).months, 20] }, # Monthly vesting post cliff
+                                                                                            [Date.new(2021, 12, 31), 61], # Final vesting
                                                                                           ])
   end
 
