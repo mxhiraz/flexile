@@ -218,7 +218,7 @@ test.describe("One-off payments", () => {
             equityAmountInCents: 13000n,
             equityAmountInOptions: 13,
             minAllowedEquityPercentage: 26,
-            maxAllowedEquityPercentage: 74,
+            maxAllowedEquityPercentage: 75,
           }),
         );
 
