@@ -176,7 +176,7 @@ test.describe("One-off payments", () => {
             const containerBounds = await sliderContainer.boundingBox();
             if (!containerBounds) throw new Error("Could not get slider container bounds");
 
-            // Move minimum thumb to 25%
+            // Move minimum thumb to 26%
             const minThumb = modal.getByRole("slider", { name: "Minimum" });
             const minThumbBounds = await minThumb.boundingBox();
             if (!minThumbBounds) throw new Error("Could not get min thumb bounds");
@@ -184,7 +184,7 @@ test.describe("One-off payments", () => {
             await minThumb.hover();
             await page.mouse.down();
             await page.mouse.move(
-              containerBounds.x + containerBounds.width * 0.25,
+              containerBounds.x + containerBounds.width * 0.26,
               containerBounds.y + containerBounds.height / 2,
             );
             await page.mouse.up();
@@ -286,7 +286,7 @@ test.describe("One-off payments", () => {
             const containerBounds = await sliderContainer.boundingBox();
             if (!containerBounds) throw new Error("Could not get slider container bounds");
 
-            // Move equity thumb to 25%
+            // Move equity thumb to 26%
             const equityPercentageThumb = modal.getByRole("slider");
             const thumbBounds = await equityPercentageThumb.boundingBox();
             if (!thumbBounds) throw new Error("Could not get equity thumb bounds");
@@ -294,18 +294,18 @@ test.describe("One-off payments", () => {
             await equityPercentageThumb.hover();
             await page.mouse.down();
             await page.mouse.move(
-              containerBounds.x + containerBounds.width * 0.25,
+              containerBounds.x + containerBounds.width * 0.26,
               containerBounds.y + containerBounds.height / 2,
             );
             await page.mouse.up();
 
-            await modal.getByRole("button", { name: "Confirm 25% split" }).click();
+            await modal.getByRole("button", { name: "Confirm 26% split" }).click();
           },
           { page },
         );
 
         await expect(page.getByRole("dialog")).not.toBeVisible();
-        await expect(page.getByRole("button", { name: "Confirm 25% split" })).not.toBeVisible();
+        await expect(page.getByRole("button", { name: "Confirm 26% split" })).not.toBeVisible();
 
         await page.waitForLoadState("networkidle");
         expect(await db.query.invoices.findFirst({ where: eq(invoices.id, invoice.id) })).toEqual(
