@@ -107,25 +107,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       ? (Number(data.sharePriceUsd) * numberOfShares).toFixed(2)
       : null;
 
-  const hasRequiredFields = () => {
-    const values = form.getValues();
-    const basicFieldsValid = Boolean(
-      values.companyWorkerId &&
-        values.optionPoolId &&
-        values.numberOfShares > 0 &&
-        values.issueDateRelationship &&
-        values.optionGrantType &&
-        values.vestingTrigger &&
-        values.boardApprovalDate &&
-        values.docusealTemplateId,
-    );
-
-    if (values.optionGrantType === "iso" && !["employee", "founder"].includes(values.issueDateRelationship)) {
-      return false;
-    }
-
-    return basicFieldsValid;
-  };
+  const isFormValid = form.formState.isValid;
 
   useEffect(() => {
     if (!recipientId) return;
@@ -615,7 +597,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
               <MutationStatusButton
                 type="submit"
                 mutation={createEquityGrant}
-                disabled={!hasRequiredFields() || createEquityGrant.isPending}
+                disabled={!isFormValid || createEquityGrant.isPending}
               >
                 Create grant
               </MutationStatusButton>
