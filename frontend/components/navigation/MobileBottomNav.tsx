@@ -1,13 +1,14 @@
 "use client";
 
 import { SignOutButton } from "@clerk/nextjs";
-import { ChevronLeft, ChevronRight, LogOut, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, MessageCircleQuestion, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import ReactDOM from "react-dom";
-import { Badge } from "@/components/ui/badge";
+import { NavBadge } from "@/components/navigation/NavBadge";
+import { SupportBadge } from "@/components/Support";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
@@ -128,7 +129,7 @@ const SheetNavItem = ({ item, image, onClick, showChevron, pathname }: SheetNavI
       <button
         onClick={onClick}
         className={cn(
-          "hover:bg-accent flex items-center gap-3 rounded-md px-6 py-3 transition-colors",
+          "hover:bg-accent flex items-center gap-3 rounded-none px-6 py-3 transition-colors",
           isActive && "bg-accent text-accent-foreground font-medium",
           "w-full text-left",
         )}
@@ -136,9 +137,7 @@ const SheetNavItem = ({ item, image, onClick, showChevron, pathname }: SheetNavI
         {itemIcon}
         <span className="font-normal">{item.label}</span>
         {showChevron ? <ChevronRight className="ml-auto h-4 w-4" /> : null}
-        {item.badge ? (
-          <Badge className="ml-auto bg-blue-500 text-white">{item.badge > 10 ? "10+" : item.badge}</Badge>
-        ) : null}
+        {typeof item.badge === "number" ? <NavBadge count={item.badge} /> : item.badge}
       </button>
     </Link>
   );
@@ -313,15 +312,27 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
             ))}
           </div>
 
-          <SignOutButton>
-            <button
-              className="hover:bg-accent flex w-full items-center gap-3 rounded-md px-6 py-3 text-left transition-colors"
-              aria-label="Log out"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="font-normal">Log out</span>
-            </button>
-          </SignOutButton>
+          <div className="flex flex-col gap-1">
+            <SheetNavItem
+              pathname={pathname}
+              onClick={() => handleOpenChange(false)}
+              item={{
+                label: "Support center",
+                route: "/support",
+                icon: MessageCircleQuestion,
+                badge: <SupportBadge />,
+              }}
+            />
+            <SignOutButton>
+              <button
+                className="hover:bg-accent flex w-full items-center gap-3 rounded-none px-6 py-3 text-left transition-colors"
+                aria-label="Log out"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="font-normal">Log out</span>
+              </button>
+            </SignOutButton>
+          </div>
         </ViewTransition>
 
         {/* Submenu */}

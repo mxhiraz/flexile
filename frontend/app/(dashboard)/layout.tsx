@@ -1,36 +1,16 @@
 "use client";
 
 import { SignOutButton } from "@clerk/nextjs";
-import { HelperClientProvider, useUnreadConversationsCount } from "@helperai/react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { skipToken, useQueryClient } from "@tanstack/react-query";
-import {
-  BookUser,
-  ChartPie,
-  ChevronRight,
-  ChevronsUpDown,
-  CircleDollarSign,
-  Files,
-  LogOut,
-  MessageCircleQuestion,
-  ReceiptIcon,
-  Rss,
-  Settings,
-  Sparkles,
-  Users,
-  X,
-} from "lucide-react";
-import type { Route } from "next";
+import { ChevronRight, ChevronsUpDown, LogOut, MessageCircleQuestion, Settings, Sparkles, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
-import { navLinks as equityNavLinks } from "@/app/(dashboard)/equity";
-import { useIsActionable } from "@/app/(dashboard)/invoices";
-import { useHelperSession } from "@/app/(dashboard)/support/SupportPortal";
 import { GettingStarted } from "@/components/GettingStarted";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { Badge } from "@/components/ui/badge";
+import { NavBadge } from "@/components/navigation/NavBadge";
+import { SupportBadge } from "@/components/Support";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,8 +48,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showTryEquity, setShowTryEquity] = React.useState(true);
   const [hovered, setHovered] = React.useState(false);
   const canShowTryEquity = user.roles.administrator && !company.equityEnabled;
-
-  const { data: helperSession } = useHelperSession();
   return (
     <SidebarProvider>
       <Sidebar collapsible="offcanvas" mobileSidebar={<MobileBottomNav />}>
@@ -162,19 +140,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </SidebarMenuItem>
                 ) : null}
                 <NavItem
-                  href="/support"
-                  active={pathname.startsWith("/support")}
+                  route="/support"
+                  isActive={pathname.startsWith("/support")}
                   icon={MessageCircleQuestion}
-                  badge={
-                    helperSession ? (
-                      <HelperClientProvider host="https://help.flexile.com" session={helperSession}>
-                        <SupportUnreadCount />
-                      </HelperClientProvider>
-                    ) : null
-                  }
-                >
-                  Support center
-                </NavItem>
+                  label="Support center"
+                  badge={<SupportBadge />}
+                />
                 <SidebarMenuItem>
                   <SignOutButton>
                     <SidebarMenuButton className="cursor-pointer">
@@ -283,7 +254,6 @@ const NavItem = ({
 }: NavLinkInfo & {
   className?: string;
   filledIcon?: React.ComponentType;
-  badge?: number | React.ReactNode;
 }) => {
   const Icon = isActive && filledIcon ? filledIcon : icon;
   return (
@@ -297,20 +267,4 @@ const NavItem = ({
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
-};
-
-const NavBadge = ({ count }: { count: number }) => (
-  <Badge role="status" className="ml-auto h-4 w-auto min-w-4 bg-blue-500 px-1 text-xs text-white">
-    {count > 10 ? "10+" : count}
-  </Badge>
-);
-
-const NavLink = <T extends string>(props: LinkProps<T>) => {
-  const sidebar = useSidebar();
-  return <Link onClick={() => sidebar.setOpenMobile(false)} {...props} />;
-};
-
-const SupportUnreadCount = () => {
-  const { data } = useUnreadConversationsCount();
-  return data?.count && data.count > 0 ? <NavBadge count={data.count} /> : null;
 };
