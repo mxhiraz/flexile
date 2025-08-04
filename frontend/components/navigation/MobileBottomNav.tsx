@@ -120,28 +120,22 @@ interface SheetNavItemProps {
   pathname?: string;
 }
 
-const SheetNavItem = ({ item, image, onClick, showChevron, pathname }: SheetNavItemProps) => {
-  const isActive = pathname === item.route || item.isActive;
-  const itemIcon = item.icon ? <item.icon className="h-5 w-5" /> : image;
-
-  return (
-    <Link href={{ pathname: item.route }}>
-      <button
-        onClick={onClick}
-        className={cn(
-          "hover:bg-accent flex items-center gap-3 rounded-none px-6 py-3 transition-colors",
-          isActive && "bg-accent text-accent-foreground font-medium",
-          "w-full text-left",
-        )}
-      >
-        {itemIcon}
-        <span className="font-normal">{item.label}</span>
-        {showChevron ? <ChevronRight className="ml-auto h-4 w-4" /> : null}
-        {typeof item.badge === "number" ? <NavBadge count={item.badge} /> : item.badge}
-      </button>
-    </Link>
-  );
-};
+const SheetNavItem = ({ item, image, onClick, showChevron, pathname }: SheetNavItemProps) => (
+  <Link
+    href={{ pathname: item.route }}
+    {...(onClick ? { onClick } : {})}
+    className={cn(
+      "hover:bg-accent flex items-center gap-3 rounded-none px-6 py-3 transition-colors",
+      (pathname === item.route || item.isActive) && "bg-accent text-accent-foreground font-medium",
+      "w-full text-left",
+    )}
+  >
+    {item.icon ? <item.icon className="h-5 w-5" /> : image}
+    <span className="font-normal">{item.label}</span>
+    {showChevron ? <ChevronRight className="ml-auto h-4 w-4" /> : null}
+    {typeof item.badge === "number" ? <NavBadge count={item.badge} /> : item.badge}
+  </Link>
+);
 
 // Submenu Navigation
 interface NavWithSubmenuProps {
