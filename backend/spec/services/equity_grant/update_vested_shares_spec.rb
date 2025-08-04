@@ -33,77 +33,77 @@ RSpec.describe EquityGrant::UpdateVestedShares do
         end.not_to change { equity_grant.reload.vesting_events.processed.count }
 
         # On the exact cliff date
-        travel_to(Date.parse("25 Oct, 2025"))
+        travel_to(Date.parse("31 Oct, 2025"))
         expect do
           service.process
         end.to change { equity_grant.reload.vesting_events.processed.count }.by(1)
-        expect(equity_grant.vesting_events.processed.where(vesting_date: Date.parse("25 Oct, 2025")).pluck(:vested_shares)).to eq([240])
+        expect(equity_grant.vesting_events.processed.where(vesting_date: Date.parse("31 Oct, 2025")).pluck(:vested_shares)).to eq([240])
         expect(equity_grant).to have_attributes(vested_shares: 240, unvested_shares: 760)
 
         # On a date after cliff with no events
-        travel_to(Date.parse("26 Oct, 2025"))
+        travel_to(Date.parse("1 Nov, 2025"))
         expect do
           service.process
         end.not_to change { equity_grant.reload.vesting_events.processed.count }
 
         # On a date when there is an event
-        travel_to(Date.parse("25 Nov, 2025"))
+        travel_to(Date.parse("30 Nov, 2025"))
         expect do
           service.process
         end.to change { equity_grant.reload.vesting_events.processed.count }.by(1)
-        expect(equity_grant.vesting_events.processed.where(vesting_date: Date.parse("25 Nov, 2025")).pluck(:vested_shares)).to eq([20])
+        expect(equity_grant.vesting_events.processed.where(vesting_date: Date.parse("30 Nov, 2025")).pluck(:vested_shares)).to eq([20])
         expect(equity_grant).to have_attributes(vested_shares: 260, unvested_shares: 740)
 
         # On a future date (assuming some of the past eligible events were not processed by then for some reason)
-        travel_to(Date.parse("28 Aug, 2027"))
+        travel_to(Date.parse("31 Aug, 2027"))
         expect do
           service.process
         end.to change { equity_grant.reload.vesting_events.processed.count }.by(21)
-        expect(equity_grant.vesting_events.processed.where("vesting_date > ?", Date.parse("25 Nov, 2025")).pluck(:vesting_date, :vested_shares)).to eq([
-                                                                                                                                                         [Date.parse("25 Dec, 2025"), 20],
-                                                                                                                                                         [Date.parse("25 Jan, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Feb, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Mar, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Apr, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 May, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Jun, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Jul, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Aug, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Sep, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Oct, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Nov, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Dec, 2026"), 20],
-                                                                                                                                                         [Date.parse("25 Jan, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Feb, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Mar, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Apr, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 May, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Jun, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Jul, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Aug, 2027"), 20]
-                                                                                                                                                       ])
+        expect(equity_grant.vesting_events.processed.where("vesting_date > ?", Date.parse("30 Nov, 2025")).order(:vesting_date).pluck(:vesting_date, :vested_shares).map { |date, shares| [date.to_date, shares] }).to eq([
+                                                                                                                                                                                                                            [Date.parse("31 Dec, 2025"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Jan, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("28 Feb, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Mar, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Apr, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 May, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Jun, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Jul, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Aug, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Sep, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Oct, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Nov, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Dec, 2026"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Jan, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("28 Feb, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Mar, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Apr, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 May, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Jun, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Jul, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Aug, 2027"), 20]
+                                                                                                                                                                                                                          ])
         expect(equity_grant).to have_attributes(vested_shares: 680, unvested_shares: 320)
         # On a final event date
-        travel_to(DateTime.parse("25 Oct, 2028").beginning_of_day)
+        travel_to(DateTime.parse("31 Oct, 2028").beginning_of_day)
         expect do
           service.process
         end.to change { equity_grant.reload.vesting_events.processed.count }.by(14)
-        expect(equity_grant.vesting_events.processed.where("vesting_date > ?", Date.parse("25 Aug, 2027")).pluck(:vesting_date, :vested_shares)).to eq([
-                                                                                                                                                         [Date.parse("25 Sep, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Oct, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Nov, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Dec, 2027"), 20],
-                                                                                                                                                         [Date.parse("25 Jan, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Feb, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Mar, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Apr, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 May, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Jun, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Jul, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Aug, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Sep, 2028"), 20],
-                                                                                                                                                         [Date.parse("25 Oct, 2028"), 60]
-                                                                                                                                                       ])
+        expect(equity_grant.vesting_events.processed.where("vesting_date > ?", Date.parse("31 Aug, 2027")).order(:vesting_date).pluck(:vesting_date, :vested_shares).map { |date, shares| [date.to_date, shares] }).to eq([
+                                                                                                                                                                                                                            [Date.parse("30 Sep, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Oct, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Nov, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Dec, 2027"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Jan, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("29 Feb, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Mar, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Apr, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 May, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Jun, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Jul, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Aug, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("30 Sep, 2028"), 20],
+                                                                                                                                                                                                                            [Date.parse("31 Oct, 2028"), 60]
+                                                                                                                                                                                                                          ])
         expect(equity_grant).to have_attributes(vested_shares: 1000, unvested_shares: 0)
         expect(equity_grant.vesting_events.cancelled.count).to eq(0)
       end
@@ -115,7 +115,7 @@ RSpec.describe EquityGrant::UpdateVestedShares do
         end
 
         it "cancels the applicable vesting events instead of marking them as processed" do
-          travel_to(Date.parse("25 Oct, 2028")) # On the final event date
+          travel_to(Date.parse("31 Oct, 2028")) # On the final event date
           expect { service.process }.to change { equity_grant.reload.vesting_events.processed.count }.by(34)
                                     .and change { equity_grant.vesting_events.cancelled.count }.by(3)
           expect(equity_grant.vesting_events.cancelled.pluck(:cancellation_reason).uniq).to eq(["not_enough_shares_available"])
