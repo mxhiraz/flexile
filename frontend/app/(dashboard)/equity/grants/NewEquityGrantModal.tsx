@@ -107,7 +107,16 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       ? (Number(data.sharePriceUsd) * numberOfShares).toFixed(2)
       : null;
 
-  const isFormValid = form.formState.isValid;
+  const hasRequiredFields = Boolean(
+    form.watch("companyWorkerId") &&
+      form.watch("optionPoolId") &&
+      form.watch("numberOfShares") > 0 &&
+      form.watch("issueDateRelationship") &&
+      form.watch("optionGrantType") &&
+      form.watch("vestingTrigger") &&
+      form.watch("boardApprovalDate") &&
+      form.watch("docusealTemplateId"),
+  );
 
   useEffect(() => {
     if (!recipientId) return;
@@ -120,7 +129,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       form.setValue("optionGrantType", lastGrant?.optionGrantType ?? "nso");
       form.setValue("issueDateRelationship", lastGrant?.issueDateRelationship ?? "employee");
     }
-  }, [recipientId, recipient, form]);
+  }, [recipientId, recipient]);
 
   useEffect(() => {
     if (!optionPool) return;
@@ -132,7 +141,7 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
     form.setValue("deathExerciseMonths", optionPool.deathExerciseMonths);
     form.setValue("disabilityExerciseMonths", optionPool.disabilityExerciseMonths);
     form.setValue("retirementExerciseMonths", optionPool.retirementExerciseMonths);
-  }, [optionPoolId, optionPool, form]);
+  }, [optionPoolId, optionPool]);
 
   const createEquityGrant = trpc.equityGrants.create.useMutation({
     onSuccess: async () => {
@@ -594,7 +603,11 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
             </div>
 
             <div className="flex justify-end">
-              <MutationStatusButton type="submit" mutation={createEquityGrant} disabled={!isFormValid}>
+              <MutationStatusButton
+                type="submit"
+                mutation={createEquityGrant}
+                disabled={!hasRequiredFields || createEquityGrant.isPending}
+              >
                 Create grant
               </MutationStatusButton>
             </div>
