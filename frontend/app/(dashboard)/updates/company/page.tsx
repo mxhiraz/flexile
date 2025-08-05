@@ -1,5 +1,5 @@
 "use client";
-import { CircleCheck, Plus, Trash } from "lucide-react";
+import { CircleCheck, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
@@ -106,7 +106,7 @@ const AdminList = () => {
             onClick={() => setDeletingUpdate(info.row.original.id)}
             className="inline-flex cursor-pointer items-center border-none bg-transparent text-inherit underline hover:text-blue-600"
           >
-            <Trash className="size-4" />
+            <Trash2 className="size-4" />
           </Button>
         ),
       }),
