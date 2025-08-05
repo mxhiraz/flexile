@@ -1,0 +1,57 @@
+steps:
+  - group: "🔧 Autofix"
+    key: "autofix"
+    depends_on: []
+    steps:
+      - label: "Run autofix"
+        command: ".buildkite/scripts/autofix.sh"
+        key: "autofix-run"
+        branches: "!main"
+        plugins:
+          - artifacts#v1.9.4:
+              download: []
+        timeout_in_minutes: 10
+
+  - group: "🧪 Tests"
+    key: "tests"
+    depends_on: []
+    steps:
+      - label: "RSpec Tests ({{matrix}})"
+        command: ".buildkite/scripts/rspec.sh"
+        key: "rspec"
+        matrix:
+          - "0"
+          - "1"
+        env:
+          CI_NODE_TOTAL: 2
+          CI_NODE_INDEX: "{{matrix}}"
+          RAILS_ENV: test
+          RUBY_YJIT_ENABLE: 1
+        timeout_in_minutes: 20
+        plugins:
+          - docker-compose#v4.16.0:
+              run: app
+              config:
+                - .buildkite/docker-compose.yml
+
+      - label: "Playwright E2E Tests"
+        command: ".buildkite/scripts/playwright.sh"
+        key: "playwright"
+        env:
+          NODE_ENV: test
+        timeout_in_minutes: 30
+        plugins:
+          - docker-compose#v4.16.0:
+              run: app
+              config:
+                - .buildkite/docker-compose.yml
+        artifact_paths:
+          - "playwright-report/**/*"
+
+env:
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "{{ buildkite.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}"
+  STRIPE_SECRET_KEY: "{{ buildkite.env.STRIPE_SECRET_KEY }}"
+  WISE_API_KEY: "{{ buildkite.env.WISE_API_KEY }}"
+  WISE_PROFILE_ID: "{{ buildkite.env.WISE_PROFILE_ID }}"
+  KNAPSACK_PRO_TEST_SUITE_TOKEN_RSPEC: "{{ buildkite.env.KNAPSACK_PRO_TEST_SUITE_TOKEN_RSPEC }}"
+  KNAPSACK_PRO_LOG_LEVEL: info
