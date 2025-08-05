@@ -1,5 +1,5 @@
 "use client";
-import { CircleCheck, Trash } from "lucide-react";
+import { CircleCheck, Plus, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { trpc } from "@/trpc/client";
 import { formatDate } from "@/utils/time";
+import { useIsMobile } from "@/utils/use-mobile";
 
 const useData = () => {
   const company = useCurrentCompany();
@@ -23,6 +24,7 @@ const useData = () => {
 };
 
 export default function CompanyUpdates() {
+  const isMobile = useIsMobile();
   const user = useCurrentUser();
   const { updates, isLoading } = useData();
 
@@ -32,9 +34,17 @@ export default function CompanyUpdates() {
         title="Updates"
         headerActions={
           user.roles.administrator ? (
-            <Button asChild>
-              <Link href="/updates/company/new">New update</Link>
-            </Button>
+            isMobile ? (
+              <Button asChild variant="fab" size="fab">
+                <Link href="/updates/company/new">
+                  <Plus />
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/updates/company/new">New update</Link>
+              </Button>
+            )
           ) : null
         }
       />

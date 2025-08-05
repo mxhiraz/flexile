@@ -1,5 +1,5 @@
 "use client";
-import { CircleAlert, CircleCheck, Info, Pencil } from "lucide-react";
+import { CircleAlert, CircleCheck, Info, Pencil, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -25,9 +25,11 @@ import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { formatMoney } from "@/utils/formatMoney";
 import { formatDate } from "@/utils/time";
+import { useIsMobile } from "@/utils/use-mobile";
 
 type EquityGrant = RouterOutput["equityGrants"]["list"][number];
 export default function GrantsPage() {
+  const isMobile = useIsMobile();
   const router = useRouter();
   const company = useCurrentCompany();
   const { data = [], isLoading, refetch } = trpc.equityGrants.list.useQuery({ companyId: company.id });
@@ -84,12 +86,20 @@ export default function GrantsPage() {
         title="Equity grants"
         headerActions={
           equityPlanContractTemplates.length > 0 ? (
-            <Button asChild>
-              <Link href={`/companies/${company.id}/administrator/equity_grants/new`}>
-                <Pencil className="size-4" />
-                New option grant
-              </Link>
-            </Button>
+            isMobile ? (
+              <Button asChild variant="fab" size="fab">
+                <Link href={`/companies/${company.id}/administrator/equity_grants/new`}>
+                  <Plus />
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href={`/companies/${company.id}/administrator/equity_grants/new`}>
+                  <Pencil className="size-4" />
+                  New option grant
+                </Link>
+              </Button>
+            )
           ) : null
         }
       />
