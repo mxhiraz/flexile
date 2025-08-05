@@ -40,7 +40,6 @@ const printStyles = {
   page: "print:bg-white print:font-sans print:text-sm print:leading-tight print:text-black print:*:invisible",
   section:
     "print:visible print:m-0 print:max-w-none print:break-before-avoid print:break-inside-avoid print:break-after-avoid print:bg-white print:p-0 print:text-black print:*:visible",
-  hidden: "print:hidden",
   header: "print:text-xs print:leading-tight",
   tableHeader: "print:border print:border-gray-300 print:bg-gray-100 print:p-1.5 print:text-xs print:font-bold",
   tableCell: "print:border print:border-gray-300 print:p-1.5 print:text-xs",
@@ -99,7 +98,7 @@ export default function InvoicePage() {
     <div className={printStyles.page}>
       <DashboardHeader
         title={`Invoice ${invoice.invoiceNumber}`}
-        className={printStyles.hidden}
+        className="print:hidden"
         headerActions={
           <>
             <InvoiceStatus aria-label="Status" invoice={invoice} />
@@ -234,17 +233,17 @@ export default function InvoicePage() {
         </Dialog>
       ) : null}
       {!taxRequirementsMet(invoice) && (
-        <Alert className={cn("mx-4", printStyles.hidden)} variant="destructive">
+        <Alert className="mx-4 print:hidden" variant="destructive">
           <ExclamationTriangleIcon />
           <AlertTitle>Missing tax information.</AlertTitle>
           <AlertDescription>Invoice is not payable until contractor provides tax information.</AlertDescription>
         </Alert>
       )}
 
-      <StatusDetails invoice={invoice} className={printStyles.hidden} />
+      <StatusDetails invoice={invoice} className="print:hidden" />
 
       {payRateInSubunits && invoice.lineItems.some((lineItem) => lineItem.payRateInSubunits > payRateInSubunits) ? (
-        <Alert className={cn("mx-4", printStyles.hidden)} variant="warning">
+        <Alert className="print:hidden" variant="warning">
           <CircleAlert />
           <AlertDescription>
             This invoice includes rates above the default of {formatMoneyFromCents(payRateInSubunits)}/
