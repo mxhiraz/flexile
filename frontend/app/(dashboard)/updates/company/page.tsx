@@ -35,7 +35,7 @@ export default function CompanyUpdates() {
         headerActions={
           user.roles.administrator ? (
             isMobile ? (
-              <Button asChild variant="fab" size="fab">
+              <Button asChild variant="floating-action" size="icon-lg">
                 <Link href="/updates/company/new">
                   <Plus />
                 </Link>

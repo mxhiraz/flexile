@@ -41,7 +41,7 @@ export default function Buybacks() {
         headerActions={
           user.roles.administrator ? (
             isMobile ? (
-              <Button asChild size="fab" variant="fab">
+              <Button asChild variant="floating-action" size="icon-lg">
                 <Link href="/equity/tender_offers/new">
                   <Plus />
                 </Link>

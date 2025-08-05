@@ -89,7 +89,7 @@ export default function GrantsPage() {
         headerActions={
           equityPlanContractTemplates.length > 0 ? (
             isMobile ? (
-              <Button variant="fab" size="fab" onClick={() => setShowNewGrantModal(true)}>
+              <Button variant="floating-action" size="icon-lg" onClick={() => setShowNewGrantModal(true)}>
                 <Plus />
               </Button>
             ) : (

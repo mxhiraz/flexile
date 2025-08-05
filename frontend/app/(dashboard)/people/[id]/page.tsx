@@ -407,7 +407,7 @@ const ActionPanel = ({
   return isMobile ? (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="fab" size="fab">
+        <Button variant="floating-action" size="icon-lg">
           <Plus />
         </Button>
       </DialogTrigger>
