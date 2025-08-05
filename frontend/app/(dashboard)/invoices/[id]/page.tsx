@@ -217,7 +217,7 @@ export default function InvoicePage() {
         </Dialog>
       ) : null}
       {!taxRequirementsMet(invoice) && (
-        <Alert variant="destructive">
+        <Alert className="mx-4" variant="destructive">
           <ExclamationTriangleIcon />
           <AlertTitle>Missing tax information.</AlertTitle>
           <AlertDescription>Invoice is not payable until contractor provides tax information.</AlertDescription>
@@ -227,7 +227,7 @@ export default function InvoicePage() {
       <StatusDetails invoice={invoice} />
 
       {payRateInSubunits && invoice.lineItems.some((lineItem) => lineItem.payRateInSubunits > payRateInSubunits) ? (
-        <Alert variant="warning">
+        <Alert className="mx-4" variant="warning">
           <CircleAlert />
           <AlertDescription>
             This invoice includes rates above the default of {formatMoneyFromCents(payRateInSubunits)}/
@@ -237,7 +237,7 @@ export default function InvoicePage() {
       ) : null}
 
       {invoice.equityAmountInCents > 0 ? (
-        <Alert className="print:hidden">
+        <Alert className="mx-4 print:hidden">
           <InformationCircleIcon />
           <AlertDescription>
             When this invoice is paid, you'll receive an additional {formatMoneyFromCents(invoice.equityAmountInCents)}{" "}
@@ -249,7 +249,7 @@ export default function InvoicePage() {
       <section>
         <form>
           <div className="grid gap-4">
-            <div className="grid auto-cols-fr gap-3 md:grid-flow-col print:grid-flow-col">
+            <div className="mx-4 grid auto-cols-fr gap-3 md:grid-flow-col print:grid-flow-col">
               <div>
                 From
                 <br />
@@ -284,36 +284,47 @@ export default function InvoicePage() {
             </div>
 
             {invoice.lineItems.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
-                      {complianceInfo?.businessEntity ? `Services (${complianceInfo.legalName})` : "Services"}
-                    </TableHead>
-                    <TableHead className="text-right">Qty / Hours</TableHead>
-                    <TableHead className="text-right">Cash rate</TableHead>
-                    <TableHead className="text-right">Line total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoice.lineItems.map((lineItem, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{lineItem.description}</TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {lineItem.hourly ? formatDuration(Number(lineItem.quantity)) : lineItem.quantity}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {lineItem.payRateInSubunits
-                          ? `${formatMoneyFromCents(lineItem.payRateInSubunits * cashFactor)}${lineItem.hourly ? " / hour" : ""}`
-                          : ""}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatMoneyFromCents(lineItemTotal(lineItem) * cashFactor)}
-                      </TableCell>
+              <div className="w-full overflow-x-auto">
+                <Table className="w-full min-w-[600px] table-fixed md:max-w-full md:min-w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50%] md:w-[60%]">
+                        {complianceInfo?.businessEntity ? `Services (${complianceInfo.legalName})` : "Services"}
+                      </TableHead>
+                      <TableHead className="w-[20%] text-right md:w-[15%]">Qty / Hours</TableHead>
+                      <TableHead className="w-[20%] text-right md:w-[15%]">Cash rate</TableHead>
+                      <TableHead className="w-[10%] text-right">Line total</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {invoice.lineItems.map((lineItem, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="w-[50%] align-top md:w-[60%]">
+                          <div
+                            className="overflow-hidden pr-2 whitespace-normal md:max-w-full"
+                            style={{
+                              wordBreak: "break-word",
+                            }}
+                          >
+                            {lineItem.description}
+                          </div>
+                        </TableCell>
+                        <TableCell className="w-[20%] text-right align-top tabular-nums md:w-[15%]">
+                          {lineItem.hourly ? formatDuration(Number(lineItem.quantity)) : lineItem.quantity}
+                        </TableCell>
+                        <TableCell className="w-[20%] text-right align-top tabular-nums md:w-[15%]">
+                          {lineItem.payRateInSubunits
+                            ? `${formatMoneyFromCents(lineItem.payRateInSubunits * cashFactor)}${lineItem.hourly ? " / hour" : ""}`
+                            : ""}
+                        </TableCell>
+                        <TableCell className="w-[10%] text-right align-top tabular-nums">
+                          {formatMoneyFromCents(lineItemTotal(lineItem) * cashFactor)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : null}
 
             {invoice.expenses.length > 0 && (

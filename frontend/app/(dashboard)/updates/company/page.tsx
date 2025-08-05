@@ -1,5 +1,5 @@
 "use client";
-import { CircleCheck, Trash } from "lucide-react";
+import { CircleCheck, Trash2 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import CompanyUpdateModal from "@/app/(dashboard)/updates/company/CompanyUpdateModal";
 import ViewUpdateDialog from "@/app/(dashboard)/updates/company/ViewUpdateDialog";
@@ -60,7 +60,9 @@ export default function CompanyUpdates() {
           <ViewList />
         )
       ) : (
-        <Placeholder icon={CircleCheck}>No updates to display.</Placeholder>
+        <div className="mx-4">
+          <Placeholder icon={CircleCheck}>No updates to display.</Placeholder>
+        </div>
       )}
 
       <CompanyUpdateModal
@@ -114,7 +116,7 @@ const AdminList = ({ onEditUpdate }: { onEditUpdate: (update: UpdateListItem) =>
             }}
             className="inline-flex cursor-pointer items-center border-none bg-transparent text-inherit underline hover:text-blue-600"
           >
-            <Trash className="size-4" />
+            <Trash2 className="size-4" />
           </Button>
         ),
       }),
