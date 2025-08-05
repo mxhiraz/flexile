@@ -121,82 +121,80 @@ const CompanyUpdateModal = ({ open, onClose, updateId }: CompanyUpdateModalProps
             <DialogTitle>{update ? "Edit company update" : "New company update"}</DialogTitle>
           </DialogHeader>
 
-          <div className="-mx-1 flex-1 space-y-6 overflow-y-auto px-1 py-1">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">Loading...</div>
-            ) : (
-              <Form {...form}>
-                <form onSubmit={(e) => void submit(e)} className="space-y-6">
-                  <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Title</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">Loading...</div>
+          ) : (
+            <Form {...form}>
+              <form onSubmit={(e) => void submit(e)} className="space-y-6">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={form.control}
-                      name="body"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Update</FormLabel>
-                          <FormControl>
-                            <RichTextEditor {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="body"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Update</FormLabel>
+                        <FormControl>
+                          <RichTextEditor {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={form.control}
-                      name="videoUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Video URL (optional)</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="videoUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Video URL (optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <Label>Recipients ({recipientCount.toLocaleString()})</Label>
+                  <div className="mt-2 space-y-2">
+                    {company.investorCount ? (
+                      <div className="flex items-center gap-2">
+                        <Users className="size-4" />
+                        <span>
+                          {company.investorCount.toLocaleString()} {pluralize("investor", company.investorCount)}
+                        </span>
+                      </div>
+                    ) : null}
+                    {company.contractorCount ? (
+                      <div className="flex items-center gap-2">
+                        <Users className="size-4" />
+                        <span>
+                          {company.contractorCount.toLocaleString()} active{" "}
+                          {pluralize("contractor", company.contractorCount)}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
-
-                  <div className="space-y-4">
-                    <Label>Recipients ({recipientCount.toLocaleString()})</Label>
-                    <div className="mt-2 space-y-2">
-                      {company.investorCount ? (
-                        <div className="flex items-center gap-2">
-                          <Users className="size-4" />
-                          <span>
-                            {company.investorCount.toLocaleString()} {pluralize("investor", company.investorCount)}
-                          </span>
-                        </div>
-                      ) : null}
-                      {company.contractorCount ? (
-                        <div className="flex items-center gap-2">
-                          <Users className="size-4" />
-                          <span>
-                            {company.contractorCount.toLocaleString()} active{" "}
-                            {pluralize("contractor", company.contractorCount)}
-                          </span>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                </form>
-              </Form>
-            )}
-          </div>
+                </div>
+              </form>
+            </Form>
+          )}
 
           <div className="pt-4">
             <div className="flex justify-end gap-3">
