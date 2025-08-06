@@ -12,7 +12,10 @@ test("login", async ({ page }) => {
 
   await page.getByLabel("Work email").fill(email);
   await page.getByRole("button", { name: "Log in", exact: true }).click();
-  await page.getByLabel("Verification code").fill("000000");
+
+  // Fill the OTP code using the InputOTP component's hidden input
+  const otpCode = "000000";
+  await page.locator('[data-slot="input-otp"]').fill(otpCode);
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
   await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
@@ -35,7 +38,10 @@ test("login with redirect_url", async ({ page }) => {
 
   await page.getByLabel("Work email").fill(email);
   await page.getByRole("button", { name: "Log in", exact: true }).click();
-  await page.getByLabel("Verification code").fill("000000");
+
+  // Fill the OTP code using the InputOTP component's hidden input
+  const otpCode = "000000";
+  await page.locator('[data-slot="input-otp"]').fill(otpCode);
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
   await page.waitForLoadState("networkidle");
