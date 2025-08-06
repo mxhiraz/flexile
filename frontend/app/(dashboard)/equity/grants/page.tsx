@@ -3,6 +3,7 @@ import { CircleAlert, CircleCheck, Info, Pencil } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import NewEquityGrantModal from "@/app/(dashboard)/equity/grants/NewEquityGrantModal";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import { linkClasses } from "@/components/Link";
@@ -32,6 +33,7 @@ export default function GrantsPage() {
   const company = useCurrentCompany();
   const { data = [], isLoading, refetch } = trpc.equityGrants.list.useQuery({ companyId: company.id });
   const [cancellingGrantId, setCancellingGrantId] = useState<string | null>(null);
+  const [showNewGrantModal, setShowNewGrantModal] = useState(false);
   const cancellingGrant = data.find((grant) => grant.id === cancellingGrantId);
   const cancelGrant = trpc.equityGrants.cancel.useMutation({
     onSuccess: () => {
@@ -84,18 +86,16 @@ export default function GrantsPage() {
         title="Equity grants"
         headerActions={
           equityPlanContractTemplates.length > 0 ? (
-            <Button asChild>
-              <Link href={`/companies/${company.id}/administrator/equity_grants/new`}>
-                <Pencil className="size-4" />
-                New option grant
-              </Link>
+            <Button onClick={() => setShowNewGrantModal(true)}>
+              <Pencil className="size-4" />
+              New option grant
             </Button>
           ) : null
         }
       />
 
       {equityPlanContractTemplates.length === 0 ? (
-        <Alert>
+        <Alert className="mx-4">
           <Info />
           <AlertDescription>
             <Link href="/documents" className={linkClasses}>
@@ -110,7 +110,9 @@ export default function GrantsPage() {
       ) : data.length > 0 ? (
         <DataTable table={table} onRowClicked={(row) => router.push(`/people/${row.user.id}`)} />
       ) : (
-        <Placeholder icon={CircleCheck}>There are no option grants right now.</Placeholder>
+        <div className="mx-4">
+          <Placeholder icon={CircleCheck}>There are no option grants right now.</Placeholder>
+        </div>
       )}
       <Dialog open={!!cancellingGrantId} onOpenChange={() => setCancellingGrantId(null)}>
         <DialogContent>
@@ -141,7 +143,7 @@ export default function GrantsPage() {
                   <p className="text-sm text-red-500">{cancellingGrant.unvestedShares.toLocaleString()}</p>
                 </div>
               </div>
-              <Alert variant="destructive">
+              <Alert className="mx-4" variant="destructive">
                 <CircleAlert className="size-4" />
                 <AlertTitle>Important note</AlertTitle>
                 <AlertDescription>
@@ -165,6 +167,7 @@ export default function GrantsPage() {
           ) : null}
         </DialogContent>
       </Dialog>
+      <NewEquityGrantModal open={showNewGrantModal} onOpenChange={setShowNewGrantModal} />
     </>
   );
 }

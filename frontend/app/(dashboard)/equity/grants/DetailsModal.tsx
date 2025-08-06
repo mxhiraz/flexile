@@ -28,7 +28,7 @@ const DetailsModal = ({
   onUpdateExercise,
   onClose,
 }: {
-  equityGrant: EquityGrant;
+  equityGrant: EquityGrant | undefined;
   userId: string;
   canExercise: boolean;
   onUpdateExercise?: () => void;
@@ -36,9 +36,7 @@ const DetailsModal = ({
 }) => {
   const company = useCurrentCompany();
   const [user] = trpc.users.get.useSuspenseQuery({ companyId: company.id, id: userId });
-  const [detailedGrant] = trpc.equityGrants.get.useSuspenseQuery({ companyId: company.id, id: equityGrant.id });
-
-  if (!detailedGrant) return null;
+  const [detailedGrant] = trpc.equityGrants.get.useSuspenseQuery({ companyId: company.id, id: equityGrant?.id ?? "" });
 
   return (
     <Sheet open onOpenChange={onClose}>

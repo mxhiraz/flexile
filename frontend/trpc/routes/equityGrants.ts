@@ -12,7 +12,6 @@ import {
   documentTemplates,
   equityGrantExercises,
   equityGrants,
-  equityGrantTransactions,
   optionPools,
   users,
   vestingEvents,
@@ -346,6 +345,7 @@ export const equityGrantsRouter = createRouter({
         };
       }),
       defaultVestingSchedules,
+      sharePriceUsd: ctx.company.fmvPerShareInUsd,
     };
   }),
   cancel: companyProcedure.input(z.object({ id: z.string(), reason: z.string() })).mutation(async ({ input, ctx }) => {
@@ -369,19 +369,6 @@ export const equityGrantsRouter = createRouter({
       if (equityGrant?.optionPool.companyId !== ctx.company.id) throw new TRPCError({ code: "NOT_FOUND" });
 
       const totalForfeitedShares = equityGrant.unvestedShares + equityGrant.forfeitedShares;
-
-      await tx.insert(equityGrantTransactions).values([
-        {
-          transactionType: "cancellation",
-          equityGrantId: equityGrant.id,
-          forfeitedShares: BigInt(equityGrant.unvestedShares),
-          totalNumberOfShares: BigInt(equityGrant.numberOfShares),
-          totalVestedShares: BigInt(equityGrant.vestedShares),
-          totalUnvestedShares: BigInt(0),
-          totalExercisedShares: BigInt(equityGrant.exercisedShares),
-          totalForfeitedShares: BigInt(totalForfeitedShares),
-        },
-      ]);
 
       const cancelledAt = new Date();
       for (const vestingEvent of equityGrant.vestingEvents) {
