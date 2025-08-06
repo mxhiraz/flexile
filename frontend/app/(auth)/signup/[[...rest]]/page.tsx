@@ -97,6 +97,7 @@ function SignUpContent() {
                     value={state.otp}
                     onChange={actions.setOtp}
                     disabled={state.loading}
+                    autoFocus
                     required
                   >
                     <InputOTPGroup>
