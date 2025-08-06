@@ -91,7 +91,14 @@ function SignUpContent() {
                   <Label htmlFor="otp" className="block">
                     Verification code
                   </Label>
-                  <InputOTP maxLength={6} value={state.otp} onChange={actions.setOtp} disabled={state.loading}>
+                  <InputOTP
+                    id="otp"
+                    maxLength={6}
+                    value={state.otp}
+                    onChange={actions.setOtp}
+                    disabled={state.loading}
+                    required
+                  >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
                       <InputOTPSlot index={1} />
@@ -105,7 +112,7 @@ function SignUpContent() {
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
-                <Button type="submit" className="w-full" disabled={state.loading}>
+                <Button type="submit" className="w-full" disabled={state.otp.length !== 6 || state.loading}>
                   {state.loading ? "Creating account..." : "Continue"}
                 </Button>
               </form>

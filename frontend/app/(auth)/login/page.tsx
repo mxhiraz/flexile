@@ -84,7 +84,14 @@ function LoginContent() {
                   <Label htmlFor="otp" className="block">
                     Verification code
                   </Label>
-                  <InputOTP maxLength={6} value={state.otp} onChange={actions.setOtp} disabled={state.loading}>
+                  <InputOTP
+                    id="otp"
+                    maxLength={6}
+                    value={state.otp}
+                    onChange={actions.setOtp}
+                    disabled={state.loading}
+                    required
+                  >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
                       <InputOTPSlot index={1} />
