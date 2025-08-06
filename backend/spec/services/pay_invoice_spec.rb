@@ -262,7 +262,7 @@ RSpec.describe PayInvoice, :vcr do
           mail = CompanyWorkerMailer.payment_failed_generic(payment_id, error_message, amount, currency)
           expect(mail.to).to include(user.email)
           expect(mail.cc).to include("support@flexile.com")
-          expect(mail.subject).to eq("Action Required: Payment Failure for Invoice ##{invoice.id}")
+          expect(mail.subject).to eq("🔴 Payment failed: Payment Failure for Invoice ##{@invoice.id}")
           expect(mail.body.encoded).to include(number_to_currency(amount, unit: currency))
           expect(mail.body.encoded).to include("Wise Error: Quote creation failed for test")
         end
