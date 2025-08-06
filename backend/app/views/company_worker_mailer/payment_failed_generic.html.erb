@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
+</head>
+<body>
+  <h1>Payment Failure Notification</h1>
+  <p>Hello <%= @user.name %>,</p>
+  <p>
+    We're writing to inform you that there was an issue processing the payment for Invoice #<%= @invoice.id %> from <%= @company.name %>.
+  </p>
+  <p>
+    <% if @amount && @currency %>
+      The payment of <%= number_to_currency(@amount, unit: @currency) %> has failed.
+    <% else %>
+      The payment has failed.
+    <% end %>
+    Our team has been notified and is looking into the issue.
+  </p>
+  <p>
+    No action is required from you at this time. We will keep you updated on the status of your payment.
+  </p>
+  <p>
+    If you have any urgent questions, please contact our support team.
+  </p>
+  <p>Thank you for your patience.</p>
+  <br>
+  <p>---</p>
+  <p><em>For Support Team:</em></p>
+  <p><em>Wise Error: <%= @error_message %></em></p>
+</body>
+</html>
