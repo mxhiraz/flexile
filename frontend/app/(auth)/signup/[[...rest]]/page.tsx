@@ -7,6 +7,7 @@ import { AuthAlerts } from "@/components/auth/AuthAlerts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { useAuthApi } from "@/hooks/useAuthApi";
 import { useOtpFlowState } from "@/hooks/useOtpFlowState";
@@ -86,20 +87,23 @@ function SignUpContent() {
                 }}
                 className="space-y-4"
               >
-                <div className="space-y-2">
+                <div className="flex flex-col items-center space-y-2">
                   <Label htmlFor="otp" className="block">
                     Verification code
                   </Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={state.otp}
-                    onChange={(e) => actions.setOtp(e.target.value)}
-                    maxLength={6}
-                    required
-                    disabled={state.loading}
-                  />
+                  <InputOTP maxLength={6} value={state.otp} onChange={actions.setOtp} disabled={state.loading}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
                 </div>
                 <Button type="submit" className="w-full" disabled={state.loading}>
                   {state.loading ? "Creating account..." : "Continue"}
