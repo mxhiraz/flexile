@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useRef } from "react";
 import { AuthAlerts } from "@/components/auth/AuthAlerts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { useOtpFlowState } from "@/hooks/useOtpFlowState";
 import logo from "@/public/logo-icon.svg";
 
 function LoginContent() {
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, actions] = useOtpFlowState();
   const { handleSendOtp, handleAuthenticate } = useAuthApi(
     {
@@ -79,6 +80,7 @@ function LoginContent() {
                   void handleAuthenticate(e);
                 }}
                 className="space-y-4"
+                ref={formRef}
               >
                 <div className="flex flex-col items-center space-y-2">
                   <Label htmlFor="otp" className="block">
@@ -88,7 +90,12 @@ function LoginContent() {
                     id="otp"
                     maxLength={6}
                     value={state.otp}
-                    onChange={actions.setOtp}
+                    onChange={(value) => {
+                      actions.setOtp(value);
+                      if (value.length === 6 && !state.loading) {
+                        setTimeout(() => formRef.current?.requestSubmit(), 100);
+                      }
+                    }}
                     disabled={state.loading}
                     autoFocus
                     required
