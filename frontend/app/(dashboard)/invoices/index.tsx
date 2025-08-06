@@ -210,21 +210,22 @@ export const RejectModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-md:p-6">
         <DialogHeader>
           <DialogTitle>Reject {ids.length > 1 ? `${ids.length} invoices` : "invoice"}?</DialogTitle>
         </DialogHeader>
         <div className="grid gap-2">
           <Label htmlFor="reject-reason">
-            Explain why the {ids.length > 1 ? "invoices were" : "invoice was"} rejected and how to fix it (optional)
+            Optionally, explain why the {ids.length > 1 ? "invoices were" : "invoice was"} rejected and how to fix it.
           </Label>
           <Textarea
             id="reject-reason"
             value={reason}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value)}
+            className="min-h-32"
           />
         </div>
-        <DialogFooter>
+        <DialogFooter className="max-md:grid max-md:grid-cols-2">
           <Button variant="outline" onClick={onClose}>
             No, cancel
           </Button>

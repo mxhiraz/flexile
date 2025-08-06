@@ -566,7 +566,7 @@ const TasksModal = ({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="md:w-110 md:p-6">
+      <DialogContent className="max-md:p-6 md:w-110">
         <DialogHeader>
           <DialogTitle className="max-md:pb-4 max-md:text-base max-md:leading-5 max-md:font-medium">
             {invoice.billFrom}
