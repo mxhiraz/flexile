@@ -12,12 +12,12 @@ export function DashboardHeader({
   className?: string;
 }) {
   return (
-    <header className={cn("px-4 pt-4", className)}>
-      <div className="grid items-center justify-between gap-3 md:flex">
-        <div>
+    <header className={cn("px-4 pt-4 print:visible print:*:visible", className)}>
+      <div className="grid items-center justify-between gap-3 md:flex print:block">
+        <div className="print:*:visible">
           <div className="flex items-center justify-between gap-2">
-            <SidebarTrigger className="md:hidden" />
-            <h1 className="text-3xl font-bold">{title}</h1>
+            <SidebarTrigger className="md:hidden print:hidden" />
+            <h1 className="text-3xl font-bold print:text-4xl print:font-bold print:text-black">{title}</h1>
           </div>
         </div>
 

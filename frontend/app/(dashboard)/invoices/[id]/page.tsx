@@ -36,15 +36,37 @@ import {
 } from "..";
 import InvoiceStatus, { StatusDetails } from "../Status";
 
-const printStyles = {
-  page: "print:bg-white print:font-sans print:text-sm print:leading-tight print:text-black print:*:invisible",
-  section:
-    "print:visible print:m-0 print:max-w-none print:break-before-avoid print:break-inside-avoid print:break-after-avoid print:bg-white print:p-0 print:text-black print:*:visible",
-  header: "print:text-xs print:leading-tight",
-  tableHeader: "print:border print:border-gray-300 print:bg-gray-100 print:p-1.5 print:text-xs print:font-bold",
-  tableCell: "print:border print:border-gray-300 print:p-1.5 print:text-xs",
-  totalRow: "print:my-1 print:flex print:items-center print:justify-between print:text-xs",
-} as const;
+const PrintHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="print:text-xs print:leading-tight">{children}</div>
+);
+
+const PrintTableHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <TableHead
+    className={cn(
+      "print:border print:border-gray-300 print:bg-gray-100 print:p-1.5 print:text-xs print:font-bold",
+      className,
+    )}
+  >
+    {children}
+  </TableHead>
+);
+
+const PrintTableCell = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <TableCell className={cn("print:border print:border-gray-300 print:p-1.5 print:text-xs", className)}>
+    {children}
+  </TableCell>
+);
+
+const PrintTotalRow = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div
+    className={cn(
+      "flex justify-between gap-2 print:my-1 print:flex print:items-center print:justify-between print:text-xs",
+      className,
+    )}
+  >
+    {children}
+  </div>
+);
 
 export default function InvoicePage() {
   const { id } = useParams<{ id: string }>();
@@ -95,10 +117,10 @@ export default function InvoicePage() {
   assert(!!invoice.invoiceDate); // must be defined due to model checks in rails
 
   return (
-    <div className={printStyles.page}>
+    <div className="print:bg-white print:font-sans print:text-sm print:leading-tight print:text-black print:*:invisible">
       <DashboardHeader
         title={`Invoice ${invoice.invoiceNumber}`}
-        className="print:hidden"
+        className="print:visible print:mb-4 print:px-0 print:pt-0"
         headerActions={
           <>
             <InvoiceStatus aria-label="Status" invoice={invoice} />
@@ -262,44 +284,46 @@ export default function InvoicePage() {
         </Alert>
       ) : null}
 
-      <section className={cn("invoice-print", printStyles.section)}>
-        <h1 className={cn("hidden", "print:mb-4 print:block print:text-4xl print:font-bold print:text-black")}>
-          INVOICE
-        </h1>
+      <section
+        className={cn(
+          "invoice-print",
+          "print:visible print:m-0 print:max-w-none print:break-before-avoid print:break-inside-avoid print:break-after-avoid print:bg-white print:p-0 print:text-black print:*:visible",
+        )}
+      >
         <form>
           <div className="grid gap-4">
             <div className="grid auto-cols-fr gap-3 p-4 md:grid-flow-col print:mb-4 print:grid-flow-col print:grid-cols-5 print:gap-3 print:border-none print:bg-transparent print:p-0">
-              <div className={printStyles.header}>
+              <PrintHeader>
                 From
                 <br />
                 <b className="print:text-sm print:font-bold">{invoice.billFrom}</b>
                 <div>
                   <Address address={invoice} />
                 </div>
-              </div>
-              <div className={printStyles.header}>
+              </PrintHeader>
+              <PrintHeader>
                 To
                 <br />
                 <b className="print:text-sm print:font-bold">{invoice.billTo}</b>
                 <div>
                   <LegacyAddress address={company.address} />
                 </div>
-              </div>
-              <div className={printStyles.header}>
+              </PrintHeader>
+              <PrintHeader>
                 Invoice ID
                 <br />
                 {invoice.invoiceNumber}
-              </div>
-              <div className={printStyles.header}>
+              </PrintHeader>
+              <PrintHeader>
                 Sent on
                 <br />
                 {formatDate(invoice.invoiceDate)}
-              </div>
-              <div className={printStyles.header}>
+              </PrintHeader>
+              <PrintHeader>
                 Paid on
                 <br />
                 {invoice.paidAt ? formatDate(invoice.paidAt) : "-"}
-              </div>
+              </PrintHeader>
             </div>
 
             {invoice.lineItems.length > 0 ? (
@@ -307,63 +331,37 @@ export default function InvoicePage() {
                 <Table className="w-full min-w-[600px] table-fixed md:max-w-full md:min-w-full print:my-3 print:w-full print:border-collapse print:text-xs">
                   <TableHeader>
                     <TableRow className="print:border-b print:border-gray-300">
-                      <TableHead className={cn("w-[50%] md:w-[60%]", printStyles.tableHeader, "print:text-left")}>
+                      <PrintTableHeader className="w-[50%] md:w-[60%] print:text-left">
                         {complianceInfo?.businessEntity ? `Services (${complianceInfo.legalName})` : "Services"}
-                      </TableHead>
-                      <TableHead
-                        className={cn("w-[20%] text-right md:w-[15%]", printStyles.tableHeader, "print:text-right")}
-                      >
+                      </PrintTableHeader>
+                      <PrintTableHeader className="w-[20%] text-right md:w-[15%] print:text-right">
                         Qty / Hours
-                      </TableHead>
-                      <TableHead
-                        className={cn("w-[20%] text-right md:w-[15%]", printStyles.tableHeader, "print:text-right")}
-                      >
+                      </PrintTableHeader>
+                      <PrintTableHeader className="w-[20%] text-right md:w-[15%] print:text-right">
                         Cash rate
-                      </TableHead>
-                      <TableHead className={cn("w-[10%] text-right", printStyles.tableHeader, "print:text-right")}>
-                        Line total
-                      </TableHead>
+                      </PrintTableHeader>
+                      <PrintTableHeader className="w-[10%] text-right print:text-right">Line total</PrintTableHeader>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {invoice.lineItems.map((lineItem, index) => (
                       <TableRow key={index}>
-                        <TableCell
-                          className={cn("w-[50%] align-top md:w-[60%]", printStyles.tableCell, "print:align-top")}
-                        >
+                        <PrintTableCell className="w-[50%] align-top md:w-[60%] print:align-top">
                           <div className="max-w-full overflow-hidden pr-2 break-words whitespace-normal">
                             {lineItem.description}
                           </div>
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            "w-[20%] text-right align-top tabular-nums md:w-[15%]",
-                            printStyles.tableCell,
-                            "print:text-right print:align-top",
-                          )}
-                        >
+                        </PrintTableCell>
+                        <PrintTableCell className="w-[20%] text-right align-top tabular-nums md:w-[15%] print:text-right print:align-top">
                           {lineItem.hourly ? formatDuration(Number(lineItem.quantity)) : lineItem.quantity}
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            "w-[20%] text-right align-top tabular-nums md:w-[15%]",
-                            printStyles.tableCell,
-                            "print:text-right print:align-top",
-                          )}
-                        >
+                        </PrintTableCell>
+                        <PrintTableCell className="w-[20%] text-right align-top tabular-nums md:w-[15%] print:text-right print:align-top">
                           {lineItem.payRateInSubunits
                             ? `${formatMoneyFromCents(lineItem.payRateInSubunits * cashFactor)}${lineItem.hourly ? " / hour" : ""}`
                             : ""}
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            "w-[10%] text-right align-top tabular-nums",
-                            printStyles.tableCell,
-                            "print:text-right print:align-top",
-                          )}
-                        >
+                        </PrintTableCell>
+                        <PrintTableCell className="w-[10%] text-right align-top tabular-nums print:text-right print:align-top">
                           {formatMoneyFromCents(lineItemTotal(lineItem) * cashFactor)}
-                        </TableCell>
+                        </PrintTableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -416,23 +414,23 @@ export default function InvoicePage() {
                 <CardContent>
                   {invoice.lineItems.length > 0 && invoice.expenses.length > 0 && (
                     <>
-                      <div className={cn("flex justify-between gap-2", printStyles.totalRow)}>
+                      <PrintTotalRow>
                         <strong>Total services</strong>
                         <span>
                           {formatMoneyFromCents(
                             invoice.lineItems.reduce((acc, lineItem) => acc + lineItemTotal(lineItem) * cashFactor, 0),
                           )}
                         </span>
-                      </div>
+                      </PrintTotalRow>
                       <Separator className="print:my-1.5 print:border-t print:border-gray-200" />
-                      <div className={cn("flex justify-between gap-2", printStyles.totalRow)}>
+                      <PrintTotalRow>
                         <strong>Total expenses</strong>
                         <span>
                           {formatMoneyFromCents(
                             invoice.expenses.reduce((acc, expense) => acc + expense.totalAmountInCents, BigInt(0)),
                           )}
                         </span>
-                      </div>
+                      </PrintTotalRow>
                       <Separator className="print:my-1.5 print:border-t print:border-gray-200" />
                     </>
                   )}
