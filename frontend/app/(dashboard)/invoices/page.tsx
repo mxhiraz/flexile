@@ -38,7 +38,7 @@ import Status, { StatusDetails } from "@/app/(dashboard)/invoices/Status";
 import StripeMicrodepositVerification from "@/app/settings/administrator/StripeMicrodepositVerification";
 import { ContextMenuActions } from "@/components/actions/ContextMenuActions";
 import { getAvailableActions, SelectionActions } from "@/components/actions/SelectionActions";
-import type { ActionConfig, ActionContext, ActionDefinition, WithKey } from "@/components/actions/types";
+import type { ActionConfig, ActionContext, AvailableActions } from "@/components/actions/types";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import DataTable, { createColumnHelper, useTable } from "@/components/DataTable";
 import DatePicker from "@/components/DatePicker";
@@ -635,11 +635,11 @@ const InvoiceBulkActionsBar = ({
 }: {
   selectedInvoices: Invoice[];
   onClose: () => void;
-  availableActions: WithKey<ActionDefinition<Invoice>>[];
+  availableActions: AvailableActions<Invoice>[];
   onAction: (actionId: string, items: Invoice[]) => void;
 }) => {
   const [visibleInvoices, setVisibleInvoices] = useState<Invoice[]>([]);
-  const [visibleActions, setVisibleActions] = useState<WithKey<ActionDefinition<Invoice>>[]>([]);
+  const [visibleActions, setVisibleActions] = useState<AvailableActions<Invoice>[]>([]);
 
   useEffect(() => {
     const isOpen = selectedInvoices.length > 0;

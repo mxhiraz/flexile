@@ -1,5 +1,3 @@
-export type WithKey<T> = T & { key: string };
-
 export interface ActionDefinition<T = unknown> {
   id: string;
   label: string;
@@ -27,3 +25,5 @@ export interface ActionConfig<T = unknown> {
   // NEW: Define group order for context menu separators
   contextMenuGroups?: string[];
 }
+
+export type AvailableActions<T> = ActionDefinition<T> & { key: string };

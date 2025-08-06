@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { ActionConfig, ActionContext, ActionDefinition, WithKey } from "./types";
+import type { ActionConfig, ActionContext, AvailableActions } from "./types";
 
 export function getAvailableActions<T>(
   selectedItems: T[],
   config: ActionConfig<T>,
   actionContext: ActionContext,
-): WithKey<ActionDefinition<T>>[] {
+): AvailableActions<T>[] {
   const context = selectedItems.length > 1 ? "bulk" : "single";
   const targetItem = selectedItems.length === 1 ? selectedItems[0] : null;
 
@@ -33,7 +33,7 @@ export function getAvailableActions<T>(
 interface SelectionActionsProps<T> {
   selectedItems: T[];
   config: ActionConfig<T>;
-  availableActions: WithKey<ActionDefinition<T>>[];
+  availableActions: AvailableActions<T>[];
   onAction: (actionId: string, items: T[]) => void;
 }
 
