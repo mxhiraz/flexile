@@ -336,8 +336,8 @@ test.describe("Equity Grants", () => {
     });
     await optionPoolsFactory.create({
       companyId: company.id,
-      authorizedShares: 20000n, // Ensure enough shares in the pool
-      issuedShares: 0n, // No shares issued yet
+      authorizedShares: BigInt(20000), // Ensure enough shares in the pool
+      issuedShares: BigInt(0), // No shares issued yet
     });
     await documentTemplatesFactory.create({
       companyId: company.id,
@@ -429,8 +429,8 @@ test.describe("Equity Grants", () => {
     });
     await optionPoolsFactory.create({
       companyId: company.id,
-      authorizedShares: 20000n, // Ensure enough shares in the pool
-      issuedShares: 0n, // No shares issued yet
+      authorizedShares: BigInt(20000), // Ensure enough shares in the pool
+      issuedShares: BigInt(0), // No shares issued yet
     });
     await documentTemplatesFactory.create({
       companyId: company.id,
@@ -475,8 +475,8 @@ test.describe("Equity Grants", () => {
     });
     await optionPoolsFactory.create({
       companyId: company.id,
-      authorizedShares: 20000n, // Ensure enough shares in the pool
-      issuedShares: 0n, // No shares issued yet
+      authorizedShares: BigInt(20000), // Ensure enough shares in the pool
+      issuedShares: BigInt(0), // No shares issued yet
     });
     await documentTemplatesFactory.create({
       companyId: company.id,

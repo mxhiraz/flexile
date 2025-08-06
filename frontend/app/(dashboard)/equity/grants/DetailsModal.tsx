@@ -12,7 +12,7 @@ import { formatMoney } from "@/utils/formatMoney";
 import { formatDate, humanizeMonths } from "@/utils/time";
 import { optionGrantTypeDisplayNames, relationshipDisplayNames } from ".";
 
-type EquityGrant = RouterOutput["equityGrants"]["get"];
+type EquityGrant = RouterOutput["equityGrants"]["list"][number];
 
 const Item = ({ label, value }: { label: string; value: string }) => (
   <div className="flex justify-between gap-4 px-6">
@@ -28,7 +28,7 @@ const DetailsModal = ({
   onUpdateExercise,
   onClose,
 }: {
-  equityGrant: EquityGrant | undefined;
+  equityGrant: EquityGrant;
   userId: string;
   canExercise: boolean;
   onUpdateExercise?: () => void;
@@ -36,7 +36,7 @@ const DetailsModal = ({
 }) => {
   const company = useCurrentCompany();
   const [user] = trpc.users.get.useSuspenseQuery({ companyId: company.id, id: userId });
-  const [detailedGrant] = trpc.equityGrants.get.useSuspenseQuery({ companyId: company.id, id: equityGrant?.id ?? "" });
+  const [detailedGrant] = trpc.equityGrants.get.useSuspenseQuery({ companyId: company.id, id: equityGrant.id });
 
   return (
     <Sheet open onOpenChange={onClose}>
@@ -128,12 +128,10 @@ const DetailsModal = ({
             <>
               <Separator />
               <h3 className="text-md px-6 font-medium">Vesting events</h3>
-              {detailedGrant.vestingEvents.map((event) => (
-                <Item
-                  key={event.id}
-                  label={formatDate(event.vestingDate)}
-                  value={`${event.vestedShares.toLocaleString()} shares`}
-                />
+              {detailedGrant.vestingEvents.map((event, index) => (
+                <div key={index}>
+                  <Item label={formatDate(event.vestingDate)} value={`${event.vestedShares.toLocaleString()} shares`} />
+                </div>
               ))}
             </>
           ) : null}
