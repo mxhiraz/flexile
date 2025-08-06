@@ -210,7 +210,7 @@ export const RejectModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-md:p-6">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Reject {ids.length > 1 ? `${ids.length} invoices` : "invoice"}?</DialogTitle>
         </DialogHeader>
