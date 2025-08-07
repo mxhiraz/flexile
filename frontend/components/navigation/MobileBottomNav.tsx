@@ -423,7 +423,7 @@ export function MobileBottomNav() {
     >
       <ul role="list" className="flex items-center justify-around">
         {mainItems.map((item) => (
-          <li key={item.label} className="flex-1">
+          <li aria-label={item.label} key={item.label} className="flex-1">
             {hasSubItems(item) ? (
               <NavWithSubmenu
                 item={item}
@@ -437,7 +437,7 @@ export function MobileBottomNav() {
             )}
           </li>
         ))}
-        <li className="flex-1">
+        <li aria-label="More" className="flex-1">
           <OverflowMenu
             items={overflowItems}
             onOpenChange={(open) => setActiveSheetId(open ? "nav-overflow" : null)}
