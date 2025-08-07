@@ -1,11 +1,11 @@
 "use client";
 
-import { SignOutButton } from "@clerk/nextjs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { ChevronRight, ChevronsUpDown, LogOut, MessageCircleQuestion, Settings, Sparkles, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import React from "react";
 import { GettingStarted } from "@/components/GettingStarted";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
@@ -32,7 +32,7 @@ import {
   SidebarMenuSubItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { useCurrentCompany, useCurrentUser } from "@/global";
+import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { switchCompany } from "@/lib/companySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
@@ -48,6 +48,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showTryEquity, setShowTryEquity] = React.useState(true);
   const [hovered, setHovered] = React.useState(false);
   const canShowTryEquity = user.roles.administrator && !company.equityEnabled;
+  const { data: session } = useSession();
+  const { logout } = useUserStore();
+
+  const handleLogout = async () => {
+    if (session?.user) {
+      await signOut({ redirect: false });
+    }
+    // Clear user state
+    logout();
+    // Redirect to login
+    window.location.href = "/login";
+  };
 
   return (
     <SidebarProvider>
@@ -109,7 +121,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
-              {company.checklistItems?.length > 0 ? <GettingStarted /> : null}
+              {company.checklistItems.length > 0 ? <GettingStarted /> : null}
               {canShowTryEquity && showTryEquity ? (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
@@ -151,12 +163,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 badge={<SupportBadge />}
               />
               <SidebarMenuItem>
-                <SignOutButton>
-                  <SidebarMenuButton className="cursor-pointer">
-                    <LogOut className="size-6" />
-                    <span>Log out</span>
-                  </SidebarMenuButton>
-                </SignOutButton>
+                <SidebarMenuButton onClick={() => void handleLogout()} className="cursor-pointer">
+                  <LogOut className="size-6" />
+                  <span>Log out</span>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -249,7 +259,7 @@ const NavItem = ({
 const CompanyName = () => {
   const user = useCurrentUser();
   const companyName = user.companies.find((c) => c.id === user.currentCompanyId)?.name ?? "Personal";
-  
+
   return (
     <div className="flex items-center gap-2">
       <Image src={defaultCompanyLogo} width={24} height={24} className="rounded" alt="" />

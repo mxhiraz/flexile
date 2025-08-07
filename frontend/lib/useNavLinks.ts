@@ -28,7 +28,7 @@ export interface NavLinkInfo {
   icon?: LucideIcon | React.ComponentType;
   isActive?: boolean;
   badge?: number | React.ReactNode;
-  subItems?: { label: string; route: string; icon?: LucideIcon }[];
+  subItems?: { label: string; route: string; icon?: LucideIcon; category?: string }[];
   isOpen?: boolean;
   onToggle?: (isOpen: boolean) => void;
 }

@@ -1,16 +1,16 @@
 "use client";
 
-import { SignOutButton } from "@clerk/nextjs";
 import { ChevronLeft, ChevronRight, LogOut, MessageCircleQuestion, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import React, { useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import { NavBadge } from "@/components/navigation/NavBadge";
 import { SupportBadge } from "@/components/Support";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useCurrentUser } from "@/global";
+import { useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { switchCompany } from "@/lib/companySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
@@ -21,8 +21,8 @@ const NAV_PRIORITIES: Record<string, number> = {
   Invoices: 1,
   Documents: 2,
   Equity: 3,
-  People: 4,
-  Updates: 5,
+  Updates: 4,
+  People: 5,
   Expenses: 6,
   Roles: 7,
   Settings: 8,
@@ -46,10 +46,10 @@ const NavIcon = ({ icon: Icon, label, badge, isActive, className }: NavIconProps
   <div
     className={cn(
       "flex h-full flex-col items-center justify-center p-2 pt-3",
-      "text-muted-foreground transition-all duration-200",
+      "text-muted-foreground transition-all duration-250",
       "hover:text-foreground",
       "group relative",
-      isActive && "text-primary",
+      isActive && "text-blue-500",
       className,
     )}
   >
@@ -75,7 +75,7 @@ const SheetOverlay = ({ open }: { open: boolean }) =>
   ReactDOM.createPortal(
     <div
       className={cn(
-        "pointer-events-none fixed inset-0 z-35 bg-black/50 transition-opacity duration-300",
+        "pointer-events-none fixed inset-0 z-35 bg-black/50 transition-opacity duration-250",
         open ? "opacity-100" : "opacity-0",
       )}
       aria-hidden="true"
@@ -103,7 +103,12 @@ const NavSheet = ({ trigger, title, open, onOpenChange, onBack, children }: NavS
             <span>{title}</span>
           </SheetTitle>
         </SheetHeader>
-        <div className="overflow-y-auto" style={{ height: "380px" }}>
+        <div
+          ref={(el) => {
+            if (el) el.style.maxHeight = `${el.scrollHeight}px`;
+          }}
+          className="min-h-0 overflow-y-auto transition-all duration-280 ease-in-out"
+        >
           {children}
         </div>
       </SheetContent>
@@ -131,11 +136,68 @@ const SheetNavItem = ({ item, image, onClick, showChevron, pathname }: SheetNavI
     )}
   >
     {item.icon ? <item.icon className="h-5 w-5" /> : image}
-    <span className="font-normal">{item.label}</span>
+    <span>{item.label}</span>
     {showChevron ? <ChevronRight className="ml-auto h-4 w-4" /> : null}
     {typeof item.badge === "number" ? <NavBadge count={item.badge} /> : item.badge}
   </Link>
 );
+
+// Helper function to group items by category
+const groupItemsByCategory = (items: NavLinkInfo["subItems"]) => {
+  if (!items) return {};
+
+  const grouped: Record<string, typeof items> = {};
+
+  items.forEach((item) => {
+    const category = item.category ?? "uncategorized";
+    if (!grouped[category]) grouped[category] = [];
+    grouped[category].push(item);
+  });
+
+  return grouped;
+};
+
+// Grouped Subitems Renderer
+interface GroupedSubitemsProps {
+  subItems: NavLinkInfo["subItems"];
+  pathname: string;
+  onItemClick: () => void;
+}
+
+const GroupedSubitems = ({ subItems, pathname, onItemClick }: GroupedSubitemsProps) => {
+  if (!subItems) return null;
+
+  const groupedItems = useMemo(() => groupItemsByCategory(subItems), [subItems]);
+  const hasCategories = Object.keys(groupedItems).some((key) => key !== "uncategorized");
+
+  if (!hasCategories) {
+    return (
+      <>
+        {subItems.map((subItem) => (
+          <SheetNavItem key={subItem.label} item={subItem} pathname={pathname} onClick={onItemClick} />
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <div className="flex flex-col">
+      {Object.entries(groupedItems).map(([category, categoryItems]) => (
+        <React.Fragment key={category}>
+          <div className="flex flex-col">
+            {category !== "uncategorized" && (
+              <div className="text-muted-foreground px-6 py-4 tracking-wider capitalize">{category}</div>
+            )}
+            {categoryItems.map((subItem) => (
+              <SheetNavItem key={subItem.label} item={subItem} pathname={pathname} onClick={onItemClick} />
+            ))}
+          </div>
+          <div className="bg-border mt-3 mb-2 h-px w-full last:hidden" />
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
 
 // Submenu Navigation
 interface NavWithSubmenuProps {
@@ -162,9 +224,7 @@ const NavWithSubmenu = ({ item }: NavWithSubmenuProps) => {
       onOpenChange={setIsOpen}
     >
       <div className="flex flex-col gap-1">
-        {item.subItems.map((subItem) => (
-          <SheetNavItem key={subItem.label} item={subItem} pathname={pathname} onClick={() => setIsOpen(false)} />
-        ))}
+        <GroupedSubitems subItems={item.subItems} pathname={pathname} onItemClick={() => setIsOpen(false)} />
       </div>
     </NavSheet>
   );
@@ -220,7 +280,7 @@ const ViewTransition = ({
 }) => (
   <div
     className={cn(
-      "transition-transform duration-200 ease-in-out",
+      "transition-transform duration-250 ease-in-out",
       show ? "translate-x-0 opacity-100" : "absolute inset-0 opacity-0",
       !show && (direction === "left" ? "-translate-x-full" : "translate-x-full"),
       className,
@@ -235,6 +295,14 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [navState, setNavState] = useState<NavigationState>({ view: "main" });
+  const { data: session } = useSession();
+  const { logout } = useUserStore();
+
+  const handleLogout = async () => {
+    if (session?.user) await signOut({ redirect: false });
+    logout();
+    window.location.href = "/login";
+  };
 
   const currentCompany = useMemo(
     () => user.companies.find((c) => c.id === user.currentCompanyId),
@@ -287,7 +355,9 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
                 }
                 showChevron={user.companies.length > 1}
                 pathname={pathname}
-                onClick={() => setNavState({ view: "companies" })}
+                onClick={() => {
+                  if (user.companies.length > 1) setNavState({ view: "companies" });
+                }}
               />
             ) : null}
 
@@ -317,28 +387,24 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
                 badge: <SupportBadge />,
               }}
             />
-            <SignOutButton>
-              <button
-                className="hover:bg-accent flex w-full items-center gap-3 rounded-none px-6 py-3 text-left transition-colors"
-                aria-label="Log out"
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="font-normal">Log out</span>
-              </button>
-            </SignOutButton>
+            <button
+              className="hover:bg-accent flex w-full items-center gap-3 rounded-none px-6 py-3 text-left transition-colors"
+              aria-label="Log out"
+              onClick={() => void handleLogout()}
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="font-normal">Log out</span>
+            </button>
           </div>
         </ViewTransition>
 
         {/* Submenu */}
         <ViewTransition show={navState.view === "submenu"} direction="right">
-          {navState.selectedItem?.subItems?.map((subItem) => (
-            <SheetNavItem
-              key={subItem.label}
-              item={subItem}
-              pathname={pathname}
-              onClick={() => handleOpenChange(false)}
-            />
-          ))}
+          <GroupedSubitems
+            subItems={navState.selectedItem?.subItems}
+            pathname={pathname}
+            onItemClick={() => handleOpenChange(false)}
+          />
         </ViewTransition>
 
         {/* Companies */}
