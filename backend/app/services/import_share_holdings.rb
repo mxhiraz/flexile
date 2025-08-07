@@ -69,7 +69,7 @@ class ImportShareHoldings
     end
 
     def gumroad_company!
-      @_gumroad_company ||= Company.find(5)
+      @_gumroad_company ||= Company.find_by(name: "Gumroad") || Company.find_by(name: "Gumroad, Inc.") || Company.find_by(name: "Gumroad Demo, Inc.") || Company.find(5)
     end
 end
 

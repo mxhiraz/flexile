@@ -38,7 +38,7 @@ class StripeBalanceTopUpJob
 
     def create_payment_intent
       # Gumroad account for pulling funds to pay invoices, dividends, etc
-      company = Company.find(5)
+      company = Company.find_by(name: "Gumroad") || Company.find_by(name: "Gumroad, Inc.") || Company.find_by(name: "Gumroad Demo, Inc.") || Company.find(5)
       stripe_setup_intent = company.bank_account.stripe_setup_intent
       Stripe::PaymentIntent.create(
         {

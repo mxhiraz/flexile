@@ -138,7 +138,7 @@ This is only necessary if investors are not imported with investment and dividen
 #### Generate Dividend Computation
 
 ```ruby
-company = Company.find(5)
+company = Company.find_by(name: "Gumroad") || Company.find(5)
 service = DividendComputationGeneration.new(
   company,
   amount_in_usd: 5_346_877,
