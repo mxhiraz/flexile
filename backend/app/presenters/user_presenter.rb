@@ -159,6 +159,11 @@ class UserPresenter
         flags: {},
       )
       result[:has_documents] = documents.not_consulting_contract.or(documents.unsigned).exists?
+      if company_worker.present?
+        if company_worker.active?
+          result[:flags][:equity] = true if company.equity_enabled?
+        end
+      end
       if company_investor.present?
         result[:flags][:equity] ||= true if company.equity_enabled?
         result[:flags][:option_exercising] = company.json_flag?("option_exercising")
