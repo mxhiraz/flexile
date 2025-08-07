@@ -1,11 +1,11 @@
 "use client";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
-import { ChevronRight, ChevronsUpDown, LogOut, MessageCircleQuestion, Settings, Sparkles, X } from "lucide-react";
+import { ChevronDown, ChevronRight, LogOut, MessageCircleQuestion, Settings, Sparkles, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import React from "react";
 import { GettingStarted } from "@/components/GettingStarted";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
@@ -48,64 +48,85 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showTryEquity, setShowTryEquity] = React.useState(true);
   const [hovered, setHovered] = React.useState(false);
   const canShowTryEquity = user.roles.administrator && !company.equityEnabled;
-  const { data: session } = useSession();
   const { logout } = useUserStore();
-
-  const handleLogout = async () => {
-    if (session?.user) {
-      await signOut({ redirect: false });
-    }
-    // Clear user state
-    logout();
-    // Redirect to login
-    window.location.href = "/login";
-  };
+  const isDefaultLogo = !company.logo_url || company.logo_url.includes("default-company-logo");
 
   return (
     <SidebarProvider>
       <Sidebar collapsible="offcanvas" mobileSidebar={<MobileBottomNav />}>
         <SidebarHeader>
-          {user.companies.length > 1 ? (
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton size="lg" className="text-base" aria-label="Switch company">
-                      <CompanyName />
-                      <ChevronsUpDown className="ml-auto" />
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-(radix-dropdown-menu-trigger-width)" align="start">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className={`gap-4 ${user.companies.length > 1 ? "data-[state=open]:bg-sidebar-accent" : "hover:bg-transparent"}`}
+                  >
+                    <div
+                      className={`text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded ${
+                        isDefaultLogo ? "border-sidebar-border border bg-white" : ""
+                      }`}
+                    >
+                      <Image
+                        src={company.logo_url ?? defaultCompanyLogo.src}
+                        className={isDefaultLogo ? "size-4" : "size-8 rounded"}
+                        width={24}
+                        height={24}
+                        alt=""
+                      />
+                    </div>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">
+                        {user.companies.find((c) => c.id === user.currentCompanyId)?.name ?? "Personal"}
+                      </span>
+                      <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                    </div>
+                    {user.companies.length > 1 && <ChevronDown className="ml-auto" />}
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                {user.companies.length > 1 && (
+                  <DropdownMenuContent
+                    className="w-[--radix-dropdown-menu-trigger-width] min-w-[239px] rounded-lg"
+                    align="start"
+                    side="bottom"
+                    sideOffset={4}
+                  >
                     {user.companies.map((company) => (
                       <DropdownMenuItem
                         key={company.id}
-                        onSelect={() => {
+                        onClick={() => {
                           if (user.currentCompanyId !== company.id) void switchCompany(company.id);
                         }}
-                        className="flex items-center gap-2"
+                        className="gap-3 p-2 text-sm font-medium"
                       >
-                        <Image
-                          src={company.logo_url || defaultCompanyLogo}
-                          width={20}
-                          height={20}
-                          className="rounded-xs"
-                          alt=""
-                        />
-                        <span className="line-clamp-1">{company.name}</span>
-                        {company.id === user.currentCompanyId && (
-                          <div className="ml-auto size-2 rounded-full bg-blue-500"></div>
-                        )}
+                        <div
+                          className={`flex size-6 items-center justify-center rounded-sm ${
+                            !company.logo_url || company.logo_url.includes("default-company-logo")
+                              ? "border-sidebar-border border bg-gray-50"
+                              : ""
+                          }`}
+                        >
+                          <Image
+                            src={company.logo_url ?? defaultCompanyLogo.src}
+                            className={
+                              !company.logo_url || company.logo_url.includes("default-company-logo")
+                                ? "size-4"
+                                : "size-6 shrink-0 rounded"
+                            }
+                            width={24}
+                            height={24}
+                            alt=""
+                          />
+                        </div>
+                        {company.name ?? "Personal"}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          ) : (
-            <div className="flex items-center gap-2 p-2">
-              <CompanyName />
-            </div>
-          )}
+                )}
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarHeader>
 
         <SidebarContent>
@@ -133,7 +154,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       role="button"
                       tabIndex={0}
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-3">
                         <Sparkles className="size-4" />
                         <span>Try equity</span>
                       </span>
@@ -163,7 +184,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 badge={<SupportBadge />}
               />
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => void handleLogout()} className="cursor-pointer">
+                <SidebarMenuButton
+                  onClick={() => void signOut({ redirect: false }).then(logout)}
+                  className="cursor-pointer"
+                >
                   <LogOut className="size-6" />
                   <span>Log out</span>
                 </SidebarMenuButton>
@@ -253,17 +277,5 @@ const NavItem = ({
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
-  );
-};
-
-const CompanyName = () => {
-  const user = useCurrentUser();
-  const companyName = user.companies.find((c) => c.id === user.currentCompanyId)?.name ?? "Personal";
-
-  return (
-    <div className="flex items-center gap-2">
-      <Image src={defaultCompanyLogo} width={24} height={24} className="rounded" alt="" />
-      <span className="font-medium">{companyName}</span>
-    </div>
   );
 };
