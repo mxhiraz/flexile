@@ -1,0 +1,11 @@
+steps:
+  - block: "Approval required for CI branch push"
+    key: require-approval
+    prompt: "Are you sure you want to push this branch to CI?"
+    blocked_state: running
+
+  - label: ":git: Push to CI branch"
+    command: .buildkite/push_to_ci_branch.sh
+    depends_on: require-approval
+    agents:
+      queue: "default"
