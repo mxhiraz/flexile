@@ -46,3 +46,33 @@ else
 fi
 
 echo "✅ Successfully pushed $CURRENT_BRANCH to $CI_BRANCH"
+
+# Clean up old CI branches (older than 1 day)
+echo "🧹 Cleaning up old CI branches..."
+
+# Get all remote ci/* branches with their last commit dates
+OLD_BRANCHES=$(git for-each-ref --format='%(refname:short) %(committerdate:unix)' refs/remotes/origin/ci/ | while read branch timestamp; do
+  # Calculate age in seconds (current time - commit time)
+  CURRENT_TIME=$(date +%s)
+  AGE=$((CURRENT_TIME - timestamp))
+
+  # If older than 1 day (86400 seconds), mark for deletion
+  if [ $AGE -gt 86400 ]; then
+    # Remove the origin/ prefix to get the branch name
+    echo "${branch#origin/}"
+  fi
+done)
+
+# Delete old branches if any were found
+if [ -n "$OLD_BRANCHES" ]; then
+  echo "🗑️  Found old CI branches to delete:"
+  echo "$OLD_BRANCHES" | while read branch; do
+    if [ -n "$branch" ]; then
+      echo "  - $branch"
+      git push origin --delete "$branch" || echo "⚠️  Failed to delete $branch (may have been already deleted)"
+    fi
+  done
+  echo "✅ Cleanup complete"
+else
+  echo "✅ No old CI branches found to clean up"
+fi
