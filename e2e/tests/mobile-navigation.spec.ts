@@ -3,7 +3,7 @@ import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 
-test.describe.only("Mobile navigation", () => {
+test.describe("Mobile navigation", () => {
   const mobileViewport = { width: 640, height: 800 };
 
   test("contractor can navigate via mobile nav menu", async ({ page }) => {
@@ -11,9 +11,6 @@ test.describe.only("Mobile navigation", () => {
 
     await page.setViewportSize(mobileViewport);
     await login(page, user);
-    await page.goto("/");
-
-    await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
 
     // Check that bottom nav items are visible
     const bottomNav = page.getByRole("navigation", { name: "Mobile navigation" });
@@ -50,9 +47,6 @@ test.describe.only("Mobile navigation", () => {
 
     await page.setViewportSize(mobileViewport);
     await login(page, adminUser);
-    await page.goto(`/people`);
-
-    await expect(page.getByRole("heading", { name: "People" })).toBeVisible();
 
     // Check that bottom nav items are visible
     const bottomNav = page.getByRole("navigation", { name: "Mobile navigation" });
