@@ -122,7 +122,7 @@ const EditTemplates = () => {
     <Dialog>
       <DialogTrigger asChild>
         {isMobile ? (
-          <Button variant="floating-action" size="icon-lg">
+          <Button variant="floating-action">
             <Plus />
           </Button>
         ) : (

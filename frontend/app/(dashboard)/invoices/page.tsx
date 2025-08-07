@@ -319,11 +319,7 @@ export default function InvoicesPage() {
                 </Link>
               </Button>
             ) : (
-              <Button
-                variant="floating-action"
-                size="icon-lg"
-                {...(!canSubmitInvoices ? { disabled: true } : { asChild: true })}
-              >
+              <Button variant="floating-action" {...(!canSubmitInvoices ? { disabled: true } : { asChild: true })}>
                 <Link href="/invoices/new" inert={!canSubmitInvoices}>
                   <Plus />
                 </Link>

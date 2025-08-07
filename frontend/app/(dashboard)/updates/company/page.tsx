@@ -53,7 +53,7 @@ export default function CompanyUpdates() {
         headerActions={
           user.roles.administrator ? (
             isMobile ? (
-              <Button variant="floating-action" size="icon-lg" onClick={handleNewUpdate}>
+              <Button variant="floating-action" onClick={handleNewUpdate}>
                 <Plus />
               </Button>
             ) : (
