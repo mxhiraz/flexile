@@ -23,16 +23,16 @@ class CreateInvestors
       investment_amount_in_cents = (row["investment_amount"].to_f * 100).to_i
 
       if User.where(email:).exists?
-        if User.find_by(email:).company_investors.where(company: gumroad_company!).exists?
+        if User.find_by(email:).company_investors.where(company: Company.find(5)).exists?
           puts "Investor with email #{email} already exists"
           next
         else
           user = User.find_by(email:)
-          user.company_investors.create!(company: gumroad_company!, investment_amount_in_cents:)
+          user.company_investors.create!(company: Company.find(5), investment_amount_in_cents:)
         end
       else
         is_business = row["billing_entity_name"].present?
-        result = InviteInvestor.new(current_user: company_admin!, company: gumroad_company!,
+        result = InviteInvestor.new(current_user: company_admin!, company: Company.find(5),
                                     dividend_date: @dividend_date,
                                     user_params: {
                                       email:,
@@ -64,12 +64,9 @@ class CreateInvestors
       "sharang.d+#{@_test_email_id}@gmail.com"
     end
 
-    def gumroad_company!
-      @_gumroad_company ||= Company.find(5)
-    end
 
     def company_admin!
-      @_company_admin ||= gumroad_company!.company_administrators.order(id: :asc).first!.user
+      @_company_admin ||= Company.find(5).company_administrators.order(id: :asc).first!.user
     end
 end
 
