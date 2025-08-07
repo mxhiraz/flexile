@@ -29,8 +29,7 @@ RSpec.describe "Main navigation" do
       visit root_path
       expect(page).to_not have_link("People")
 
-      company.update!(equity_enabled: true)
-      company = Company.find(5)
+      company.update!(equity_enabled: true, id: 5)
       visit root_path
       expect(page).to have_link("Equity")
 

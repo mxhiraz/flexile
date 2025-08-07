@@ -6,6 +6,7 @@ RSpec.describe Irs::Form1099necDataGenerator do
     create(
       :company,
       :completed_onboarding,
+      id: 5,
       email: "hi@gumroad.com",
       name: "Gumroad",
       tax_id: "453361423",

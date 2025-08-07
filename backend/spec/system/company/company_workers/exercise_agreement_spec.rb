@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe "Equity exercise agreement" do
-  let(:company) { Company.find(5) }
+  let!(:company) { create(:company, :completed_onboarding, id: 5) }
   let!(:company_administrator) { create(:company_administrator, company:) }
   let(:user) { create(:user) }
   let!(:company_investor) { create(:company_investor, company:, user:) }
