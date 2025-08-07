@@ -303,7 +303,7 @@ const OverflowMenu = ({ items, onOpenChange, open }: OverflowMenuProps) => {
   const getTitle = () => {
     switch (navState.view) {
       case "companies":
-        return "Workplaces";
+        return "Workspaces";
       case "submenu":
         return navState.selectedItem?.label || "Submenu";
       default:
