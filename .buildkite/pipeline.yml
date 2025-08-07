@@ -1,0 +1,12 @@
+steps:
+  - label: ":rspec: RSpec tests"
+    command: ".buildkite/ci_scripts/run_rspec_tests.sh"
+    agents:
+      queue: "aws-flexile-public-1"
+
+  - label: ":playwright: Playwright E2E tests"
+    command: ".buildkite/ci_scripts/run_playwright_tests.sh"
+    agents:
+      queue: "aws-flexile-public-1"
+    artifact_paths:
+      - "playwright-report/**/*"

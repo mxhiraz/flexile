@@ -1,0 +1,64 @@
+FROM ubuntu:24.04
+
+# Install system dependencies for Ruby and Node.js
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    build-essential \
+    libssl-dev \
+    libreadline-dev \
+    zlib1g-dev \
+    libncurses5-dev \
+    libffi-dev \
+    libgdbm-dev \
+    libyaml-dev \
+    libsqlite3-dev \
+    libgdbm-compat-dev \
+    libreadline6-dev \
+    uuid-dev \
+    postgresql-client \
+    wget \
+    gnupg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 22.14.0
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install Ruby 3.4.3 via rbenv
+RUN git clone https://github.com/rbenv/rbenv.git ~/.rbenv \
+    && git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build \
+    && echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc \
+    && echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+
+ENV PATH="/root/.rbenv/bin:/root/.rbenv/shims:$PATH"
+RUN rbenv install 3.4.3 && rbenv global 3.4.3
+
+# Install Bundler and Foreman
+RUN gem install bundler foreman
+
+# Install Playwright system dependencies
+RUN npx playwright install-deps chromium
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files and install Node.js dependencies
+COPY package.json pnpm-lock.yaml ./
+COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
+COPY backend/package.json backend/pnpm-lock.yaml ./backend/
+RUN pnpm install
+
+# Copy Gemfiles and install Ruby dependencies
+COPY backend/Gemfile backend/Gemfile.lock ./backend/
+RUN cd backend && bundle install
+
+# Install Playwright browsers
+RUN pnpm playwright install chromium
+
+# Copy environment example (source code will be mounted at runtime)
+COPY .env.example .env
