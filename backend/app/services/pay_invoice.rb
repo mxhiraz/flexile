@@ -3,7 +3,7 @@
 class PayInvoice
   class WiseError < StandardError; end
 
-  attr_reader :invoice, :payment
+  attr_reader :invoice
   delegate :company, to: :invoice, private: true
 
   def initialize(invoice_id)
@@ -20,8 +20,6 @@ class PayInvoice
       return
     end
 
-    amount = nil
-    target_currency = nil
     payout_service = Wise::PayoutApi.new
     bank_account = invoice.user.bank_account
 
@@ -70,7 +68,9 @@ class PayInvoice
   rescue WiseError => e
     payment.update!(status: Payment::FAILED)
     invoice.update!(status: Invoice::FAILED)
-    CompanyWorkerMailer.payment_failed_generic(payment.id, e.message, amount, target_currency).deliver_later if payment
+    if !e.message.start_with?("Bank account is no longer active for payment")
+      CompanyWorkerMailer.payment_failed_generic(payment.id, amount, target_currency).deliver_later
+    end
     raise e
   end
 end

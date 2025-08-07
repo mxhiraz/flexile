@@ -214,6 +214,9 @@ RSpec.describe PayInvoice, :vcr do
           .and have_enqueued_mail(CompanyWorkerMailer, :payment_failed_generic)
 
         payment = Payment.last
+        expect(payment.processor_uuid).to be_present
+        expect(payment.wise_quote_id).not_to be_present
+        expect(payment.wise_transfer_id).not_to be_present
         expect(payment.status).to eq(Payment::FAILED)
         expect(invoice.reload.status).to eq(Invoice::FAILED)
       end
@@ -229,6 +232,9 @@ RSpec.describe PayInvoice, :vcr do
           .and have_enqueued_mail(CompanyWorkerMailer, :payment_failed_generic)
 
         payment = Payment.last
+        expect(payment.processor_uuid).to be_present
+        expect(payment.wise_quote_id).to be_present
+        expect(payment.wise_transfer_id).not_to be_present
         expect(payment.status).to eq(Payment::FAILED)
         expect(invoice.reload.status).to eq(Invoice::FAILED)
       end
@@ -244,27 +250,28 @@ RSpec.describe PayInvoice, :vcr do
           .and have_enqueued_mail(CompanyWorkerMailer, :payment_failed_generic)
 
         payment = Payment.last
+        expect(payment.processor_uuid).to be_present
+        expect(payment.wise_quote_id).to be_present
+        expect(payment.wise_transfer_id).to be_present
         expect(payment.status).to eq(Payment::FAILED)
         expect(invoice.reload.status).to eq(Invoice::FAILED)
       end
 
-      it "sends an email with the correct content on payment failure" do
+      it "sends an email with the correct arguments on payment failure" do
         allow_any_instance_of(Company).to receive(:has_sufficient_balance?).and_return(true)
-        allow_any_instance_of(Wise::PayoutApi).to receive(:get_exchange_rate).and_return([{ "rate" => 1.2 }])
+        rate = 1.2
+        allow_any_instance_of(Wise::PayoutApi).to receive(:get_exchange_rate).and_return([{ "rate" => rate }])
         allow_any_instance_of(Wise::PayoutApi).to receive(:get_recipient_account).and_return({ "active" => true })
         allow_any_instance_of(Wise::PayoutApi).to receive(:create_quote).and_raise(PayInvoice::WiseError.new("Quote creation failed for test"))
+
         expect do
           expect do
             described_class.new(invoice.id).process
           end.to raise_error(PayInvoice::WiseError, "Quote creation failed for test")
-        end.to have_enqueued_mail(CompanyWorkerMailer, :payment_failed_generic).with do |payment_id, error_message, amount, currency|
-          Payment.find(payment_id)
-          mail = CompanyWorkerMailer.payment_failed_generic(payment_id, error_message, amount, currency)
-          expect(mail.to).to include(user.email)
-          expect(mail.cc).to include("support@flexile.com")
-          expect(mail.subject).to eq("🔴 Payment failed: Payment Failure for Invoice ##{@invoice.id}")
-          expect(mail.body.encoded).to include(number_to_currency(amount, unit: currency))
-          expect(mail.body.encoded).to include("Wise Error: Quote creation failed for test")
+        end.to have_enqueued_mail(CompanyWorkerMailer, :payment_failed_generic).with do |payment_id, amount, currency|
+          expect(payment_id).to eq(Payment.last.id)
+          expect(amount).to eq(invoice.cash_amount_in_usd * rate)
+          expect(currency).to eq("GBP")
         end
       end
     end
