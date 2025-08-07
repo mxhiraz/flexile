@@ -192,29 +192,26 @@ const GroupedSubitems = ({ subItems, pathname, onItemClick }: GroupedSubitemsPro
 // Submenu Navigation
 interface NavWithSubmenuProps {
   item: NavLinkInfo & { subItems: NonNullable<NavLinkInfo["subItems"]> };
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const NavWithSubmenu = ({ item }: NavWithSubmenuProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+const NavWithSubmenu = ({ item, open, onOpenChange }: NavWithSubmenuProps) => {
   const pathname = usePathname();
 
   return (
     <NavSheet
       trigger={
-        <button
-          aria-label={`${item.label} menu`}
-          aria-current={item.isActive || isOpen ? "page" : undefined}
-          className="w-full"
-        >
-          <NavIcon {...item} isActive={item.isActive || isOpen} />
+        <button aria-label={`${item.label} menu`} aria-current={open ? "page" : undefined} className="w-full">
+          <NavIcon {...item} isActive={open} />
         </button>
       }
       title={item.label}
-      open={isOpen}
-      onOpenChange={setIsOpen}
+      open={open}
+      onOpenChange={onOpenChange}
     >
       <div className="flex flex-col gap-1">
-        <GroupedSubitems subItems={item.subItems} pathname={pathname} onItemClick={() => setIsOpen(false)} />
+        <GroupedSubitems subItems={item.subItems} pathname={pathname} onItemClick={() => onOpenChange(false)} />
       </div>
     </NavSheet>
   );
@@ -255,6 +252,8 @@ const CompanySwitcher = ({ onSelect }: CompanySwitcherProps) => {
 // Overflow Menu
 interface OverflowMenuProps {
   items: NavLinkInfo[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 const ViewTransition = ({
@@ -280,10 +279,9 @@ const ViewTransition = ({
   </div>
 );
 
-const OverflowMenu = ({ items }: OverflowMenuProps) => {
+const OverflowMenu = ({ items, onOpenChange, open }: OverflowMenuProps) => {
   const user = useCurrentUser();
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
   const [navState, setNavState] = useState<NavigationState>({ view: "main" });
   const { data: session } = useSession();
   const { logout } = useUserStore();
@@ -300,7 +298,7 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
   );
 
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
+    onOpenChange(open);
     if (!open) setNavState({ view: "main" });
   };
 
@@ -319,11 +317,11 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
     <NavSheet
       trigger={
         <button aria-label="More" className="w-full">
-          <NavIcon icon={MoreHorizontal} label="More" isActive={isOpen} />
+          <NavIcon icon={MoreHorizontal} label="More" isActive={open} />
         </button>
       }
       title={getTitle()}
-      open={isOpen}
+      open={open}
       onOpenChange={handleOpenChange}
       onBack={navState.view !== "main" ? () => setNavState({ view: "main" }) : undefined}
     >
@@ -406,6 +404,7 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
 // Main Component
 export function MobileBottomNav() {
   const allNavLinks = useNavLinks();
+  const [activeSheetId, setActiveSheetId] = useState<string | null>(null);
 
   const { mainItems, overflowItems } = useMemo(() => {
     const sorted = [...allNavLinks].sort(
@@ -428,16 +427,24 @@ export function MobileBottomNav() {
         {mainItems.map((item) => (
           <li key={item.label} className="flex-1">
             {hasSubItems(item) ? (
-              <NavWithSubmenu item={item} />
+              <NavWithSubmenu
+                item={item}
+                open={activeSheetId === item.label}
+                onOpenChange={(open) => setActiveSheetId(open ? item.label : null)}
+              />
             ) : (
               <Link href={{ pathname: item.route }}>
-                <NavIcon {...item} />
+                <NavIcon {...item} isActive={typeof activeSheetId === "string" ? false : !!item.isActive} />
               </Link>
             )}
           </li>
         ))}
         <li className="flex-1">
-          <OverflowMenu items={overflowItems} />
+          <OverflowMenu
+            items={overflowItems}
+            onOpenChange={(open) => setActiveSheetId(open ? "nav-overflow" : null)}
+            open={activeSheetId === "nav-overflow"}
+          />
         </li>
       </ul>
     </nav>
