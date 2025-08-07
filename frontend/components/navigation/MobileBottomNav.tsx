@@ -174,7 +174,7 @@ const GroupedSubitems = ({ subItems, pathname, onItemClick }: GroupedSubitemsPro
         <React.Fragment key={category}>
           <div className="flex flex-col gap-1">
             {category !== "uncategorized" && (
-              <div className="text-muted-foreground px-4 py-4 text-xs tracking-wider capitalize">{category}</div>
+              <div className="text-muted-foreground px-4 py-4 text-sm tracking-wider capitalize">{category}</div>
             )}
             {categoryItems.map((subItem) => (
               <SheetNavItem key={subItem.label} item={subItem} pathname={pathname} onClick={onItemClick} />

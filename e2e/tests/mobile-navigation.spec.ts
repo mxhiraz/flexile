@@ -3,7 +3,7 @@ import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 
-test.describe.only("Mobile navigation", () => {
+test.describe("Mobile navigation", () => {
   const mobileViewport = { width: 640, height: 800 };
 
   test("contractor can navigate via mobile nav menu", async ({ page }) => {
