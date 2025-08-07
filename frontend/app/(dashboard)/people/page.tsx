@@ -291,7 +291,7 @@ const ActionPanel = ({
           <DialogClose asChild onClick={handleMobileInviteClick}>
             <Button size="small">
               <Plus className="size-4" />
-              Invite contractor
+              Add contractor
             </Button>
           </DialogClose>
         </div>
@@ -305,7 +305,7 @@ const ActionPanel = ({
       </Button>
       <Button size="small" onClick={handleInviteClick}>
         <Plus className="size-4" />
-        Invite contractor
+        Add contractor
       </Button>
     </div>
   );
