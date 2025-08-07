@@ -149,14 +149,12 @@ const groupItemsByCategory = (items: NavLinkInfo["subItems"]) => {
 
 // Grouped Subitems Renderer
 interface GroupedSubitemsProps {
-  subItems: NavLinkInfo["subItems"];
+  subItems: NonNullable<NavLinkInfo["subItems"]>;
   pathname: string;
   onItemClick: () => void;
 }
 
 const GroupedSubitems = ({ subItems, pathname, onItemClick }: GroupedSubitemsProps) => {
-  if (!subItems) return null;
-
   const groupedItems = useMemo(() => groupItemsByCategory(subItems), [subItems]);
   const hasCategories = Object.keys(groupedItems).some((key) => key !== "uncategorized");
 
@@ -353,7 +351,7 @@ const OverflowMenu = ({ items, onOpenChange, open }: OverflowMenuProps) => {
                 item={item}
                 pathname={pathname}
                 onClick={() => {
-                  if (item.subItems) setNavState({ view: "submenu", selectedItem: item });
+                  if (item.subItems && item.subItems.length > 0) setNavState({ view: "submenu", selectedItem: item });
                   if (item.route) handleOpenChange(false);
                 }}
                 showChevron={!!item.subItems}
@@ -386,7 +384,7 @@ const OverflowMenu = ({ items, onOpenChange, open }: OverflowMenuProps) => {
         {/* Submenu */}
         <ViewTransition show={navState.view === "submenu"} direction="right">
           <GroupedSubitems
-            subItems={navState.selectedItem?.subItems}
+            subItems={navState.selectedItem?.subItems ?? []}
             pathname={pathname}
             onItemClick={() => handleOpenChange(false)}
           />
