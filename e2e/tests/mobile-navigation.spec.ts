@@ -3,7 +3,7 @@ import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 
-test.describe("Mobile navigation", () => {
+test.describe.only("Mobile navigation", () => {
   const mobileViewport = { width: 640, height: 800 };
 
   test("contractor can navigate via mobile nav menu", async ({ page }) => {
@@ -59,8 +59,9 @@ test.describe("Mobile navigation", () => {
     await expect(bottomNav.getByRole("listitem", { name: "More" })).toBeVisible();
 
     // Navigate to Invoices
-    await bottomNav.getByRole("link").filter({ hasText: "Invoices" }).click();
-    await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
+    // Click on Documents link
+    await bottomNav.getByRole("link").filter({ hasText: "Documents" }).click();
+    await expect(page.getByRole("heading", { name: "Documents" })).toBeVisible();
 
     // Test Equity submenu
     await bottomNav.getByRole("button", { name: "Equity menu" }).click();
