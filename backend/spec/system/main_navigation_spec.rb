@@ -30,8 +30,7 @@ RSpec.describe "Main navigation" do
       expect(page).to_not have_link("People")
 
       company.update!(equity_enabled: true)
-      company.is_gumroad = true
-      company.save!
+      company = Company.find(5)
       visit root_path
       expect(page).to have_link("Equity")
 

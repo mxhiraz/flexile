@@ -35,7 +35,7 @@ RSpec.describe CreateInvestors do
       end
 
       it "raises an exception if there are multiple Gumroad-like companies" do
-        create_pair(:company, is_gumroad: true)
+        create_pair(:company)
 
         expect do
           described_class.new(@csv.path, dividend_date:).process
@@ -45,7 +45,7 @@ RSpec.describe CreateInvestors do
       end
 
       it "raises an exception if there is no company administrator for Gumroad" do
-        create(:company, is_gumroad: true)
+        create(:company, id: 5)
 
         expect do
           described_class.new(@csv.path, dividend_date:).process
@@ -56,7 +56,7 @@ RSpec.describe CreateInvestors do
     end
 
     describe "Environment and data are both good" do
-      let!(:gumroad) { create(:company, is_gumroad: true) }
+      let!(:gumroad) { create(:company, id: 5) }
       let!(:company_admin) { create(:company_administrator, company: gumroad) }
       let!(:contractor) { create(:company_worker, company: gumroad) }
 
@@ -157,7 +157,7 @@ RSpec.describe CreateInvestors do
   end
 
   describe "#errors" do
-    let!(:gumroad) { create(:company, is_gumroad: true) }
+    let!(:gumroad) { create(:company, id: 5) }
     let!(:company_admin) { create(:company_administrator, company: gumroad) }
 
     before do

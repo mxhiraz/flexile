@@ -2,22 +2,7 @@
 
 RSpec.describe Irs::Form1099divDataGenerator do
   let(:tax_year) { 2023 }
-  let!(:transmitter_company) do
-    create(
-      :company,
-      :completed_onboarding,
-      is_gumroad: true,
-      email: "hi@gumroad.com",
-      name: "Gumroad",
-      tax_id: "453361423",
-      street_address: "548 Market St",
-      city: "San Francisco",
-      state: "CA",
-      zip_code: "94105",
-      country_code: "US",
-      phone_number: "555-123-4567"
-    )
-  end
+  let!(:transmitter_company) { Company.find(5) }
   let(:company) do
     create(
       :company,

@@ -28,7 +28,6 @@
         "is_trusted": true,
         "fully_diluted_shares": 200188,
         "equity_enabled": true,
-        "is_gumroad": true
       },
       "feature_flags": {
         "company_updates": true,

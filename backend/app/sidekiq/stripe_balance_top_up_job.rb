@@ -37,7 +37,7 @@ class StripeBalanceTopUpJob
     end
 
     def create_payment_intent
-      company = Company.is_gumroad.sole
+      company = Company.find(5)
       stripe_setup_intent = company.bank_account.stripe_setup_intent
       Stripe::PaymentIntent.create(
         {

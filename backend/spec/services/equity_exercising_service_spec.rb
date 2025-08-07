@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe EquityExercisingService do
-  let(:company) { create(:company, :completed_onboarding, is_gumroad: true) }
+  let(:company) { Company.find(5) }
   let(:user) { create(:user) }
   let(:company_investor) { create(:company_investor, company:, user:) }
   let!(:company_worker) { create(:company_worker, company:, user:) }

@@ -38,7 +38,7 @@ class Irs::BaseFormDataGenerator
   private
     attr_reader :company, :tax_year, :is_test
 
-    def transmitter_company = Company.is_gumroad.sole
+    def transmitter_company = Company.find(5)
 
     def test_file_indicator = is_test ? "T" : " "
 
