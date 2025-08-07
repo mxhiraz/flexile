@@ -46,8 +46,7 @@ const NavIcon = ({ icon: Icon, label, badge, isActive, className }: NavIconProps
   <div
     className={cn(
       "flex h-full flex-col items-center justify-center p-2 pt-3",
-      "text-muted-foreground transition-all duration-250",
-      "hover:text-foreground",
+      "text-muted-foreground transition-all duration-200",
       "group relative",
       isActive && "text-blue-500",
       className,
@@ -75,7 +74,7 @@ const SheetOverlay = ({ open }: { open: boolean }) =>
   ReactDOM.createPortal(
     <div
       className={cn(
-        "pointer-events-none fixed inset-0 z-35 bg-black/50 transition-opacity duration-250",
+        "pointer-events-none fixed inset-0 z-35 bg-black/50 transition-opacity duration-200",
         open ? "opacity-100" : "opacity-0",
       )}
       aria-hidden="true"
@@ -92,25 +91,14 @@ const NavSheet = ({ trigger, title, open, onOpenChange, onBack, children }: NavS
         <SheetHeader className="pb-0">
           <SheetTitle className="flex h-5 items-center gap-2">
             {onBack ? (
-              <button
-                onClick={onBack}
-                className="hover:bg-accent -ml-2 rounded-md p-1 transition-colors"
-                aria-label="Go back"
-              >
+              <button onClick={onBack} className="-ml-2 rounded-md p-1 transition-colors" aria-label="Go back">
                 <ChevronLeft className="h-5 w-5" />
               </button>
             ) : null}
             <span>{title}</span>
           </SheetTitle>
         </SheetHeader>
-        <div
-          ref={(el) => {
-            if (el) el.style.maxHeight = `${el.scrollHeight}px`;
-          }}
-          className="min-h-0 overflow-y-auto transition-all duration-280 ease-in-out"
-        >
-          {children}
-        </div>
+        <div className="overflow-y-auto">{children}</div>
       </SheetContent>
     </Sheet>
   </>
@@ -123,16 +111,18 @@ interface SheetNavItemProps {
   onClick?: () => void;
   showChevron?: boolean;
   pathname?: string;
+  className?: string;
 }
 
-const SheetNavItem = ({ item, image, onClick, showChevron, pathname }: SheetNavItemProps) => (
+const SheetNavItem = ({ item, image, onClick, showChevron, pathname, className }: SheetNavItemProps) => (
   <Link
     href={{ pathname: item.route }}
     {...(onClick ? { onClick } : {})}
     className={cn(
-      "hover:bg-accent flex items-center gap-3 rounded-none px-6 py-3 transition-colors",
+      "flex items-center gap-3 rounded-none px-6 py-3 transition-colors",
       (pathname === item.route || item.isActive) && "bg-accent text-accent-foreground font-medium",
       "w-full text-left",
+      className,
     )}
   >
     {item.icon ? <item.icon className="h-5 w-5" /> : image}
@@ -181,12 +171,12 @@ const GroupedSubitems = ({ subItems, pathname, onItemClick }: GroupedSubitemsPro
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       {Object.entries(groupedItems).map(([category, categoryItems]) => (
         <React.Fragment key={category}>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1">
             {category !== "uncategorized" && (
-              <div className="text-muted-foreground px-6 py-4 tracking-wider capitalize">{category}</div>
+              <div className="text-muted-foreground px-4 py-4 text-xs tracking-wider capitalize">{category}</div>
             )}
             {categoryItems.map((subItem) => (
               <SheetNavItem key={subItem.label} item={subItem} pathname={pathname} onClick={onItemClick} />
@@ -250,13 +240,13 @@ const CompanySwitcher = ({ onSelect }: CompanySwitcherProps) => {
       key={company.id}
       onClick={() => void handleCompanySwitch(company.id)}
       className={cn(
-        "hover:bg-accent flex w-full items-center gap-3 px-6 py-3 text-left transition-colors",
+        "flex w-full items-center gap-3 px-6 py-3 text-left transition-colors",
         company.id === user.currentCompanyId && "bg-accent text-accent-foreground font-medium",
       )}
       aria-label={`Switch to ${company.name}`}
       aria-current={company.id === user.currentCompanyId ? "true" : undefined}
     >
-      <Image src={company.logo_url || defaultCompanyLogo} width={20} height={20} className="rounded-xs" alt="" />
+      <Image src={company.logo_url ?? defaultCompanyLogo} width={20} height={20} className="rounded-xs" alt="" />
       <span className="line-clamp-1 flex-1 text-left font-normal">{company.name}</span>
     </button>
   ));
@@ -280,7 +270,7 @@ const ViewTransition = ({
 }) => (
   <div
     className={cn(
-      "transition-transform duration-250 ease-in-out",
+      "transition-transform duration-200 ease-in-out",
       show ? "translate-x-0 opacity-100" : "absolute inset-0 opacity-0",
       !show && (direction === "left" ? "-translate-x-full" : "translate-x-full"),
       className,
@@ -317,7 +307,7 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
   const getTitle = () => {
     switch (navState.view) {
       case "companies":
-        return "Companies";
+        return "Workplaces";
       case "submenu":
         return navState.selectedItem?.label || "Submenu";
       default:
@@ -343,10 +333,10 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
           <div className="flex-1 overflow-y-auto">
             {user.companies.length > 0 && currentCompany ? (
               <SheetNavItem
-                item={{ label: currentCompany.name || "Company" }}
+                item={{ label: currentCompany.name ?? "Personal" }}
                 image={
                   <Image
-                    src={currentCompany.logo_url || defaultCompanyLogo}
+                    src={currentCompany.logo_url ?? defaultCompanyLogo}
                     width={20}
                     height={20}
                     className="rounded-xs object-contain"
@@ -355,9 +345,7 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
                 }
                 showChevron={user.companies.length > 1}
                 pathname={pathname}
-                onClick={() => {
-                  if (user.companies.length > 1) setNavState({ view: "companies" });
-                }}
+                onClick={() => user.companies.length > 1 && setNavState({ view: "companies" })}
               />
             ) : null}
 
@@ -366,11 +354,10 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
                 key={item.label}
                 item={item}
                 pathname={pathname}
-                {...(item.subItems
-                  ? { onClick: () => setNavState({ view: "submenu", selectedItem: item }) }
-                  : item.route
-                    ? { onClick: () => handleOpenChange(false) }
-                    : {})}
+                onClick={() => {
+                  if (item.subItems) setNavState({ view: "submenu", selectedItem: item });
+                  if (item.route) handleOpenChange(false);
+                }}
                 showChevron={!!item.subItems}
               />
             ))}
@@ -388,7 +375,7 @@ const OverflowMenu = ({ items }: OverflowMenuProps) => {
               }}
             />
             <button
-              className="hover:bg-accent flex w-full items-center gap-3 rounded-none px-6 py-3 text-left transition-colors"
+              className="flex w-full items-center gap-3 rounded-none px-6 py-3 text-left transition-colors"
               aria-label="Log out"
               onClick={() => void handleLogout()}
             >
