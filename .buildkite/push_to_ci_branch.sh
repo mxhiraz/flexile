@@ -26,14 +26,23 @@ echo "🎯 Target CI branch: $CI_BRANCH"
 echo "📥 Fetching latest changes..."
 git fetch origin
 
+# Determine what to push (use HEAD if local branch doesn't exist)
+if git show-ref --verify --quiet "refs/heads/$CURRENT_BRANCH"; then
+  SOURCE_REF="$CURRENT_BRANCH"
+  echo "📍 Using local branch: $SOURCE_REF"
+else
+  SOURCE_REF="HEAD"
+  echo "📍 Using HEAD (detached or missing local branch)"
+fi
+
 # Check if the CI branch already exists remotely
 if git show-ref --verify --quiet "refs/remotes/origin/$CI_BRANCH"; then
   echo "⚠️  CI branch $CI_BRANCH already exists remotely"
-  echo "🔄 Force pushing current branch to existing CI branch..."
-  git push origin "$CURRENT_BRANCH:$CI_BRANCH" --force
+  echo "🔄 Force pushing current commit to existing CI branch..."
+  git push origin "$SOURCE_REF:refs/heads/$CI_BRANCH" --force
 else
   echo "🆕 Creating new CI branch: $CI_BRANCH"
-  git push origin "$CURRENT_BRANCH:$CI_BRANCH"
+  git push origin "$SOURCE_REF:refs/heads/$CI_BRANCH"
 fi
 
 echo "✅ Successfully pushed $CURRENT_BRANCH to $CI_BRANCH"
