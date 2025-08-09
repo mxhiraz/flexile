@@ -17,7 +17,7 @@ class Internal::Companies::InviteLinksController < Internal::BaseController
     authorize CompanyAdministrator
 
     document_template_id = params[:document_template_id] || nil
-    invite_link = CompanyInviteLink.find_by(company: Current.company, document_template_id:)
+    invite_link = CompanyInviteLink.find_by(company: current.company, document_template_id:)
     if invite_link
       invite_link.reset!
       render json: { success: true, invite_link: invite_link.token }, status: :ok

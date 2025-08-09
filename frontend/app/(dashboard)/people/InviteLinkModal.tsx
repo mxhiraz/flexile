@@ -3,7 +3,6 @@ import { Copy } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import TemplateSelector from "@/app/(dashboard)/document_templates/TemplateSelector";
 import CopyButton from "@/components/CopyButton";
 import { MutationStatusButton } from "@/components/MutationButton";
 import { Button } from "@/components/ui/button";
@@ -19,31 +18,23 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useCurrentCompany } from "@/global";
-import { DocumentTemplateType, trpc } from "@/trpc/client";
+import { trpc } from "@/trpc/client";
 
-interface InviteLinkModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-const InviteLinkModal = ({ open, onOpenChange }: InviteLinkModalProps) => {
+const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
   const company = useCurrentCompany();
   const [showResetLinkModal, setShowResetLinkModal] = useState(false);
 
   const form = useForm({
     defaultValues: {
       contractSignedElsewhere: true,
-      documentTemplateId: "",
     },
     resolver: zodResolver(
       z.object({
         contractSignedElsewhere: z.boolean(),
-        documentTemplateId: z.string().nullable().optional(),
       }),
     ),
   });
 
-  const documentTemplateId = form.watch("documentTemplateId");
   const contractSignedElsewhere = form.watch("contractSignedElsewhere");
 
   const queryParams = {
@@ -99,13 +90,6 @@ const InviteLinkModal = ({ open, onOpenChange }: InviteLinkModalProps) => {
                   </FormItem>
                 )}
               />
-              {!form.watch("contractSignedElsewhere") && (
-                <FormField
-                  control={form.control}
-                  name="documentTemplateId"
-                  render={({ field }) => <TemplateSelector type={DocumentTemplateType.ConsultingContract} {...field} />}
-                />
-              )}
             </Form>
           </div>
           <DialogFooter>
