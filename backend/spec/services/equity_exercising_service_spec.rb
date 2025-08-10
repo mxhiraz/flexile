@@ -21,7 +21,7 @@ RSpec.describe EquityExercisingService do
         { id: equity_grant.external_id, number_of_options: 100 },
       ]
     end
-    subject(:create_exercise_request) { described_class.create_request(equity_grants_params:, company_investor:, company_worker:, submission_id: "submission") }
+    subject(:create_exercise_request) { described_class.create_request(equity_grants_params:, company_investor:) }
 
     it "disallows creating a request when an exercise is in progress for the equity grant" do
       active_exercise = create(:equity_grant_exercise, :signed, equity_grants: [equity_grant])
