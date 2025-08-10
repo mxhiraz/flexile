@@ -188,7 +188,7 @@ const ExerciseModal = ({
               </p>
             </div>
             <DialogFooter>
-              <MutationButton mutation={submitMutation}>Sign & submit</MutationButton>
+              <MutationButton mutation={submitMutation}>Sign and submit</MutationButton>
             </DialogFooter>
           </>
         ) : (
