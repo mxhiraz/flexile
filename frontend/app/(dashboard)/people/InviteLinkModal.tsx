@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useCurrentCompany } from "@/global";
 import { request } from "@/utils/request";
-import { company_invite_links_path } from "@/utils/routes";
+import { company_invite_link_path, reset_company_invite_link_path } from "@/utils/routes";
 
 const inviteLinkSchema = z.object({ invite_link: z.string() });
 const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
@@ -28,7 +28,7 @@ const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     queryKey: ["companyInviteLink", company.id],
     queryFn: async () => {
       const response = await request({
-        url: company_invite_links_path(company.id),
+        url: company_invite_link_path(company.id),
         method: "GET",
         accept: "json",
         assertOk: true,
@@ -40,8 +40,8 @@ const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const resetMutation = useMutation({
     mutationFn: async () => {
       const response = await request({
-        url: company_invite_links_path(company.id),
-        method: "DELETE",
+        url: reset_company_invite_link_path(company.id),
+        method: "POST",
         accept: "json",
         assertOk: true,
       });

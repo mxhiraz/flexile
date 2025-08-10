@@ -75,7 +75,9 @@ scope path: :internal, module: :internal do
     end
     resources :roles, only: [:index, :create, :update, :destroy]
 
-    resource :invite_link, only: [:show, :reset]
+    resource :invite_link, only: [:show] do
+      post :reset
+    end
 
     resources :dividends, only: [:show] do
       member do
