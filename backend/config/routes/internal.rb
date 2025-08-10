@@ -75,12 +75,7 @@ scope path: :internal, module: :internal do
     end
     resources :roles, only: [:index, :create, :update, :destroy]
 
-    resources :invite_links, only: [] do
-      collection do
-        get :show
-        patch :reset
-      end
-    end
+    resource :invite_link, only: [:show, :reset]
 
     resources :dividends, only: [:show] do
       member do
@@ -93,7 +88,6 @@ scope path: :internal, module: :internal do
   resources :company_invitations, only: [:create]
 
   resources :invite_links, only: [] do
-    post :verify, on: :collection
     post :accept, on: :collection
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_10_213827) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
     t.decimal "conversion_share_price_usd"
     t.jsonb "json_data", default: {"flags" => []}, null: false
     t.boolean "equity_enabled", default: false, null: false
+    t.string "company_invite_link"
+    t.index ["company_invite_link"], name: "index_companies_on_company_invite_link", unique: true
     t.index ["external_id"], name: "index_companies_on_external_id", unique: true
   end
 
@@ -173,18 +175,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
     t.index ["external_id"], name: "index_company_investors_on_external_id", unique: true
     t.index ["user_id", "company_id"], name: "index_company_investors_on_user_id_and_company_id", unique: true
     t.index ["user_id"], name: "index_company_investors_on_user_id"
-  end
-
-  create_table "company_invite_links", force: :cascade do |t|
-    t.bigint "company_id", null: false
-    t.bigint "document_template_id"
-    t.string "token", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["company_id", "document_template_id"], name: "idx_on_company_id_document_template_id_57bbad7c26", unique: true
-    t.index ["company_id"], name: "index_company_invite_links_on_company_id"
-    t.index ["document_template_id"], name: "index_company_invite_links_on_document_template_id"
-    t.index ["token"], name: "index_company_invite_links_on_token", unique: true
   end
 
   create_table "company_lawyers", force: :cascade do |t|
@@ -424,19 +414,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
     t.datetime "updated_at", null: false
     t.index ["document_id"], name: "index_document_signatures_on_document_id"
     t.index ["user_id"], name: "index_document_signatures_on_user_id"
-  end
-
-  create_table "document_templates", force: :cascade do |t|
-    t.bigint "company_id"
-    t.string "name", null: false
-    t.integer "document_type", null: false
-    t.string "external_id", null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.datetime "updated_at", null: false
-    t.boolean "signable", default: false, null: false
-    t.bigint "docuseal_id", null: false
-    t.index ["company_id"], name: "index_document_templates_on_company_id"
-    t.index ["external_id"], name: "index_document_templates_on_external_id", unique: true
   end
 
   create_table "documents", force: :cascade do |t|
@@ -925,7 +902,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
     t.string "otp_secret_key"
     t.integer "otp_failed_attempts_count", default: 0, null: false
     t.datetime "otp_first_failed_at"
-    t.bigint "signup_invite_link_id"
     t.index ["clerk_id"], name: "index_users_on_clerk_id", unique: true
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -934,7 +910,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-    t.index ["signup_invite_link_id"], name: "index_users_on_signup_invite_link_id"
   end
 
   create_table "versions", force: :cascade do |t|

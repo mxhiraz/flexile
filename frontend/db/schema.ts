@@ -1729,7 +1729,6 @@ export const users = pgTable(
     teamMember: boolean("team_member").notNull().default(false),
     sentInvalidTaxIdEmail: boolean("sent_invalid_tax_id_email").notNull().default(false),
     clerkId: varchar("clerk_id"),
-    signupInviteLinkId: bigint("signup_invite_link_id", { mode: "number" }),
     otpSecretKey: varchar("otp_secret_key"),
   },
   (table) => [
@@ -1748,10 +1747,6 @@ export const users = pgTable(
       table.resetPasswordToken.asc().nullsLast().op("text_ops"),
     ),
     index("index_users_on_clerk_id").using("btree", table.clerkId.asc().nullsLast().op("text_ops")),
-    index("index_users_on_signup_invite_link_id").using(
-      "btree",
-      table.signupInviteLinkId.asc().nullsLast().op("int8_ops"),
-    ),
   ],
 );
 
