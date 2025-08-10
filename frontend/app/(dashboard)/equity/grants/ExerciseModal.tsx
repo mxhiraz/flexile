@@ -1,9 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { Decimal } from "decimal.js";
 import { Fragment, useId, useState } from "react";
-import { z } from "zod";
-import Form, { customCss } from "@/app/(dashboard)/documents/DocusealForm";
 import Delta from "@/components/Delta";
+import MutationButton from "@/components/MutationButton";
 import RangeInput from "@/components/RangeInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,8 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import env from "@/env/client";
-import { useCurrentCompany, useCurrentUser } from "@/global";
+import { useCurrentCompany } from "@/global";
 import type { RouterOutput } from "@/trpc";
 import { trpc } from "@/trpc/client";
 import { assertDefined } from "@/utils/assert";
@@ -33,7 +31,6 @@ const ExerciseModal = ({
   companyValuation: number;
   onClose: () => void;
 }) => {
-  const user = useCurrentUser();
   const company = useCurrentCompany();
   const uid = useId();
   const [optionsToExercise, setOptionsToExercise] = useState(0);
@@ -70,7 +67,7 @@ const ExerciseModal = ({
 
   const trpcUtils = trpc.useUtils();
   const submitMutation = useMutation({
-    mutationFn: async (submissionId: number) => {
+    mutationFn: async () => {
       if (optionsToExercise === 0) throw new Error("No options to exercise");
       const equityGrants = [...selectedGrants].map(([grant, options]) => ({
         id: grant.id,
@@ -81,7 +78,7 @@ const ExerciseModal = ({
         method: "POST",
         url: company_equity_grant_exercises_path(company.id),
         accept: "json",
-        jsonData: { equity_grants: equityGrants, submission_id: submissionId },
+        jsonData: { equity_grants: equityGrants },
         assertOk: true,
       });
       await trpcUtils.equityGrants.list.refetch();
@@ -96,22 +93,104 @@ const ExerciseModal = ({
           <DialogTitle>Exercise your options</DialogTitle>
         </DialogHeader>
         {signing ? (
-          <Form
-            src={`https://docuseal.com/d/${env.NEXT_PUBLIC_EQUITY_EXERCISE_DOCUSEAL_ID}`}
-            externalId={new Date().toISOString()}
-            customCss={customCss}
-            onComplete={(data) =>
-              submitMutation.mutate(z.object({ submission_id: z.number() }).parse(data).submission_id)
-            }
-            values={{
-              __companyName: company.name,
-              __name: user.legalName,
-              __email: user.email,
-              __address1: user.address.street_address,
-              __address2: `${user.address.city}, ${user.address.state} ${user.address.zip_code}`,
-              __address3: user.address.country,
-            }}
-          />
+          <>
+            <div className="prose max-h-100 overflow-auto rounded-md border p-2">
+              <h2 className="mx-auto mb-2 text-center text-lg font-bold">NOTICE OF EXERCISE</h2>
+              <p>
+                This constitutes notice to {company.name} (the “<strong>Company</strong>”) under my stock option that I
+                elect to purchase the below number of shares of Common Stock of the Company (the “
+                <strong>Shares</strong>”) for the price set forth below. Use of certain payment methods is subject to
+                Company and/or Board consent and certain additional requirements set forth in the Option Agreement and
+                the Plan.{" "}
+              </p>
+              <p>
+                By this exercise, I agree (i) to provide such additional documents as you may require pursuant to the
+                terms of the Equity Incentive Plan, (ii) to provide for the payment by me to you (in the manner
+                designated by you) of your withholding obligation, if any, relating to the exercise of this option,
+                (iii) if this exercise relates to an incentive stock option, to notify you in writing within 15 days
+                after the date of any disposition of any of the Shares issued upon exercise of this option that occurs
+                within two years after the date of grant of this option or within one year after such Shares are issued
+                upon exercise of this option, and (iv) to execute, if and when requested by the Company, at any time or
+                from time to time, any agreements entered into with holders of capital stock of the Company, including
+                without limitation a right of first refusal and co-sale agreement, stockholders agreement and/or a
+                voting agreement. I further agree that this Notice of Exercise may be delivered via facsimile,
+                electronic mail (including pdf or any electronic signature complying with the U.S. federal ESIGN Act of
+                2000, Uniform Electronic Transactions Act or other applicable law) or other transmission method and will
+                be deemed to have been duly and validly delivered and be valid and effective for all purposes.
+              </p>
+              <p>
+                I hereby make the following certifications and representations with respect to the number of Shares
+                listed above, which are being acquired by me for my own account upon exercise of the option as set forth
+                above:
+              </p>
+              <p>
+                I acknowledge that the Shares have not been registered under the Securities Act of 1933, as amended (the
+                “<strong>Securities Act</strong>”), and are deemed to constitute “restricted securities” under Rule 701
+                and Rule 144 promulgated under 1 If left blank, will be issued in the name of the option holder. 2 Cash
+                may be in the form of cash, check, bank draft, electronic funds transfer or money order payment. 3
+                Subject to Company and/or Board consent and must meet the public trading and other requirements set
+                forth in the Option Agreement. 4 Subject to Company and/or Board consent and must meet the public
+                trading and other requirements set forth in the Option Agreement. Shares must be valued in accordance
+                with the terms of the option being exercised, and must be owned free and clear of any liens, claims,
+                encumbrances or security interests. Certificates must be endorsed or accompanied by an executed
+                assignment separate from certificate. 5 Subject to Company and/or Board consent and must be a
+                Nonstatutory Option. 256742988 v1 the Securities Act. I warrant and represent to the Company that I have
+                no present intention of distributing or selling said Shares, except as permitted under the Securities
+                Act and any applicable state securities laws.
+              </p>
+              <p>
+                I further acknowledge and agree that, except for such information as required to be delivered to me by
+                the Company pursuant to the option or the Plan (if any), I will have no right to receive any information
+                from the Company by virtue of the grant of the option or the purchase of shares of Common Stock through
+                exercise of the option, ownership of such shares of Common Stock, or as a result of my being a holder of
+                record of stock of the Company. Without limiting the foregoing, to the fullest extent permitted by law,
+                I hereby waive all inspection rights under Section 220 of the Delaware General Corporation Law and all
+                such similar information and/or inspection rights that may be provided under the law of any
+                jurisdiction, or any federal, state or foreign regulation, that are, or may become, applicable to the
+                Company or the Company’s capital stock (the “Inspection Rights”). I hereby covenant and agree never to
+                directly or indirectly commence, voluntarily aid in any way, prosecute, assign, transfer, or cause to be
+                commenced any claim, action, cause of action, or other proceeding to pursue or exercise the Inspection
+                Rights.
+              </p>
+              <p>
+                I further acknowledge that I will not be able to resell the Shares for at least 90 days after the stock
+                of the Company becomes publicly traded (i.e., subject to the reporting requirements of Section 13 or
+                15(d) of the Securities Exchange Act of 1934) under Rule 701 and that more restrictive conditions apply
+                to affiliates of the Company under Rule 144.{" "}
+              </p>
+              <p>
+                I further acknowledge that all certificates representing any of the Shares subject to the provisions of
+                the option will have endorsed thereon appropriate legends reflecting the foregoing limitations, as well
+                as any legends reflecting restrictions pursuant to the Company’s Certificate of Incorporation, Bylaws
+                and/or applicable securities laws.{" "}
+              </p>
+              <p>
+                I further agree that, if required by the Company (or a representative of the underwriters) in connection
+                with the first underwritten registration of the offering of any securities of the Company under the
+                Securities Act, I will not sell, dispose of, transfer, make any short sale of, grant any option for the
+                purchase of, or enter into any hedging or similar transaction with the same economic effect as a sale
+                with respect to any shares of Common Stock or other securities of the Company for a period of 180 days
+                following the effective date of a registration statement of the Company filed under the Securities Act
+                (or such longer period as the underwriters or the Company will request to facilitate compliance with
+                applicable FINRA rules) (the “Lock-Up Period”). I further agree to execute and deliver such other
+                agreements as may be reasonably requested by the Company or the underwriters that are consistent with
+                the foregoing or that are necessary to give further effect thereto. In order to enforce the foregoing
+                covenant, the Company may impose stop-transfer instructions with respect to securities subject to the
+                foregoing restrictions until the end of such period. I further agree that the obligations contained in
+                this paragraph shall also, if so determined by the Company’s Board of Directors, apply in the Company’s
+                initial listing of its Common Stock on a national securities exchange by means of a registration
+                statement on Form S-1 under the Securities Act (or any successor registration form under the Securities
+                Act subsequently adopted by the Securities and Exchange Commission) filed by the Company with the
+                Securities and Exchange Commission that registers shares of existing capital stock of the Company for
+                resale (a “Direct Listing”), provided that all holders of at least 5% of the Company’s outstanding
+                Common Stock (after giving effect to the conversion into Common Stock of any outstanding Preferred Stock
+                of the Company) are subject to substantially similar obligations with respect to such Direct Listing.
+              </p>
+            </div>
+            <DialogFooter>
+              <MutationButton mutation={submitMutation}>Sign & submit</MutationButton>
+            </DialogFooter>
+          </>
         ) : (
           <>
             <div className="grid gap-2">
@@ -207,13 +286,13 @@ const ExerciseModal = ({
                 </CardContent>
               </Card>
             </div>
+            <DialogFooter>
+              <Button onClick={() => setSigning(true)} disabled={optionsToExercise === 0}>
+                Proceed
+              </Button>
+            </DialogFooter>
           </>
         )}
-        <DialogFooter>
-          <Button onClick={() => setSigning(true)} disabled={optionsToExercise === 0}>
-            Proceed
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

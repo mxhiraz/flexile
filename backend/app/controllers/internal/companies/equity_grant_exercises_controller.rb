@@ -8,9 +8,7 @@ class Internal::Companies::EquityGrantExercisesController < Internal::Companies:
     authorize EquityGrantExercise
 
     result = EquityExercisingService.create_request(equity_grants_params:,
-                                                    submission_id: params[:submission_id],
-                                                    company_investor: Current.company_investor!,
-                                                    company_worker: Current.company_worker!)
+                                                    company_investor: Current.company_investor!)
 
     if result[:success]
       render json: { id: result[:exercise].id }
