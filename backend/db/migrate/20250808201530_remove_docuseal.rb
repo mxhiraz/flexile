@@ -1,7 +1,7 @@
 class RemoveDocuseal < ActiveRecord::Migration[8.0]
   def change
     drop_table :document_templates do |t|
-      t.references :company, null: false
+      t.references :company
       t.string :name, null: false
       t.integer :document_type, null: false
       t.string :external_id, null: false
