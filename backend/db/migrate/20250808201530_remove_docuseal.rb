@@ -12,8 +12,8 @@ class RemoveDocuseal < ActiveRecord::Migration[8.0]
       t.index :external_id, unique: true
     end
 
-    remove_column :documents, :json_data
-    remove_column :documents, :emailed_at
+    remove_column :documents, :json_data, :json
+    remove_column :documents, :emailed_at, :datetime
     add_column :documents, :text, :string
     add_column :documents, :signed_at, :datetime
   end
