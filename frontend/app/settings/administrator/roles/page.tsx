@@ -126,6 +126,7 @@ const UserOrEmailInput = ({
 export default function RolesPage() {
   const company = useCurrentCompany();
   const currentUser = useCurrentUser();
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [confirmRevoke, setConfirmRevoke] = useState<{ id: string; name: string; role: string } | null>(null);
 
