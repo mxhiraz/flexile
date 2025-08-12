@@ -79,7 +79,7 @@ RSpec.describe InvoiceEquityCalculator do
 
     context "when unvested shares are insufficient for the equity amount" do
       it "notifies about insufficient unvested shares and returns nil" do
-        equity_grant.update!(unvested_shares: 50)
+        equity_grant.update!(unvested_shares: 50, number_of_shares: 350)
         message = "InvoiceEquityCalculator: Insufficient unvested shares for CompanyWorker #{company_worker.id}. Company needs to create proper equity grant."
         expect(Bugsnag).to receive(:notify).with(message)
 

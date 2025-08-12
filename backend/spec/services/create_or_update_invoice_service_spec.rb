@@ -128,16 +128,22 @@ RSpec.describe CreateOrUpdateInvoiceService do
         end.to change { user.invoices.count }.by(1)
       end
 
-      it "fails to create an invoice if the equity portion makes up less than one share" do
+      it "does not apply an equity split if the equity portion makes up less than one share" do
         contractor.update!(equity_percentage: 1)
         equity_grant.update!(share_price_usd: 20)
 
-        expect(Bugsnag).to receive(:notify).with("InvoiceEquityCalculator: Insufficient unvested shares for CompanyWorker #{contractor.id}. Company needs to create proper equity grant.")
         expect do
           result = invoice_service.process
-          expect(result[:success]).to eq(false)
-          expect(result[:error_message]).to eq("Something went wrong. Please contact the company administrator.")
-        end.to_not change(user.invoices, :count)
+          expect(result[:success]).to eq(true)
+          invoice = result[:invoice]
+
+          expect(invoice.total_amount_in_usd_cents).to eq(expected_total_amount_in_cents)
+          expect(invoice.equity_amount_in_options).to eq(0)
+          expect(invoice.equity_percentage).to eq(0)
+          expect(invoice.equity_amount_in_cents).to eq(0)
+          expect(invoice.cash_amount_in_cents).to eq(expected_total_amount_in_cents)
+          expect(invoice.flexile_fee_cents).to eq(50 + (1.5 * expected_total_amount_in_cents / 100).round)
+        end.to change { user.invoices.count }.by(1)
       end
 
 

@@ -46,10 +46,15 @@ export const calculateInvoiceEquity = async ({
     equityAmountInOptions = Decimal.div(equityAmountInCents, Decimal.mul(sharePriceUsd, 100)).round().toNumber();
   }
 
-  if (equityAmountInOptions <= 0) {
+  if (equityAmountInOptions <= 0 || !unvestedGrant) {
     equityPercentage = 0;
     equityAmountInCents = 0;
     equityAmountInOptions = 0;
+  } else if (unvestedGrant.unvestedShares < equityAmountInOptions) {
+    Bugsnag.notify(
+      `calculateInvoiceEquity: Insufficient unvested shares for CompanyWorker ${companyContractor.id}. Company needs to create proper equity grant.`,
+    );
+    return null;
   }
 
   return {
