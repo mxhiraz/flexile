@@ -16,6 +16,10 @@ class InvoiceEquityCalculator
       Bugsnag.notify("InvoiceEquityCalculator: Error determining share price for CompanyWorker #{company_worker.id}")
       return
     end
+    if company_worker.equity_percentage.nonzero? && unvested_grant.nil?
+      Bugsnag.notify("InvoiceEquityCalculator: Error selecting active grant for CompanyWorker #{company_worker.id}")
+      return
+    end
     equity_percentage = company_worker.equity_percentage
     equity_amount_in_cents = ((service_amount_cents * equity_percentage) / 100.to_d).round
     equity_amount_in_options =
@@ -24,18 +28,10 @@ class InvoiceEquityCalculator
       else
         (equity_amount_in_cents / (share_price_usd * 100.to_d)).round
       end
-    # Handle legitimate zero cases first (these should return zeros, not errors)
-    if equity_percentage.zero? || !company.equity_enabled?
+    if equity_amount_in_options <= 0 || !unvested_grant.present? || unvested_grant.unvested_shares < equity_amount_in_options
       equity_percentage = 0
       equity_amount_in_cents = 0
       equity_amount_in_options = 0
-    # Error cases: when equity is expected but something is wrong
-    elsif equity_percentage.nonzero? && company.equity_enabled? && equity_amount_in_options <= 0
-      Bugsnag.notify("InvoiceEquityCalculator: Calculated equity amount rounds to zero shares for CompanyWorker #{company_worker.id}. Company needs to create proper equity grant.")
-      return
-    elsif equity_percentage.nonzero? && company.equity_enabled? && (!unvested_grant.present? || unvested_grant.unvested_shares < equity_amount_in_options)
-      Bugsnag.notify("InvoiceEquityCalculator: Insufficient unvested shares for CompanyWorker #{company_worker.id}. Company needs to create proper equity grant.")
-      return
     end
     {
       equity_cents: equity_amount_in_cents,
