@@ -37,7 +37,6 @@ class InvoiceEquityCalculator
       Bugsnag.notify("InvoiceEquityCalculator: Insufficient unvested shares for CompanyWorker #{company_worker.id}. Company needs to create proper equity grant.")
       return
     end
-
     {
       equity_cents: equity_amount_in_cents,
       equity_options: equity_amount_in_options,
