@@ -56,11 +56,11 @@ RSpec.describe InvoiceEquityCalculator do
     context "and an eligible unvested equity grant for the year is absent" do
       let(:invoice_year) { Date.current.year + 2 }
 
-      it "returns zero for all equity values" do
-        result = calculator.calculate
-        expect(result[:equity_cents]).to eq(0)
-        expect(result[:equity_options]).to eq(0)
-        expect(result[:equity_percentage]).to eq(0)
+      it "notifies about insufficient unvested shares and returns nil" do
+        message = "InvoiceEquityCalculator: Insufficient unvested shares for CompanyWorker #{company_worker.id}. Company needs to create proper equity grant."
+        expect(Bugsnag).to receive(:notify).with(message)
+
+        expect(calculator.calculate).to be_nil
       end
 
       context "and the company does not have a share price" do
@@ -74,6 +74,16 @@ RSpec.describe InvoiceEquityCalculator do
 
           expect(calculator.calculate).to be_nil
         end
+      end
+    end
+
+    context "when unvested shares are insufficient for the equity amount" do
+      it "notifies about insufficient unvested shares and returns nil" do
+        equity_grant.update!(unvested_shares: 50)
+        message = "InvoiceEquityCalculator: Insufficient unvested shares for CompanyWorker #{company_worker.id}. Company needs to create proper equity grant."
+        expect(Bugsnag).to receive(:notify).with(message)
+
+        expect(calculator.calculate).to be_nil
       end
     end
   end
