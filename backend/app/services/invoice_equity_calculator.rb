@@ -16,7 +16,7 @@ class InvoiceEquityCalculator
       Bugsnag.notify("InvoiceEquityCalculator: Error determining share price for CompanyWorker #{company_worker.id}")
       return
     end
-    if company_worker.equity_percentage.nonzero? && unvested_grant.nil?
+    if company_worker.equity_percentage.nonzero? && company.equity_enabled? && unvested_grant.nil?
       Bugsnag.notify("InvoiceEquityCalculator: Error selecting active grant for CompanyWorker #{company_worker.id}")
       return
     end
