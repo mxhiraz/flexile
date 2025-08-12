@@ -30,16 +30,12 @@ RSpec.describe InvoiceEquityCalculator do
     context "and computed equity component is too low to make up a whole share" do
       let(:share_price_usd) { 14.90 }
 
-      it "returns zero for all equity values" do
+      it "notifies about insufficient equity and returns nil" do
         company_worker.update!(equity_percentage: 1)
-        result = calculator.calculate
+        message = "InvoiceEquityCalculator: Calculated equity amount rounds to zero shares for CompanyWorker #{company_worker.id}. Company needs to create proper equity grant."
+        expect(Bugsnag).to receive(:notify).with(message)
 
-        # Equity portion = $720 * 1% = $7.20
-        # Shares = $7.20 / $14.9 = 0.4832214765100671 = 0 (rounded)
-        # Don't allocate any portion to equity as the number of shares comes to 0
-        expect(result[:equity_cents]).to eq(0)
-        expect(result[:equity_options]).to eq(0)
-        expect(result[:equity_percentage]).to eq(0)
+        expect(calculator.calculate).to be_nil
       end
     end
 
