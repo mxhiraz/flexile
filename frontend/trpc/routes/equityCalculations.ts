@@ -46,7 +46,11 @@ export const calculateInvoiceEquity = async ({
     equityAmountInOptions = Decimal.div(equityAmountInCents, Decimal.mul(sharePriceUsd, 100)).round().toNumber();
   }
 
-  if (equityAmountInOptions <= 0 && equityPercentage !== 0) {
+  if (equityPercentage === 0) {
+    equityPercentage = 0;
+    equityAmountInCents = 0;
+    equityAmountInOptions = 0;
+  } else if (equityAmountInOptions <= 0) {
     Bugsnag.notify(
       `calculateInvoiceEquity: Calculated equity amount rounds to zero shares for CompanyWorker ${companyContractor.id}. Company needs to create proper equity grant.`,
     );
@@ -56,12 +60,6 @@ export const calculateInvoiceEquity = async ({
       `calculateInvoiceEquity: Insufficient unvested shares for CompanyWorker ${companyContractor.id}. Company needs to create proper equity grant.`,
     );
     return null;
-  }
-
-  if (equityPercentage === 0) {
-    equityPercentage = 0;
-    equityAmountInCents = 0;
-    equityAmountInOptions = 0;
   }
 
   return {
