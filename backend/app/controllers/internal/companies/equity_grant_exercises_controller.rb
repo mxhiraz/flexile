@@ -3,6 +3,11 @@
 class Internal::Companies::EquityGrantExercisesController < Internal::Companies::BaseController
   before_action :load_equity_grant_exercise!, only: [:resend]
 
+  def new
+    authorize EquityGrantExercise
+
+    render json: { exercise_notice: Current.company.exercise_notice }
+  end
 
   def create
     authorize EquityGrantExercise
