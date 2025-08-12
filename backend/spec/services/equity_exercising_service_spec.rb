@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe EquityExercisingService do
+RSpec.describe EquityExercisingService, :skip_pdf_generation do
   let!(:company) { create(:company, :completed_onboarding, name: "Gumroad") }
   let(:user) { create(:user) }
   let(:company_investor) { create(:company_investor, company:, user:) }

@@ -56,7 +56,7 @@ class EquityExercisingService
           exercise_price_usd: equity_grant.exercise_price_usd
         )
       end
-      pdf = CreatePdf.new(body_html: sanitize(company.exercise_notice)).perform
+      pdf = CreatePdf.new(body_html: ActionController::Base.helpers.sanitize(company.exercise_notice)).perform
       document = company.documents.exercise_notice.build(name: "Notice of Exercise", year: Time.current.year, json_data: { equity_grant_exercise_id: exercise.id })
       document.signatures.build(user: company_investor.user, title: "Signer", signed_at: current_time)
       document.attachments.attach(
