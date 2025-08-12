@@ -1,8 +1,10 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { z } from "zod";
 import env from "@/env";
 import { assertDefined } from "@/utils/assert";
+import { oauth_index_url } from "@/utils/routes";
 
 const otpLoginSchema = z.object({
   email: z.string().email(),
@@ -75,6 +77,10 @@ export const authOptions = {
         }
       },
     }),
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -94,6 +100,52 @@ export const authOptions = {
     },
     session({ session, token }) {
       return { ...session, user: { ...session.user, ...token, id: token.sub } };
+    },
+    async signIn({ user, account }) {
+      let user_attributes: { provider_id: string; email: string; provider: string } | undefined;
+
+      if (!account) return false;
+
+      if (account.provider === "google") {
+        user_attributes = {
+          provider_id: String(user.id),
+          email: String(user.email),
+          provider: "google",
+        };
+      }
+      if (!user_attributes) return false;
+
+      try {
+        const response = await fetch(oauth_index_url(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(user_attributes),
+        });
+
+        if (!response.ok) {
+          return false;
+        }
+
+        const data = z
+          .object({
+            user: z.object({
+              id: z.number(),
+              email: z.string(),
+              name: z.string().nullable(),
+              legal_name: z.string().nullable(),
+              preferred_name: z.string().nullable(),
+            }),
+            jwt: z.string(),
+          })
+          .parse(await response.json());
+
+        user.jwt = data.jwt;
+        user.legalName = data.user.legal_name ?? "";
+        user.preferredName = data.user.preferred_name ?? "";
+        return true;
+      } catch {
+        return false;
+      }
     },
   },
   pages: {

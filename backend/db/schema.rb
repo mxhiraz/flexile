@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_11_190249) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -739,6 +739,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_08_180255) do
     t.index ["external_id"], name: "index_invoices_on_external_id", unique: true
     t.index ["rejected_by_id"], name: "index_invoices_on_rejected_by_id"
     t.index ["user_id"], name: "index_invoices_on_user_id"
+  end
+
+  create_table "oauth_accounts", force: :cascade do |t|
+    t.string "provider", null: false
+    t.string "provider_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "provider_id"], name: "index_oauth_accounts_on_provider_and_provider_id", unique: true
+    t.index ["user_id"], name: "index_oauth_accounts_on_user_id"
   end
 
   create_table "option_pools", force: :cascade do |t|

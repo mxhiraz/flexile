@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import googleLogoLight from "@/images/google-light.svg";
 import logo from "@/public/logo-icon.svg";
 import { request } from "@/utils/request";
 
@@ -37,6 +38,7 @@ export function AuthPage({
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get("invitation_token");
   const queryClient = useQueryClient();
+  const lastSignInMethod = typeof window !== "undefined" ? localStorage.getItem("last_sign_in_method") : "Email";
   const sendOtp = useMutation({
     mutationFn: async (values: { email: string }) => {
       const response = await request({
@@ -82,6 +84,7 @@ export function AuthPage({
   const submitEmailForm = emailForm.handleSubmit(async (values) => {
     try {
       await sendOtp.mutateAsync(values);
+      localStorage.setItem("last_sign_in_method", "Email");
     } catch (error) {
       emailForm.setError("email", {
         message: error instanceof Error ? error.message : "Failed to send verification code",
@@ -176,6 +179,33 @@ export function AuthPage({
           {!sendOtp.isSuccess ? (
             <Form {...emailForm}>
               <form onSubmit={(e) => void submitEmailForm(e)} className="space-y-4">
+                <div className="mb-4 flex flex-col items-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`flex h-12 w-full items-center justify-center gap-2 text-base font-medium ${
+                      lastSignInMethod === "Google" ? "bg-blue-600 text-white hover:bg-blue-500" : ""
+                    }`}
+                    onClick={() => {
+                      localStorage.setItem("last_sign_in_method", "Google");
+                      void signIn("google", { callbackUrl: "/dashboard" }, { prompt: "login" });
+                    }}
+                  >
+                    <Image
+                      src={googleLogoLight}
+                      alt="Google"
+                      width={20}
+                      height={20}
+                      className={lastSignInMethod === "Google" ? "" : "brightness-0 saturate-100"}
+                    />
+                    {sendOtpText} with Google
+                  </Button>
+                  <div className="my-3 flex w-full items-center gap-2">
+                    <div className="bg-muted h-px flex-1" />
+                    <span className="text-muted-foreground text-sm">or</span>
+                    <div className="bg-muted h-px flex-1" />
+                  </div>
+                </div>
                 <FormField
                   control={emailForm.control}
                   name="email"
