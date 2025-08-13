@@ -21,8 +21,9 @@ import {
 } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/global";
 import { settingsNavLinks } from "@/lib/settingsNavLinks";
+import { UserDataProvider } from "@/trpc/client";
 
-export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+function SettingsLayout({ children }: { children: React.ReactNode }) {
   const user = useCurrentUser();
   const pathname = usePathname();
   const filteredPersonalLinks = settingsNavLinks.filter((link) => link.category === "personal" && link.isVisible(user));
