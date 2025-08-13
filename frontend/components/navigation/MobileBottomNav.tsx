@@ -242,7 +242,7 @@ const CompanySwitcher = ({ onSelect }: CompanySwitcherProps) => {
       aria-label={`Switch to ${company.name}`}
       aria-current={company.id === user.currentCompanyId ? "true" : undefined}
     >
-      <Image src={company.logo_url ?? defaultCompanyLogo} width={20} height={20} className="rounded-xs" alt="" />
+      <Image src={company.logo_url ?? defaultCompanyLogo.src} width={20} height={20} className="rounded-xs" alt="" />
       <span className="line-clamp-1 flex-1 text-left font-normal">{company.name}</span>
     </button>
   ));
@@ -333,7 +333,7 @@ const OverflowMenu = ({ items, onOpenChange, open }: OverflowMenuProps) => {
                 item={{ label: currentCompany.name ?? "Personal" }}
                 image={
                   <Image
-                    src={currentCompany.logo_url ?? defaultCompanyLogo}
+                    src={currentCompany.logo_url ?? defaultCompanyLogo.src}
                     width={20}
                     height={20}
                     className="rounded-xs object-contain"
