@@ -37,8 +37,9 @@ import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { switchCompany } from "@/lib/companySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
 import { cn } from "@/utils";
+import { UserDataProvider } from "@/trpc/client";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = useCurrentUser();
   const company = useCurrentCompany();
   const pathname = usePathname();
@@ -198,7 +199,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarInset>
         <div className="flex flex-col not-print:h-screen not-print:overflow-hidden">
           <main className={cn("flex flex-1 flex-col pb-20 not-print:overflow-y-auto sm:pb-4")}>
-            <div className="flex flex-col gap-4">{children}</div>
+            <div className="flex flex-col gap-2 md:gap-4">{children}</div>
           </main>
         </div>
       </SidebarInset>
@@ -251,6 +252,14 @@ const NavLinks = () => {
     </SidebarMenu>
   );
 };
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <UserDataProvider>
+      <DashboardLayout>{children}</DashboardLayout>
+    </UserDataProvider>
+  );
+}
 
 const NavItem = ({
   label,

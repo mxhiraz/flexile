@@ -97,3 +97,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     </SidebarProvider>
   );
 }
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <UserDataProvider>
+      <SettingsLayout>{children}</SettingsLayout>
+    </UserDataProvider>
+  );
+}
