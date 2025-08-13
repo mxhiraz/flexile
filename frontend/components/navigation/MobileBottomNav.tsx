@@ -118,6 +118,7 @@ const SheetNavItem = ({ item, image, onClick, showChevron, pathname, className }
   <Link
     href={{ pathname: item.route }}
     {...(onClick ? { onClick } : {})}
+    {...(!item.route && { role: "button" })}
     className={cn(
       "flex items-center gap-3 rounded-none px-6 py-3 transition-colors",
       (pathname === item.route || item.isActive) && "bg-accent text-accent-foreground font-medium",
