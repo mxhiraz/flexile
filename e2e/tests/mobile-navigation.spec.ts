@@ -81,7 +81,7 @@ test.describe("Mobile navigation", () => {
 
     // Check that overflow menu items are visible (People and Settings should be in overflow)
     await expect(page.getByRole("link", { name: "People" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Settings" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Support center" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
 
