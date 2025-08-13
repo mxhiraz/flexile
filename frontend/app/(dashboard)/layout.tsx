@@ -36,8 +36,8 @@ import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
 import { switchCompany } from "@/lib/companySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
-import { cn } from "@/utils";
 import { UserDataProvider } from "@/trpc/client";
+import { cn } from "@/utils";
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = useCurrentUser();
