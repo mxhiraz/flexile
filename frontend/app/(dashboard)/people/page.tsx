@@ -108,10 +108,13 @@ export default function PeoplePage() {
   });
   const submit = form.handleSubmit((values) => saveMutation.mutate(values));
 
+  const isMobile = useIsMobile();
+
   const columnHelper = createColumnHelper<(typeof workers)[number]>();
-  const columns = useMemo(
+  const desktopColumns = useMemo(
     () => [
       columnHelper.accessor("user.name", {
+        id: "userName",
         header: "Name",
         cell: (info) => {
           const content = info.getValue();
@@ -129,6 +132,7 @@ export default function PeoplePage() {
       }),
       columnHelper.simple("user.countryCode", "Country", (v) => v && countries.get(v)),
       columnHelper.accessor((row) => (row.endedAt ? "Alumni" : row.startedAt > new Date() ? "Onboarding" : "Active"), {
+        id: "status",
         header: "Status",
         meta: { filterOptions: ["Active", "Onboarding", "Alumni"] },
         cell: (info) =>
@@ -145,14 +149,95 @@ export default function PeoplePage() {
           ),
       }),
     ],
-    [],
+    [workers],
   );
+  const mobileColumns = useMemo(
+    () => [
+      columnHelper.display({
+        id: "nameRoleCountry",
+        cell: (info) => {
+          const person = info.row.original;
+          return (
+            <>
+              <div>
+                <div className="text-base font-medium">{person.user.name}</div>
+                <div className="text-sm font-normal">{person.role}</div>
+              </div>
+              {person.user.countryCode ? (
+                <div className="text-sm font-normal text-gray-600">{countries.get(person.user.countryCode)}</div>
+              ) : null}
+            </>
+          );
+        },
+        meta: {
+          cellClassName: "w-full",
+        },
+      }),
+
+      columnHelper.display({
+        id: "statusDisplay",
+        cell: (info) => {
+          const original = info.row.original;
+          let variant: "critical" | "success" | "primary";
+
+          if (original.endedAt) {
+            variant = "critical";
+          } else if (original.startedAt <= new Date()) {
+            variant = "success";
+          } else if (original.user.onboardingCompleted) {
+            variant = "success";
+          } else if (original.user.invitationAcceptedAt) {
+            variant = "primary";
+          } else {
+            variant = "primary";
+          }
+
+          return (
+            <div className="flex h-full flex-col items-end justify-between">
+              <div className="flex h-5 w-4 items-center justify-center">
+                <Status variant={variant} />
+              </div>
+            </div>
+          );
+        },
+      }),
+
+      columnHelper.accessor((row) => (row.endedAt ? "Alumni" : row.startedAt > new Date() ? "Onboarding" : "Active"), {
+        id: "status",
+        header: "Status",
+        meta: {
+          filterOptions: ["Active", "Onboarding", "Alumni"],
+          hidden: true,
+        },
+      }),
+
+      columnHelper.accessor("user.name", {
+        id: "userName",
+        header: "Name",
+        meta: {
+          hidden: true,
+        },
+      }),
+
+      columnHelper.accessor("role", {
+        id: "role",
+        header: "Role",
+        meta: {
+          filterOptions: [...new Set(workers.map((worker) => worker.role))],
+          hidden: true,
+        },
+      }),
+    ],
+    [workers],
+  );
+
+  const columns = isMobile ? mobileColumns : desktopColumns;
 
   const table = useTable({
     columns,
     data: workers,
     initialState: {
-      sorting: [{ id: "Status", desc: false }],
+      sorting: [{ id: "status", desc: false }],
     },
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -166,12 +251,36 @@ export default function PeoplePage() {
 
   return (
     <>
-      <DashboardHeader title="People" headerActions={workers.length === 0 ? actionsPanel : null} />
+      <DashboardHeader
+        title="People"
+        headerActions={
+          <>
+            {isMobile && table.options.enableRowSelection ? (
+              <button
+                className="text-blue-600"
+                onClick={() => table.toggleAllRowsSelected(!table.getIsAllRowsSelected())}
+              >
+                {table.getIsAllRowsSelected() ? "Unselect all" : "Select all"}
+              </button>
+            ) : null}
+            {workers.length === 0 ? (
+              <ActionPanel setShowInviteLinkModal={setShowInviteLinkModal} setShowInviteModal={setShowInviteModal} />
+            ) : null}
+          </>
+        }
+      />
 
       {isLoading ? (
         <TableSkeleton columns={4} />
       ) : workers.length > 0 ? (
-        <DataTable table={table} searchColumn="user_name" actions={actionsPanel} />
+        <DataTable
+          table={table}
+          searchColumn="userName"
+          tabsColumn="status"
+          actions={
+            <ActionPanel setShowInviteLinkModal={setShowInviteLinkModal} setShowInviteModal={setShowInviteModal} />
+          }
+        />
       ) : (
         <div className="mx-4">
           <Placeholder icon={Users}>Contractors will show up here.</Placeholder>

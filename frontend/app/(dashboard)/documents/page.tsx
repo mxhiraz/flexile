@@ -1,5 +1,4 @@
 "use client";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { skipToken, useQueryClient } from "@tanstack/react-query";
 import { type ColumnFiltersState, getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import { BriefcaseBusiness, CircleCheck, Download, Info, SendHorizontal } from "lucide-react";
@@ -8,13 +7,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
 import React, { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { FinishOnboarding } from "@/app/(dashboard)/documents/FinishOnboarding";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import DataTable, { createColumnHelper, filterValueSchema, useTable } from "@/components/DataTable";
 import { linkClasses } from "@/components/Link";
-import MutationButton, { MutationStatusButton } from "@/components/MutationButton";
+import MutationButton from "@/components/MutationButton";
 import Placeholder from "@/components/Placeholder";
 import RichText from "@/components/RichText";
 import Status, { type Variant as StatusVariant } from "@/components/Status";
@@ -84,10 +82,10 @@ const inviteLawyerSchema = z.object({
 export default function DocumentsPage() {
   const user = useCurrentUser();
   const company = useCurrentCompany();
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const isCompanyRepresentative = !!user.roles.administrator || !!user.roles.lawyer;
   const userId = isCompanyRepresentative ? null : user.id;
   const canSign = user.address.street_address || isCompanyRepresentative;
+  const isMobile = useIsMobile();
 
   const [forceWorkerOnboarding, setForceWorkerOnboarding] = useState<boolean>(
     user.roles.worker ? !user.roles.worker.role : false,
@@ -95,17 +93,6 @@ export default function DocumentsPage() {
 
   const currentYear = new Date().getFullYear();
   const { data: documents = [], isLoading } = trpc.documents.list.useQuery({ companyId: company.id, userId });
-
-  const inviteLawyerForm = useForm({ resolver: zodResolver(inviteLawyerSchema) });
-  const inviteLawyer = trpc.lawyers.invite.useMutation({
-    onSuccess: () => {
-      setShowInviteModal(false);
-      inviteLawyerForm.reset();
-    },
-  });
-  const submitInviteLawyer = inviteLawyerForm.handleSubmit(async ({ email }) =>
-    inviteLawyer.mutateAsync({ companyId: company.id, email }),
-  );
 
   const columnHelper = createColumnHelper<Document>();
   const [downloadDocument, setDownloadDocument] = useState<bigint | null>(null);
@@ -132,14 +119,14 @@ export default function DocumentsPage() {
     if (downloadUrl) window.location.href = downloadUrl;
   }, [downloadUrl]);
 
-  const columns = useMemo(
+  const desktopColumns = useMemo(
     () =>
       [
         isCompanyRepresentative
           ? columnHelper.accessor(
               (row) =>
                 assertDefined(row.signatories.find((signatory) => signatory.title !== "Company Representative")).name,
-              { header: "Signer" },
+              { id: "signer", header: "Signer" },
             )
           : null,
         columnHelper.simple("name", "Document"),
@@ -157,6 +144,7 @@ export default function DocumentsPage() {
             Array.isArray(filterValue) && filterValue.includes(row.original.createdAt.getFullYear().toString()),
         }),
         columnHelper.accessor((row) => getStatus(row).name, {
+          id: "status",
           header: "Status",
           meta: { filterOptions: [...new Set(documents.map((document) => getStatus(document).name))] },
           cell: (info) => {
@@ -198,14 +186,94 @@ export default function DocumentsPage() {
           },
         }),
       ].filter((column) => !!column),
-    [userId],
+    [documents, isCompanyRepresentative, isSignable, canSign, setSignDocumentId, setDownloadDocument],
   );
+
+  const mobileColumns = useMemo(
+    () =>
+      [
+        columnHelper.display({
+          id: "documentNameSigner",
+          cell: (info) => (
+            <div className="flex flex-col gap-1">
+              <div className="text-base font-medium">{info.row.original.name}</div>
+              {isCompanyRepresentative ? (
+                <div className="text-sm font-normal">
+                  {
+                    info.row.original.signatories.find((signatory) => signatory.title !== "Company Representative")
+                      ?.name
+                  }
+                </div>
+              ) : null}
+            </div>
+          ),
+          meta: {
+            cellClassName: "w-full",
+          },
+        }),
+
+        columnHelper.display({
+          id: "statusSentOn",
+          cell: (info) => {
+            const document = info.row.original;
+            const { variant } = getStatus(info.row.original);
+
+            return (
+              <div className="flex h-full flex-col items-end justify-between">
+                <div className="flex h-5 w-4 items-center justify-center">
+                  <Status variant={variant} />
+                </div>
+                <div className="text-gray-600">{formatDate(document.createdAt)}</div>
+              </div>
+            );
+          },
+        }),
+
+        columnHelper.accessor((row) => getStatus(row).name, {
+          id: "status",
+          meta: { filterOptions: [...new Set(documents.map((document) => getStatus(document).name))], hidden: true },
+        }),
+        isCompanyRepresentative
+          ? columnHelper.accessor(
+              (row) =>
+                assertDefined(row.signatories.find((signatory) => signatory.title !== "Company Representative")).name,
+              {
+                id: "signer",
+                header: "Signer",
+                meta: { hidden: true },
+              },
+            )
+          : null,
+
+        columnHelper.accessor("createdAt", {
+          id: "createdAt",
+          header: "Date",
+          cell: (info) => formatDate(info.getValue()),
+          meta: {
+            filterOptions: [...new Set(documents.map((document) => document.createdAt.getFullYear().toString()))],
+            hidden: true,
+          },
+          filterFn: (row, _, filterValue) =>
+            Array.isArray(filterValue) && filterValue.includes(row.original.createdAt.getFullYear().toString()),
+        }),
+
+        columnHelper.accessor((row) => typeLabels[row.type], {
+          header: "Type",
+          meta: { filterOptions: [...new Set(documents.map((document) => typeLabels[document.type]))], hidden: true },
+        }),
+      ].filter((column) => !!column),
+    [documents, isCompanyRepresentative],
+  );
+
+  const columns = isMobile ? mobileColumns : desktopColumns;
+
   const storedColumnFilters = columnFiltersSchema.safeParse(
     JSON.parse(localStorage.getItem(storageKeys.DOCUMENTS_COLUMN_FILTERS) ?? "{}"),
   );
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    storedColumnFilters.data ?? [{ id: "Status", value: ["Signature required"] }],
+    storedColumnFilters.data ?? [{ id: "status", value: ["Signature required"] }],
   );
+
   const table = useTable({
     columns,
     data: documents,
@@ -275,40 +343,6 @@ export default function DocumentsPage() {
           <Placeholder icon={CircleCheck}>No documents yet.</Placeholder>
         </div>
       )}
-
-      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Who's joining?</DialogTitle>
-          </DialogHeader>
-          <Form {...inviteLawyerForm}>
-            <form onSubmit={(e) => void submitInviteLawyer(e)}>
-              <FormField
-                control={inviteLawyerForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <MutationStatusButton
-                type="submit"
-                mutation={inviteLawyer}
-                className="mt-4 w-full"
-                loadingText="Inviting..."
-              >
-                <SendHorizontal className="size-5" />
-                Invite
-              </MutationStatusButton>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
       {forceWorkerOnboarding ? <FinishOnboarding handleComplete={() => setForceWorkerOnboarding(false)} /> : null}
     </>
   );
