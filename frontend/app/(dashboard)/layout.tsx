@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useCurrentCompany, useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
-import { switchCompany } from "@/lib/companySwitcher";
+import { useSwitchCompany } from "@/lib/companySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
 import { UserDataProvider } from "@/trpc/client";
 import { cn } from "@/utils";
@@ -49,6 +49,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   const canShowTryEquity = user.roles.administrator && !company.equityEnabled;
   const { logout } = useUserStore();
   const isDefaultLogo = !company.logo_url || company.logo_url.includes("default-company-logo");
+  const { switchCompany } = useSwitchCompany();
 
   return (
     <SidebarProvider>

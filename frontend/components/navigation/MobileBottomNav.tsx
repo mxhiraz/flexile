@@ -12,7 +12,7 @@ import { SupportBadge } from "@/components/Support";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCurrentUser, useUserStore } from "@/global";
 import defaultCompanyLogo from "@/images/default-company-logo.svg";
-import { switchCompany } from "@/lib/companySwitcher";
+import { useSwitchCompany } from "@/lib/companySwitcher";
 import { hasSubItems, type NavLinkInfo, useNavLinks } from "@/lib/useNavLinks";
 import { cn } from "@/utils/index";
 
@@ -223,6 +223,7 @@ interface CompanySwitcherProps {
 
 const CompanySwitcher = ({ onSelect }: CompanySwitcherProps) => {
   const user = useCurrentUser();
+  const { switchCompany } = useSwitchCompany();
 
   const handleCompanySwitch = async (companyId: string) => {
     if (user.currentCompanyId !== companyId) {
