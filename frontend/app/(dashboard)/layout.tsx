@@ -217,8 +217,8 @@ const NavLinks = () => {
           return (
             <Collapsible
               key={link.label}
-              open={link.isOpen || false}
-              onOpenChange={link.onToggle || (() => undefined)}
+              open={!!link.isOpen}
+              onOpenChange={(open) => link.onToggle?.(open)}
               className="group/collapsible"
             >
               <SidebarMenuItem>
