@@ -79,7 +79,7 @@ export function AuthPage({
   const submitEmailForm = emailForm.handleSubmit(async (values) => {
     try {
       await sendOtp.mutateAsync(values);
-      localStorage.setItem("last_sign_in_method", "Email");
+      localStorage.setItem("last_sign_in_method", "Work Email");
     } catch (error) {
       emailForm.setError("email", {
         message: error instanceof Error ? error.message : "Failed to send verification code",
@@ -178,21 +178,13 @@ export function AuthPage({
                   <Button
                     type="button"
                     variant="outline"
-                    className={`flex h-12 w-full items-center justify-center gap-2 text-base font-medium ${
-                      lastSignInMethod === "Google" ? "bg-blue-600 text-white hover:bg-blue-500" : ""
-                    }`}
+                    className="flex h-12 w-full items-center justify-center gap-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-500"
                     onClick={() => {
                       localStorage.setItem("last_sign_in_method", "Google");
                       void signIn("google", { callbackUrl: "/dashboard" }, { prompt: "login" });
                     }}
                   >
-                    <Image
-                      src={googleLogoLight}
-                      alt="Google"
-                      width={20}
-                      height={20}
-                      className={lastSignInMethod === "Google" ? "" : "brightness-0 saturate-100"}
-                    />
+                    <Image src={googleLogoLight} alt="Google" width={20} height={20} />
                     {sendOtpText} with Google
                   </Button>
                   <div className="my-3 flex w-full items-center gap-2">
@@ -221,7 +213,12 @@ export function AuthPage({
                     </FormItem>
                   )}
                 />
-                <MutationStatusButton mutation={sendOtp} type="submit" className="w-full" loadingText="Sending...">
+                <MutationStatusButton
+                  mutation={sendOtp}
+                  type="submit"
+                  className="w-full bg-white text-gray-900 hover:bg-gray-100"
+                  loadingText="Sending..."
+                >
                   {sendOtpText}
                 </MutationStatusButton>
 

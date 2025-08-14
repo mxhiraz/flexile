@@ -6,30 +6,35 @@ class Internal::OauthController < Internal::BaseController
   skip_before_action :verify_authenticity_token
 
   def create
-    provider_id = params[:provider_id]
     email = params[:email]
-    provider = params[:provider]
+    params[:invitation_token]
 
-    unless email.present? && provider_id.present? && provider.present?
-      return render json: { error: "Missing required fields" }, status: :unprocessable_entity
+    if email.blank?
+      render json: { error: "Email is required" }, status: :bad_request
+      return
     end
 
-    unless OauthAccount.providers.key?(provider)
-      return render json: { error: "Unknown provider" }, status: :unprocessable_entity
+    user = User.find_by(email: email)
+    return success_response_with_jwt(user) if user.persisted?
+
+    result = complete_user_signup(user)
+
+    if result[:success]
+      success_response_with_jwt(result[:user], :created)
+    else
+      render json: { error: result[:error_message] }, status: :unprocessable_entity
     end
-
-    user = find_or_create_user_from_oauth(provider, provider_id, email)
-
-    success_response_with_jwt(user)
   end
 
   private
-    def find_or_create_user_from_oauth(provider, provider_id, email)
-      account = OauthAccount.find_by(provider: provider, provider_id: provider_id)
-      return account.user if account&.user
+    def complete_user_signup(user, invitation_token: nil)
+      ApplicationRecord.transaction do
+        user = User.new(email: email, confirmed_at: Time.current)
+        user.tos_agreements.create!(ip_address: request.remote_ip)
 
-      user = User.find_or_create_by!(email: email)
-      user.oauth_accounts.create!(provider: provider, provider_id: provider_id)
-      user
+        { success: true, user: user }
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      { success: false, error_message: e.record.errors.full_messages.to_sentence }
     end
 end

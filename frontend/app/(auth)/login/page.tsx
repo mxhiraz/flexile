@@ -4,7 +4,7 @@ import { linkClasses } from "@/components/Link";
 import { AuthPage } from "..";
 
 export default function LoginPage() {
-  const lastSignInMethod = typeof window !== "undefined" ? localStorage.getItem("last_sign_in_method") : "Email";
+  const lastSignInMethod = localStorage.getItem("last_sign_in_method");
 
   return (
     <AuthPage
