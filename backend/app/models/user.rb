@@ -48,7 +48,6 @@ class User < ApplicationRecord
   has_many :user_compliance_infos, autosave: true
   has_one :compliance_info, -> { alive.order(tax_information_confirmed_at: :desc) }, class_name: "UserComplianceInfo"
 
-  has_many :oauth_accounts
   has_one_attached :avatar
 
   validates :email, presence: true, length: { minimum: MIN_EMAIL_LENGTH }
