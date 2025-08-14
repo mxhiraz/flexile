@@ -111,10 +111,6 @@ const AdminList = ({ onEditUpdate }: { onEditUpdate: (update: UpdateListItem) =>
           </button>
         ),
       }),
-      columnHelper.accessor("summary", {
-        header: "Summary",
-        cell: (info) => <div className="truncate whitespace-normal">{info.getValue()}</div>,
-      }),
       columnHelper.simple("sentAt", "Sent On", (v) => (v ? formatDate(v) : "-")),
       columnHelper.accessor((row) => (row.sentAt ? "Sent" : "Draft"), {
         header: "Status",
