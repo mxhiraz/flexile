@@ -11,10 +11,10 @@ class GrantStockOptions
     @company = company_worker.company
     @board_approval_date = board_approval_date
     @vesting_commencement_date = vesting_commencement_date
-    @number_of_shares = number_of_shares.to_i
+    @number_of_shares = number_of_shares&.to_i
     @issue_date_relationship = issue_date_relationship
     @option_grant_type = option_grant_type
-    @option_expiry_months = option_expiry_months.to_i
+    @option_expiry_months = option_expiry_months&.to_i
     @vesting_trigger = vesting_trigger
     @vesting_schedule_params = vesting_schedule_params || {}
     @voluntary_termination_exercise_months = voluntary_termination_exercise_months
@@ -82,7 +82,7 @@ class GrantStockOptions
       document.signatures.build(user:, title: "Signer", signed_at: contract.is_a?(String) ? nil : DateTime.now)
       document.save!
       CompanyWorkerMailer.equity_grant_issued(equity_grant.id).deliver_later
-      { success: true, document_id: document.id }
+      { success: true }
     else
       { success: false, error: equity_grant_creation_result.error }
     end
