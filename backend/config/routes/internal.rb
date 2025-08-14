@@ -55,6 +55,13 @@ scope path: :internal, module: :internal do
     end
     resources :workers, only: [:create]
     resources :lawyers, only: [:create]
+    resources :administrators, only: [:create]
+    resources :users, only: [:index] do
+      collection do
+        post :add_role
+        post :remove_role
+      end
+    end
     resources :equity_grant_exercises, only: :create do
       member do
         post :resend
@@ -77,11 +84,8 @@ scope path: :internal, module: :internal do
     end
     resources :roles, only: [:index, :create, :update, :destroy]
 
-    resources :invite_links, only: [] do
-      collection do
-        get :show
-        patch :reset
-      end
+    resource :invite_link, only: [:show] do
+      post :reset
     end
 
     resources :dividends, only: [:show] do
@@ -95,7 +99,6 @@ scope path: :internal, module: :internal do
   resources :company_invitations, only: [:create]
 
   resources :invite_links, only: [] do
-    post :verify, on: :collection
     post :accept, on: :collection
   end
 end
