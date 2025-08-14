@@ -1,6 +1,6 @@
 import docuseal from "@docuseal/api";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, inArray, isNotNull, isNull, not, type SQLWrapper } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, not, or, type SQLWrapper } from "drizzle-orm";
 import { pick } from "lodash-es";
 import { z } from "zod";
 import { byExternalId, db } from "@/db";
@@ -28,7 +28,7 @@ export const documentsRouter = createRouter({
 
       const signable = assertDefined(
         and(
-          isNotNull(documents.docusealSubmissionId),
+          or(isNotNull(documents.docusealSubmissionId), isNotNull(documents.text)),
           isNull(documentSignatures.signedAt),
           input.userId ? undefined : eq(documentSignatures.title, "Company Representative"),
         ),
@@ -39,7 +39,7 @@ export const documentsRouter = createRouter({
       );
       const rows = await db
         .selectDistinctOn([documents.id], {
-          ...pick(documents, "id", "name", "createdAt", "docusealSubmissionId", "type"),
+          ...pick(documents, "id", "name", "createdAt", "docusealSubmissionId", "type", "text"),
           attachment: pick(activeStorageBlobs, "key", "filename"),
         })
         .from(documents)

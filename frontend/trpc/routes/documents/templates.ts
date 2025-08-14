@@ -1,7 +1,6 @@
 import docuseal from "@docuseal/api";
 import { TRPCError } from "@trpc/server";
 import { max } from "date-fns";
-import Decimal from "decimal.js";
 import { and, asc, eq, isNull, or } from "drizzle-orm";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import jwt from "jsonwebtoken";
@@ -109,13 +108,6 @@ export const templatesRouter = createRouter({
             },
           },
         },
-        equityGrant: {
-          with: {
-            optionPool: true,
-            vestingSchedule: true,
-            companyInvestor: { with: { user: { columns: { state: true, countryCode: true } } } },
-          },
-        },
       },
     });
     if (!document) throw new TRPCError({ code: "NOT_FOUND" });
@@ -159,34 +151,6 @@ export const templatesRouter = createRouter({
           ? `${(contractor.payRateInSubunits / 100).toLocaleString()} per ${contractor.payRateType === PayRateType.Hourly ? "hour" : "project"}`
           : "",
       });
-    } else if (document.type === DocumentType.EquityPlanContract) {
-      const equityGrant = document.equityGrant;
-      if (!equityGrant) throw new TRPCError({ code: "NOT_FOUND" });
-
-      Object.assign(values, {
-        __name: equityGrant.optionHolderName,
-        __companyName: ctx.company.name ?? "",
-        __boardApprovalDate: equityGrant.boardApprovalDate ?? "",
-        __quantity: equityGrant.numberOfShares.toString(),
-        __relationship: equityGrant.issueDateRelationship,
-        __grantType: equityGrant.optionGrantType === "iso" ? "Incentive Stock Option" : "Nonstatutory Stock Option",
-        __exercisePrice: equityGrant.exercisePriceUsd.toString(),
-        __totalExercisePrice: new Decimal(equityGrant.exercisePriceUsd).mul(equityGrant.numberOfShares).toString(),
-        __expirationDate: equityGrant.expiresAt.toLocaleDateString(),
-        __optionPool: equityGrant.optionPool.name,
-        __vestingCommencementDate: equityGrant.periodStartedAt.toLocaleDateString(),
-        __exerciseSchedule: "Same as Vesting Schedule",
-      });
-
-      const vestingSchedule = equityGrant.vestingSchedule;
-      if (vestingSchedule) {
-        values.__vestingSchedule = `${vestingSchedule.vestingFrequencyMonths}/${vestingSchedule.totalVestingDurationMonths} of the total Shares shall vest monthly on the same day each month as the Vesting Commencement Date${vestingSchedule.cliffDurationMonths > 0 ? `, with ${vestingSchedule.cliffDurationMonths} months cliff` : ""}, subject to the service provider's Continuous Service (as defined in the Plan) through each vesting date.`;
-      } else if (equityGrant.vestingTrigger === "invoice_paid") {
-        values.__vestingSchedule = `Shares will vest as invoices are paid. The number of shares vesting each month will be equal to the total dollar amount of eligible fees billed to and approved by the Company during that month, times the equity allocation percentage selected, divided by the value per share of the Company's common stock on the Effective Date of the Equity Election Form (which for purposes of the vesting of this award will be either a) the fully diluted share price associated with the last SAFE valuation cap, or b) the share price of the last preferred stock sale, whichever is most recent, as determined by the Board). Any options that remain unvested at the conclusion of the calendar year after giving effect to any vesting earned for the month of December will be forfeited for no consideration.`;
-      }
-
-      const { state, countryCode } = equityGrant.companyInvestor.user;
-      values.__optionholderAddress = (countryCode === "US" ? state : countries.get(countryCode ?? "")) ?? "";
     }
 
     await docuseal.updateSubmitter(submitter.id, { values });
