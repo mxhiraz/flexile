@@ -161,6 +161,8 @@ test.describe("Equity Grants", () => {
     await page.getByRole("link", { name: "sign it" }).click();
     await expect(page.getByText("This is a contract you must sign")).toBeVisible();
     await page.getByRole("button", { name: "Add your signature" }).click();
+    await expect(page.getByText(assertDefined(projectBasedUser.legalName))).toBeVisible();
+    await page.getByRole("button", { name: "Agree & Submit" }).click();
 
     await page.getByRole("link", { name: "New invoice" }).first().click();
     await page.getByLabel("Invoice ID").fill("CUSTOM-2");

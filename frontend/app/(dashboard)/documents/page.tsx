@@ -20,7 +20,7 @@ import Status, { type Variant as StatusVariant } from "@/components/Status";
 import TableSkeleton from "@/components/TableSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCurrentCompany, useCurrentUser } from "@/global";
 import { storageKeys } from "@/models/constants";
@@ -478,6 +478,7 @@ const SignDocumentModal = ({ document, onClose }: { document: Document; onClose:
       else onClose();
     },
   });
+  const [signed, setSigned] = useState(false);
   const sign = () => {
     signDocument.mutate({
       companyId: company.id,
@@ -489,10 +490,20 @@ const SignDocumentModal = ({ document, onClose }: { document: Document; onClose:
   return (
     <Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>{document.name}</DialogTitle>
+        </DialogHeader>
         {document.docusealSubmissionId != null ? (
           <SignWithDocuseal id={document.docusealSubmissionId} onSigned={sign} />
         ) : (
-          <SignForm content={data.text ?? ""} signed={false} onSign={sign} />
+          <>
+            <SignForm content={data.text ?? ""} signed={signed} onSign={() => setSigned(true)} />
+            <DialogFooter>
+              <Button onClick={sign} disabled={!signed}>
+                Agree & Submit
+              </Button>
+            </DialogFooter>
+          </>
         )}
       </DialogContent>
     </Dialog>

@@ -18,6 +18,7 @@ export default function NewDocumentField() {
   const form = useFormContext<z.infer<typeof schema>>();
   const [contractType, setContractType] = useState("upload");
   const value = form.watch("contract");
+  const [isDragging, setIsDragging] = useState(false);
   useEffect(() => form.setValue("contract", ""), [contractType]);
 
   return (
@@ -48,7 +49,7 @@ export default function NewDocumentField() {
               <div className="flex h-full w-10 items-center justify-center rounded-sm bg-red-50 p-2 text-sm text-red-600">
                 PDF
               </div>
-              <div className="flex flex-col">
+              <div>
                 <p>{value.name}</p>
                 <p className="text-muted-foreground text-sm">{formatFileSize(value.size)}</p>
               </div>
@@ -62,8 +63,12 @@ export default function NewDocumentField() {
               </Button>
             </div>
           ) : (
-            <label className="relative">
-              <Placeholder icon={CloudUpload}>
+            <label
+              className="relative"
+              onDragEnter={() => setIsDragging(true)}
+              onDragLeave={() => setIsDragging(false)}
+            >
+              <Placeholder icon={CloudUpload} className={isDragging ? "border-dashed border-blue-500 bg-blue-50" : ""}>
                 <b>
                   Drag and drop or <span className={linkClasses}>click to browse</span> your PDF file here
                 </b>
