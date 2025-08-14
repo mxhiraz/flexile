@@ -9,4 +9,4 @@ export const fillDatePicker = async (page: Page, name: string, value: string) =>
   page.getByRole("spinbutton", { name }).first().pressSequentially(value, { delay: 50 });
 
 export const findRichTextEditor = (page: Locator | Page, name: string) =>
-  page.locator(`xpath=.//*[(./@id = //label[contains(., '${name}')]/@for)]`);
+  page.locator(`xpath=.//*[@contenteditable="true" and (./@id = //label[contains(., ${JSON.stringify(name)})]/@for)]`);

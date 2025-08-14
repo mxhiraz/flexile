@@ -165,7 +165,6 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
       formData.append("equity_grant[board_approval_date]", values.boardApprovalDate.toString());
       formData.append("equity_grant[vesting_trigger]", values.vestingTrigger);
       formData.append("equity_grant[vesting_commencement_date]", values.vestingCommencementDate.toString());
-      formData.append("equity_grant[vesting_commencement_date]", values.vestingCommencementDate.toString());
       formData.append("equity_grant[contract]", values.contract);
 
       if (values.vestingTrigger === "scheduled") {

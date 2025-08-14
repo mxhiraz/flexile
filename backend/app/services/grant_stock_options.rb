@@ -56,35 +56,37 @@ class GrantStockOptions
     exercise_price_usd = company.fmv_per_share_in_usd
     share_price_usd = company.conversion_share_price_usd
 
-    equity_grant_creation_result = EquityGrantCreation.new(company_investor:, option_pool:, option_grant_type:, share_price_usd:,
-                                                           exercise_price_usd:, number_of_shares: @number_of_shares,
-                                                           vested_shares: 0, period_started_at:, period_ended_at:,
-                                                           issue_date_relationship:, option_expiry_months:,
-                                                           board_approval_date:, vesting_trigger:, vesting_schedule:,
-                                                           voluntary_termination_exercise_months:,
-                                                           involuntary_termination_exercise_months:,
-                                                           termination_with_cause_exercise_months:,
-                                                           death_exercise_months:, disability_exercise_months:,
-                                                           retirement_exercise_months:)
-                                                      .process
-    if equity_grant_creation_result.success?
-      equity_grant = equity_grant_creation_result.equity_grant
-      document = company_worker.user.documents.build(equity_grant:,
-                                                     company:,
-                                                     name: "Equity Incentive Plan #{Date.current.year}",
-                                                     year: Date.current.year,
-                                                     document_type: :equity_plan_contract)
-      if contract.is_a?(String)
-        document.text = contract
+    ActiveRecord::Base.transaction do
+      equity_grant_creation_result = EquityGrantCreation.new(company_investor:, option_pool:, option_grant_type:, share_price_usd:,
+                                                             exercise_price_usd:, number_of_shares: @number_of_shares,
+                                                             vested_shares: 0, period_started_at:, period_ended_at:,
+                                                             issue_date_relationship:, option_expiry_months:,
+                                                             board_approval_date:, vesting_trigger:, vesting_schedule:,
+                                                             voluntary_termination_exercise_months:,
+                                                             involuntary_termination_exercise_months:,
+                                                             termination_with_cause_exercise_months:,
+                                                             death_exercise_months:, disability_exercise_months:,
+                                                             retirement_exercise_months:)
+                                                        .process
+      if equity_grant_creation_result.success?
+        equity_grant = equity_grant_creation_result.equity_grant
+        document = company_worker.user.documents.build(equity_grant:,
+                                                       company:,
+                                                       name: "Equity Incentive Plan #{Date.current.year}",
+                                                       year: Date.current.year,
+                                                       document_type: :equity_plan_contract)
+        if contract.is_a?(String)
+          document.text = contract
+        else
+          document.attachments.attach(contract)
+        end
+        document.signatures.build(user:, title: "Signer", signed_at: contract.is_a?(String) ? nil : Time.current)
+        document.save!
+        CompanyWorkerMailer.equity_grant_issued(equity_grant.id).deliver_later
+        { success: true }
       else
-        document.attachments.attach(contract)
+        { success: false, error: equity_grant_creation_result.error }
       end
-      document.signatures.build(user:, title: "Signer", signed_at: contract.is_a?(String) ? nil : DateTime.now)
-      document.save!
-      CompanyWorkerMailer.equity_grant_issued(equity_grant.id).deliver_later
-      { success: true }
-    else
-      { success: false, error: equity_grant_creation_result.error }
     end
   end
 

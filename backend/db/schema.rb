@@ -416,7 +416,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_14_120058) do
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", null: false
     t.integer "docuseal_submission_id"
-    t.string "text"
+    t.text "text"
     t.index ["company_id"], name: "index_documents_on_company_id"
     t.index ["docuseal_submission_id"], name: "index_documents_on_docuseal_submission_id"
     t.index ["equity_grant_id"], name: "index_documents_on_equity_grant_id"
