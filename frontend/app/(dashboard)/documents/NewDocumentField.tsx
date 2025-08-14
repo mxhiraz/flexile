@@ -7,7 +7,6 @@ import Placeholder from "@/components/Placeholder";
 import { Editor as RichTextEditor } from "@/components/RichText";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatFileSize } from "@/utils";
 
@@ -56,7 +55,7 @@ export default function NewDocumentField() {
               </Button>
             </div>
           ) : (
-            <label className="block cursor-pointer">
+            <label className="relative">
               <Placeholder icon={CloudUpload}>
                 <b>
                   Drag and drop or <span className={linkClasses}>click to browse</span> your file here
@@ -64,7 +63,12 @@ export default function NewDocumentField() {
                 PDF
               </Placeholder>
               <FormControl>
-                <Input type="file" accept=".pdf" hidden onChange={(e) => field.onChange(e.target.files?.[0])} />
+                <input
+                  type="file"
+                  accept=".pdf"
+                  className="absolute inset-0 size-full cursor-pointer opacity-0"
+                  onChange={(e) => field.onChange(e.target.files?.[0])}
+                />
               </FormControl>
             </label>
           )}

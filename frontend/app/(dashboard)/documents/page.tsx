@@ -202,7 +202,7 @@ export default function DocumentsPage() {
   const [signDocumentParam] = useQueryState("sign");
   const [signDocumentId, setSignDocumentId] = useState<bigint | null>(null);
   const isSignable = (document: Document) =>
-    (!!document.docusealSubmissionId || !!document.text) &&
+    (!!document.docusealSubmissionId || document.hasText) &&
     document.signatories.some(
       (signatory) =>
         !signatory.signedAt &&
@@ -467,6 +467,7 @@ const SignDocumentModal = ({ document, onClose }: { document: Document; onClose:
   const trpcUtils = trpc.useUtils();
   const queryClient = useQueryClient();
 
+  const [data] = trpc.documents.get.useSuspenseQuery({ companyId: company.id, id: document.id });
   const signDocument = trpc.documents.sign.useMutation({
     onSuccess: async () => {
       router.replace("/documents");
@@ -491,7 +492,7 @@ const SignDocumentModal = ({ document, onClose }: { document: Document; onClose:
         {document.docusealSubmissionId != null ? (
           <SignWithDocuseal id={document.docusealSubmissionId} onSigned={sign} />
         ) : (
-          <SignForm content={document.text ?? ""} signed={false} onSign={sign} />
+          <SignForm content={data.text ?? ""} signed={false} onSign={sign} />
         )}
       </DialogContent>
     </Dialog>

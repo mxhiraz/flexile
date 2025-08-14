@@ -39,8 +39,9 @@ export const documentsRouter = createRouter({
       );
       const rows = await db
         .selectDistinctOn([documents.id], {
-          ...pick(documents, "id", "name", "createdAt", "docusealSubmissionId", "type", "text"),
+          ...pick(documents, "id", "name", "createdAt", "docusealSubmissionId", "type"),
           attachment: pick(activeStorageBlobs, "key", "filename"),
+          hasText: isNotNull(documents.text),
         })
         .from(documents)
         .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
@@ -76,6 +77,15 @@ export const documentsRouter = createRouter({
           })),
       }));
     }),
+  get: companyProcedure.input(z.object({ id: z.bigint() })).query(async ({ ctx, input }) => {
+    const [document] = await db
+      .select(pick(documents, "text"))
+      .from(documents)
+      .innerJoin(documentSignatures, eq(documents.id, documentSignatures.documentId))
+      .where(and(eq(documents.id, input.id), visibleDocuments(ctx.company.id, ctx.user.id)));
+    if (!document) throw new TRPCError({ code: "NOT_FOUND" });
+    return document;
+  }),
   getUrl: companyProcedure.input(z.object({ id: z.bigint() })).query(async ({ ctx, input }) => {
     const [document] = await db
       .select({ docusealSubmissionId: documents.docusealSubmissionId })
