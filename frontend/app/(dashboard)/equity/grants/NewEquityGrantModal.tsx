@@ -235,14 +235,14 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">New equity grant</DialogTitle>
           <DialogDescription>Fill in the details below to create an equity grant.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={(e) => void submit(e)} className="grid gap-6">
+          <form onSubmit={(e) => void submit(e)} className="grid gap-8">
             <div className="grid gap-4">
               <h2 className="text-lg font-medium">Recipient details</h2>
               <FormField
@@ -606,13 +606,13 @@ export default function NewEquityGrantModal({ open, onOpenChange }: NewEquityGra
 
             <NewDocumentField />
 
-            <div className="grid gap-2">
-              {form.formState.errors.root ? (
+            {form.formState.errors.root ? (
+              <div className="grid gap-2">
                 <div className="text-red text-center text-xs">
                   {form.formState.errors.root.message ?? "An error occurred"}
                 </div>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
 
             <div className="flex justify-end">
               <MutationStatusButton type="submit" mutation={createEquityGrant} disabled={!isFormValid}>

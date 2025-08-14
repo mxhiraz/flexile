@@ -1,4 +1,4 @@
-import { CloudUpload, PencilLine, Trash } from "lucide-react";
+import { CloudUpload, PencilLine, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
@@ -44,23 +44,29 @@ export default function NewDocumentField() {
               <RichTextEditor {...field} value={typeof field.value === "string" ? field.value : ""} />
             </FormControl>
           ) : value instanceof File ? (
-            <div className="flex items-center gap-2 rounded-md border p-4">
-              <div className="rounded-sm bg-red-50 p-2 text-red-500">PDF</div>
+            <div className="border-input flex items-center gap-2 rounded-md border py-2 pl-2">
+              <div className="flex h-full w-10 items-center justify-center rounded-sm bg-red-50 p-2 text-sm text-red-600">
+                PDF
+              </div>
               <div className="flex flex-col">
                 <p>{value.name}</p>
                 <p className="text-muted-foreground text-sm">{formatFileSize(value.size)}</p>
               </div>
-              <Button variant="link" size="icon" className="ml-auto" onClick={() => field.onChange("")}>
-                <Trash className="size-4" />
+              <Button
+                variant="link"
+                size="icon"
+                className="ml-auto hover:text-red-600"
+                onClick={() => field.onChange("")}
+              >
+                <Trash2 className="size-4" />
               </Button>
             </div>
           ) : (
             <label className="relative">
               <Placeholder icon={CloudUpload}>
                 <b>
-                  Drag and drop or <span className={linkClasses}>click to browse</span> your file here
+                  Drag and drop or <span className={linkClasses}>click to browse</span> your PDF file here
                 </b>
-                PDF
               </Placeholder>
               <FormControl>
                 <input
