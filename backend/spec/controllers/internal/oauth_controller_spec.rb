@@ -26,6 +26,15 @@ RSpec.describe Internal::OauthController, type: :controller do
         json_response = JSON.parse(response.body)
         expect(json_response["user"]["email"]).to eq(email)
       end
+
+      it "updates current_sign_in_at for existing user on login" do
+        user = User.create!(email: email, current_sign_in_at: 2.days.ago)
+        expect do
+          post :create, params: { email: email }
+        end.not_to change(User, :count)
+        user.reload
+        expect(user.current_sign_in_at).to be_within(5.seconds).of(Time.current)
+      end
     end
 
     context "with missing parameters" do

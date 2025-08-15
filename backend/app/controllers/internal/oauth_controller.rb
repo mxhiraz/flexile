@@ -14,7 +14,10 @@ class Internal::OauthController < Internal::BaseController
     end
 
     user = User.find_by(email: email)
-    return success_response_with_jwt(user) if user&.persisted?
+    if user
+      user.update!(current_sign_in_at: Time.current)
+      return success_response_with_jwt(user)
+    end
 
     result = SignUpUser.new(user_attributes: { email: email, confirmed_at: Time.current }, ip_address: request.remote_ip).perform
 

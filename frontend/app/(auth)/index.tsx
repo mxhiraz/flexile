@@ -99,6 +99,16 @@ export function AuthPage({
     }
   });
 
+  const providerSignIn = (provider: SignInMethod) => {
+    localStorage.setItem("last_sign_in_method", provider);
+    const redirectUrlParam = searchParams.get("redirect_url");
+    const redirectUrl =
+      redirectUrlParam && redirectUrlParam.startsWith("/") && !redirectUrlParam.startsWith("//")
+        ? redirectUrlParam
+        : "/dashboard";
+    void signIn(provider, { callbackUrl: redirectUrl }, { prompt: "login" });
+  };
+
   return (
     <div className="flex items-center justify-center">
       <Card className="w-full max-w-md border-0 bg-transparent">
@@ -180,10 +190,7 @@ export function AuthPage({
                     type="button"
                     variant="outline"
                     className="flex h-12 w-full items-center justify-center gap-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-500"
-                    onClick={() => {
-                      localStorage.setItem("last_sign_in_method", SignInMethod.Google);
-                      void signIn("google", { callbackUrl: "/dashboard" }, { prompt: "login" });
-                    }}
+                    onClick={() => providerSignIn(SignInMethod.Google)}
                   >
                     <Image src={googleLogoLight} alt="Google" width={20} height={20} />
                     {sendOtpText} with Google
