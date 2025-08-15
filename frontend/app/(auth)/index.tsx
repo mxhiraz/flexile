@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { SignInMethod } from "@/db/enums";
 import googleLogoLight from "@/images/google-light.svg";
 import logo from "@/public/logo-icon.svg";
 import { request } from "@/utils/request";
@@ -79,7 +80,7 @@ export function AuthPage({
   const submitEmailForm = emailForm.handleSubmit(async (values) => {
     try {
       await sendOtp.mutateAsync(values);
-      localStorage.setItem("last_sign_in_method", "Work Email");
+      localStorage.setItem("last_sign_in_method", SignInMethod.Email);
     } catch (error) {
       emailForm.setError("email", {
         message: error instanceof Error ? error.message : "Failed to send verification code",
@@ -180,7 +181,7 @@ export function AuthPage({
                     variant="outline"
                     className="flex h-12 w-full items-center justify-center gap-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-500"
                     onClick={() => {
-                      localStorage.setItem("last_sign_in_method", "Google");
+                      localStorage.setItem("last_sign_in_method", SignInMethod.Google);
                       void signIn("google", { callbackUrl: "/dashboard" }, { prompt: "login" });
                     }}
                   >

@@ -102,18 +102,16 @@ export const authOptions = {
       return { ...session, user: { ...session.user, ...token, id: token.sub } };
     },
     async signIn({ user, account }) {
-      let user_attributes: { provider_id: string; email: string; provider: string } | undefined;
+      let user_attributes: { email: string } | undefined;
 
       if (!account) return false;
 
       if (account.provider === "google") {
         user_attributes = {
-          provider_id: String(user.id),
           email: String(user.email),
-          provider: "google",
         };
       }
-      if (!user_attributes) return false;
+      if (!user_attributes) return true;
 
       try {
         const response = await fetch(oauth_index_url(), {
@@ -142,6 +140,7 @@ export const authOptions = {
         user.jwt = data.jwt;
         user.legalName = data.user.legal_name ?? "";
         user.preferredName = data.user.preferred_name ?? "";
+
         return true;
       } catch {
         return false;

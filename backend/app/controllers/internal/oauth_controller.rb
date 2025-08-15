@@ -6,8 +6,7 @@ class Internal::OauthController < Internal::BaseController
   skip_before_action :verify_authenticity_token
 
   def create
-    email = params[:email]
-    params[:invitation_token]
+    email = params[:email].to_s.strip.downcase
 
     if email.blank?
       render json: { error: "Email is required" }, status: :bad_request
@@ -15,9 +14,9 @@ class Internal::OauthController < Internal::BaseController
     end
 
     user = User.find_by(email: email)
-    return success_response_with_jwt(user) if user.persisted?
+    return success_response_with_jwt(user) if user&.persisted?
 
-    result = complete_user_signup(user)
+    result = SignUpUser.new(user_attributes: { email: email, confirmed_at: Time.current }, ip_address: request.remote_ip).perform
 
     if result[:success]
       success_response_with_jwt(result[:user], :created)
@@ -25,16 +24,4 @@ class Internal::OauthController < Internal::BaseController
       render json: { error: result[:error_message] }, status: :unprocessable_entity
     end
   end
-
-  private
-    def complete_user_signup(user, invitation_token: nil)
-      ApplicationRecord.transaction do
-        user = User.new(email: email, confirmed_at: Time.current)
-        user.tos_agreements.create!(ip_address: request.remote_ip)
-
-        { success: true, user: user }
-      end
-    rescue ActiveRecord::RecordInvalid => e
-      { success: false, error_message: e.record.errors.full_messages.to_sentence }
-    end
 end
