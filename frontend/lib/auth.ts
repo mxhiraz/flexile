@@ -1,15 +1,37 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import type { Provider } from "next-auth/providers/index";
 import { z } from "zod";
 import env from "@/env";
 import { assertDefined } from "@/utils/assert";
-import { oauth_index_url } from "@/utils/routes";
 
 const otpLoginSchema = z.object({
   email: z.string().email(),
   otp: z.string().length(6),
 });
+
+const isTestEnv = process.env.RAILS_ENV === "test" || process.env.NODE_ENV === "test";
+const ExternalProvider = (provider: Provider) => {
+  if (!isTestEnv) return provider;
+
+  return CredentialsProvider({
+    id: provider.id,
+    name: provider.name,
+    credentials: {
+      email: { label: "Email", type: "email" },
+    },
+    authorize(credentials) {
+      if (!credentials?.email) return null;
+      return {
+        email: credentials.email,
+        jwt: "test-jwt-token",
+        id: "test-user-id",
+        name: "Test User",
+      };
+    },
+  });
+};
 
 export const authOptions = {
   providers: [
@@ -77,10 +99,12 @@ export const authOptions = {
         }
       },
     }),
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    }),
+    ExternalProvider(
+      GoogleProvider({
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+      }),
+    ),
   ],
   session: {
     strategy: "jwt",
@@ -114,10 +138,10 @@ export const authOptions = {
       if (!user_attributes) return true;
 
       try {
-        const response = await fetch(oauth_index_url(), {
+        const response = await fetch(`${process.env.NEXTAUTH_URL}/internal/oauth`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(user_attributes),
+          body: JSON.stringify({ ...user_attributes, token: env.API_SECRET_TOKEN }),
         });
 
         if (!response.ok) {

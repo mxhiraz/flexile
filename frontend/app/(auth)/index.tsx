@@ -106,7 +106,7 @@ export function AuthPage({
       redirectUrlParam && redirectUrlParam.startsWith("/") && !redirectUrlParam.startsWith("//")
         ? redirectUrlParam
         : "/dashboard";
-    void signIn(provider, { callbackUrl: redirectUrl }, { prompt: "login" });
+    void signIn(provider, { callbackUrl: redirectUrl });
   };
 
   return (
