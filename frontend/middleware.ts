@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import env from "@/env";
 
-export default function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   // TODO: Bring back nonce and remove unsafe-inline
   // const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const { NODE_ENV } = process.env; // destructure to prevent inlining
@@ -33,6 +34,16 @@ export default function middleware(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   // requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", cspHeader);
+
+  if (req.nextUrl.pathname === "/") {
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (secret) {
+      const token = await getToken({ req, secret });
+      if (token) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+    }
+  }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", cspHeader);
