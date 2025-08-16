@@ -126,22 +126,15 @@ export const authOptions = {
       return { ...session, user: { ...session.user, ...token, id: token.sub } };
     },
     async signIn({ user, account }) {
-      let user_attributes: { email: string } | undefined;
-
       if (!account) return false;
 
-      if (account.provider === "google") {
-        user_attributes = {
-          email: String(user.email),
-        };
-      }
-      if (!user_attributes) return true;
+      if (account.type !== "oauth") return true;
 
       try {
         const response = await fetch(`${process.env.NEXTAUTH_URL}/internal/oauth`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...user_attributes, token: env.API_SECRET_TOKEN }),
+          body: JSON.stringify({ email: user.email, token: env.API_SECRET_TOKEN }),
         });
 
         if (!response.ok) {
