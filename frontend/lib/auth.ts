@@ -128,7 +128,7 @@ export const authOptions = {
     async signIn({ user, account }) {
       if (!account) return false;
 
-      if (account.type !== "oauth") return true;
+      if (account.type !== "oauth" && !isTestEnv) return true;
 
       try {
         const response = await fetch(`${process.env.NEXTAUTH_URL}/internal/oauth`, {
