@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { navLinks as equityNavLinks } from "@/app/(dashboard)/equity";
 import env from "@/env";
-import { currentUserSchema } from "@/models/user";
-import { assertDefined } from "@/utils/assert";
-import { internal_current_user_data_url } from "@/utils/routes";
+import { getRedirectUrl } from "@/lib/getRedirectUrl";
 
 export default async function middleware(req: NextRequest) {
   // TODO: Bring back nonce and remove unsafe-inline
@@ -39,28 +36,8 @@ export default async function middleware(req: NextRequest) {
   requestHeaders.set("Content-Security-Policy", cspHeader);
 
   if (req.nextUrl.pathname === "/") {
-    const host = assertDefined(req.headers.get("Host"));
-    const response = await fetch(internal_current_user_data_url({ host }), {
-      headers: {
-        cookie: req.headers.get("cookie") ?? "",
-        "User-Agent": req.headers.get("User-Agent") ?? "",
-      },
-    });
-    if (!response.ok) return NextResponse.redirect(new URL("/login", req.url));
-    const user = currentUserSchema.parse(await response.json());
-    if (user.onboardingPath) return NextResponse.redirect(new URL(user.onboardingPath, req.url));
-
-    if (user.roles.administrator) {
-      return NextResponse.redirect(new URL("/invoices", req.url));
-    }
-    if (user.roles.lawyer) {
-      return NextResponse.redirect(new URL("/documents", req.url));
-    }
-    if (user.roles.worker) {
-      return NextResponse.redirect(new URL("/invoices", req.url));
-    }
-    const company = assertDefined(user.companies.find((company) => company.id === user.currentCompanyId));
-    return NextResponse.redirect(new URL(assertDefined(equityNavLinks(user, company)[0]?.route), req.url));
+    const redirectUrl = await getRedirectUrl(req);
+    return NextResponse.redirect(new URL(redirectUrl, req.url));
   }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
