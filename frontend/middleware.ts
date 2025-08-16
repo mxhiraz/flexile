@@ -36,8 +36,12 @@ export default async function middleware(req: NextRequest) {
   requestHeaders.set("Content-Security-Policy", cspHeader);
 
   if (req.nextUrl.pathname === "/") {
-    const redirectUrl = await getRedirectUrl(req);
-    return NextResponse.redirect(new URL(redirectUrl, req.url));
+    const sessionCookie =
+      req.cookies.get("next-auth.session-token") || req.cookies.get("__Secure-next-auth.session-token");
+    if (sessionCookie) {
+      const redirectUrl = await getRedirectUrl(req);
+      return NextResponse.redirect(new URL(redirectUrl, req.url));
+    }
   }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
