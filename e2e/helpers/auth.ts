@@ -52,8 +52,13 @@ export const signup = async (page: Page, email: string) => {
 
 export const externalProviderMock = async (page: Page, provider: string, credentials: { email: string }) => {
   await page.route(`**/api/auth/callback/${provider}`, async (route) => {
-    const body = await route.request().postDataJSON();
-    const modifiedData = new URLSearchParams({ ...body, email: credentials.email }).toString();
+    const body: {
+      callbackUrl: string;
+      csrfToken: string;
+      json: string;
+      [key: string]: string;
+    } = await route.request().postDataJSON();
+    const modifiedData: string = new URLSearchParams({ ...body, email: credentials.email }).toString();
     await route.continue({ postData: modifiedData });
   });
 };
