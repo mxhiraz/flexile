@@ -148,14 +148,6 @@ export function AuthPage({
                     </FormItem>
                   )}
                 />
-                <MutationStatusButton
-                  mutation={verifyOtp}
-                  type="submit"
-                  className="w-[342px]"
-                  loadingText="Verifying..."
-                >
-                  Continue
-                </MutationStatusButton>
                 <div className="pt-6 text-center">
                   <Button
                     className="text-gray-600"
