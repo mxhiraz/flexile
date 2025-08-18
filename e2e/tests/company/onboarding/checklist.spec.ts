@@ -157,7 +157,7 @@ test.describe("Onboarding checklist", () => {
     await page.getByLabel("Rate").fill("50");
     await expect(page.getByText("Total amount$525")).toBeVisible();
     await page.getByRole("button", { name: "Send for approval" }).click();
-    await expect(page.getByRole("row").getByText("$525")).toBeVisible();
+    await expect(page.locator("tbody").getByRole("row").getByText("$525")).toBeVisible();
   });
 
   test("completes investor onboarding checklist by filling tax information and adding payout details", async ({
@@ -279,6 +279,6 @@ test.describe("Onboarding checklist", () => {
     await page.getByLabel("Rate").fill("50");
     await expect(page.getByText("Total amount$525")).toBeVisible();
     await page.getByRole("button", { name: "Send for approval" }).click();
-    await expect(page.getByRole("row").getByText("$525")).toBeVisible();
+    await expect(page.locator("tbody").getByRole("row").getByText("$525")).toBeVisible();
   });
 });

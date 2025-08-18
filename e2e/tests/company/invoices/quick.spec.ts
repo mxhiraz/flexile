@@ -37,12 +37,12 @@ test.describe("quick invoicing", () => {
     await page.getByLabel("Rate").fill("50");
     await expect(page.getByText("Total amount$525")).toBeVisible();
     await page.getByRole("button", { name: "Send for approval" }).click();
-    await expect(page.getByRole("row").getByText("$525")).toBeVisible();
+    await expect(page.locator("tbody").getByRole("row").getByText("$525")).toBeVisible();
 
     const invoice = await db.query.invoices
       .findFirst({ where: eq(invoices.companyId, company.id), orderBy: desc(invoices.id) })
       .then(takeOrThrow);
-    expect(invoice.totalAmountInUsdCents).toBe(52500n);
+    expect(invoice.totalAmountInUsdCents).toBe(BigInt(52500));
   });
 
   test.describe("when equity compensation is disabled", () => {
@@ -87,9 +87,9 @@ test.describe("quick invoicing", () => {
     const invoice = await db.query.invoices
       .findFirst({ where: eq(invoices.companyId, company.id), orderBy: desc(invoices.id) })
       .then(takeOrThrow);
-    expect(invoice.totalAmountInUsdCents).toBe(63000n);
-    expect(invoice.cashAmountInCents).toBe(50400n);
-    expect(invoice.equityAmountInCents).toBe(12600n);
+    expect(invoice.totalAmountInUsdCents).toBe(BigInt(63000));
+    expect(invoice.cashAmountInCents).toBe(BigInt(50400));
+    expect(invoice.equityAmountInCents).toBe(BigInt(12600));
     expect(invoice.equityPercentage).toBe(20);
   });
 });
