@@ -40,7 +40,7 @@ export default async function middleware(req: NextRequest) {
       req.cookies.get("next-auth.session-token") || req.cookies.get("__Secure-next-auth.session-token");
     if (sessionCookie) {
       const redirectUrl = await getRedirectUrl(req);
-      return NextResponse.redirect(new URL(redirectUrl, req.url));
+      return NextResponse.redirect(new URL(redirectUrl, req.url), { status: 307 });
     }
   }
 

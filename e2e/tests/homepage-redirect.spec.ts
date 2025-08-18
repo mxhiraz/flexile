@@ -65,4 +65,32 @@ test.describe("Homepage redirect", () => {
     await page.waitForURL((url) => url.pathname.includes("/equity"));
     expect(page.url()).toContain("/equity/");
   });
+
+  test("authenticated users are redirected server-side without marketing page flicker", async ({ page }) => {
+    const { adminUser } = await companiesFactory.createCompletedOnboarding();
+    await login(page, adminUser);
+
+    let marketingPageLoaded = false;
+    page.on("response", (response) => {
+      if (response.url().endsWith("/") && response.status() === 200) {
+        marketingPageLoaded = true;
+      }
+    });
+
+    const response = await page.goto("/", { waitUntil: "networkidle" });
+
+    const currentRequest = response?.request();
+    const redirectedFromRequest = currentRequest?.redirectedFrom();
+    expect(redirectedFromRequest).toBeTruthy();
+    expect(redirectedFromRequest?.url()).toMatch(/\/$/u);
+
+    expect(redirectedFromRequest?.redirectedTo()).toBe(currentRequest);
+
+    expect(marketingPageLoaded).toBe(false);
+
+    await page.waitForURL((url) => url.pathname === "/invoices");
+    expect(page.url()).toContain("/invoices");
+
+    await expect(page.getByText("Contractor payments")).not.toBeVisible();
+  });
 });
