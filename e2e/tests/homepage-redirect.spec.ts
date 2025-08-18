@@ -73,14 +73,7 @@ test.describe.serial("Homepage redirect", () => {
       }
     });
 
-    const response = await page.goto("/", { waitUntil: "networkidle" });
-
-    const currentRequest = response?.request();
-    const redirectedFromRequest = currentRequest?.redirectedFrom();
-    expect(redirectedFromRequest).toBeTruthy();
-    expect(redirectedFromRequest?.url()).toMatch(/\/$/u);
-
-    expect(redirectedFromRequest?.redirectedTo()).toBe(currentRequest);
+    await page.goto("/");
 
     expect(marketingPageLoaded).toBe(false);
 

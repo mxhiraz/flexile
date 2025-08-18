@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import env from "@/env";
-import { getRedirectUrl } from "@/lib/getRedirectUrl";
 
-export default async function middleware(req: NextRequest) {
+export default function middleware(req: NextRequest) {
   // TODO: Bring back nonce and remove unsafe-inline
   // const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const { NODE_ENV } = process.env; // destructure to prevent inlining
@@ -34,15 +33,6 @@ export default async function middleware(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   // requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", cspHeader);
-
-  if (req.nextUrl.pathname === "/") {
-    const sessionCookie =
-      req.cookies.get("next-auth.session-token") || req.cookies.get("__Secure-next-auth.session-token");
-    if (sessionCookie) {
-      const redirectUrl = await getRedirectUrl(req);
-      return NextResponse.redirect(new URL(redirectUrl, req.url), { status: 307 });
-    }
-  }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", cspHeader);
