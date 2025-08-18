@@ -290,7 +290,14 @@ export default function InvoicesPage() {
         meta: {
           cellClassName: "w-full",
         },
-        footer: () => (
+        footer: user.roles.administrator ? (
+          <div className="flex flex-col gap-2">
+            <div className="text-base font-medium">Total</div>
+            <div className="text-sm">
+              {formatMoneyFromCents(data.reduce((sum, invoice) => sum + Number(invoice.totalAmountInUsdCents || 0), 0))}
+            </div>
+          </div>
+        ) : (
           <div className="flex flex-col gap-2">
             <div className="text-base font-medium">Total</div>
             <div className="text-sm">
@@ -314,7 +321,7 @@ export default function InvoicesPage() {
             </div>
           );
         },
-        footer: () => <div></div>,
+        footer: <div></div>,
       }),
 
       columnHelper.accessor((row) => statusNames[row.status], {
