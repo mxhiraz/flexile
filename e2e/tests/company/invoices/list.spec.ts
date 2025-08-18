@@ -225,14 +225,14 @@ test.describe("Invoices admin flow", () => {
         await invoicesFactory.create({ companyId: company.id });
         const { invoice } = await invoicesFactory.create({
           companyId: company.id,
-          totalAmountInUsdCents: 75_00n,
+          totalAmountInUsdCents: BigInt(75_00),
         });
         await invoiceApprovalsFactory.create({ invoiceId: invoice.id });
         await db.update(invoices).set({ status: "approved" }).where(eq(invoices.id, invoice.id));
 
         const { invoice: invoice2 } = await invoicesFactory.create({
           companyId: company.id,
-          totalAmountInUsdCents: 75_00n,
+          totalAmountInUsdCents: BigInt(75_00),
         });
         await invoiceApprovalsFactory.create({ invoiceId: invoice2.id });
         await db.update(invoices).set({ status: "approved" }).where(eq(invoices.id, invoice2.id));
@@ -362,6 +362,110 @@ test.describe("Invoices admin flow", () => {
     await page.getByRole("row").getByText("Awaiting approval").first().click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("This invoice includes rates above the default of $60/hour.")).not.toBeVisible();
+  });
+
+  test.describe("footer total row", () => {
+    test("displays total footer with correct sum for administrator view", async ({ page }) => {
+      const { company, user: adminUser } = await setupCompany();
+
+      await invoicesFactory.create({
+        companyId: company.id,
+        totalAmountInUsdCents: BigInt(100_00),
+      });
+      await invoicesFactory.create({
+        companyId: company.id,
+        totalAmountInUsdCents: BigInt(250_00),
+      });
+      await invoicesFactory.create({
+        companyId: company.id,
+        totalAmountInUsdCents: BigInt(150_00),
+      });
+
+      await login(page, adminUser);
+      await page.getByRole("link", { name: "Invoices" }).click();
+
+      const footerRow = page.locator("tfoot tr");
+      await expect(footerRow).toBeVisible();
+      await expect(footerRow.locator("td").first()).toContainText("Total");
+
+      await expect(footerRow.locator("td").last()).toContainText("$500");
+    });
+
+    test("displays total footer with correct sum for contractor view", async ({ page }) => {
+      const { company } = await setupCompany();
+      const { companyContractor } = await companyContractorsFactory.create({ companyId: company.id });
+      const contractorUser = await db.query.users.findFirst({
+        where: eq(users.id, companyContractor.userId),
+      });
+      assert(contractorUser !== undefined);
+
+      await invoicesFactory.create({
+        companyId: company.id,
+        companyContractorId: companyContractor.id,
+        totalAmountInUsdCents: BigInt(75_00),
+      });
+      await invoicesFactory.create({
+        companyId: company.id,
+        companyContractorId: companyContractor.id,
+        totalAmountInUsdCents: BigInt(125_00),
+      });
+
+      await login(page, contractorUser);
+      await page.getByRole("link", { name: "Invoices" }).click();
+
+      const footerRow = page.locator("tfoot tr");
+      await expect(footerRow).toBeVisible();
+      await expect(footerRow.locator("td").first()).toContainText("Total");
+
+      await expect(footerRow.locator("td").last()).toContainText("$200");
+    });
+
+    test("handles empty invoice list correctly", async ({ page }) => {
+      const { user: adminUser } = await setupCompany();
+
+      await login(page, adminUser);
+      await page.getByRole("link", { name: "Invoices" }).click();
+
+      const footerRow = page.locator("tfoot tr");
+      await expect(footerRow).toBeVisible();
+      await expect(footerRow.locator("td").first()).toContainText("Total");
+      await expect(footerRow.locator("td").last()).toContainText("$0");
+    });
+
+    test("updates total when invoices are filtered", async ({ page }) => {
+      const { company, user: adminUser } = await setupCompany();
+
+      const { companyContractor: contractor1 } = await companyContractorsFactory.create({
+        companyId: company.id,
+        role: "Developer",
+      });
+      const { companyContractor: contractor2 } = await companyContractorsFactory.create({
+        companyId: company.id,
+        role: "Designer",
+      });
+
+      await invoicesFactory.create({
+        companyId: company.id,
+        companyContractorId: contractor1.id,
+        totalAmountInUsdCents: BigInt(200_00),
+      });
+      await invoicesFactory.create({
+        companyId: company.id,
+        companyContractorId: contractor2.id,
+        totalAmountInUsdCents: BigInt(300_00),
+      });
+
+      await login(page, adminUser);
+      await page.getByRole("link", { name: "Invoices" }).click();
+
+      const footerRow = page.locator("tfoot tr");
+      await expect(footerRow.locator("td").last()).toContainText("$500");
+
+      const searchInput = page.getByPlaceholder("Search by Contractor...");
+      await searchInput.fill("Developer");
+
+      await expect(footerRow.locator("td").last()).toContainText("$200");
+    });
   });
 });
 
