@@ -290,6 +290,14 @@ export default function InvoicesPage() {
         meta: {
           cellClassName: "w-full",
         },
+        footer: () => (
+          <div className="flex flex-col gap-2">
+            <div className="text-base font-medium">Total</div>
+            <div className="text-sm">
+              {formatMoneyFromCents(data.reduce((sum, invoice) => sum + Number(invoice.totalAmountInUsdCents || 0), 0))}
+            </div>
+          </div>
+        ),
       }),
 
       columnHelper.display({
@@ -306,6 +314,7 @@ export default function InvoicesPage() {
             </div>
           );
         },
+        footer: () => <div></div>,
       }),
 
       columnHelper.accessor((row) => statusNames[row.status], {
@@ -331,7 +340,7 @@ export default function InvoicesPage() {
         },
       }),
     ],
-    [data],
+    [data, user.roles.administrator],
   );
 
   const columns = isMobile ? mobileColumns : desktopColumns;

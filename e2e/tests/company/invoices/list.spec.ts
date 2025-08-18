@@ -388,7 +388,7 @@ test.describe("Invoices admin flow", () => {
       await expect(footerRow).toBeVisible();
       await expect(footerRow.locator("td").first()).toContainText("Total");
 
-      await expect(footerRow.locator("td").last()).toContainText("$500");
+      await expect(footerRow.locator("td").first()).toContainText("$500");
     });
 
     test("displays total footer with correct sum for contractor view", async ({ page }) => {
@@ -417,7 +417,7 @@ test.describe("Invoices admin flow", () => {
       await expect(footerRow).toBeVisible();
       await expect(footerRow.locator("td").first()).toContainText("Total");
 
-      await expect(footerRow.locator("td").last()).toContainText("$200");
+      await expect(footerRow.locator("td").first()).toContainText("$200");
     });
 
     test("handles empty invoice list correctly", async ({ page }) => {
@@ -429,7 +429,7 @@ test.describe("Invoices admin flow", () => {
       const footerRow = page.locator("tfoot tr");
       await expect(footerRow).toBeVisible();
       await expect(footerRow.locator("td").first()).toContainText("Total");
-      await expect(footerRow.locator("td").last()).toContainText("$0");
+      await expect(footerRow.locator("td").first()).toContainText("$0");
     });
 
     test("updates total when invoices are filtered", async ({ page }) => {
@@ -459,12 +459,12 @@ test.describe("Invoices admin flow", () => {
       await page.getByRole("link", { name: "Invoices" }).click();
 
       const footerRow = page.locator("tfoot tr");
-      await expect(footerRow.locator("td").last()).toContainText("$500");
+      await expect(footerRow.locator("td").first()).toContainText("$500");
 
       const searchInput = page.getByPlaceholder("Search by Contractor...");
       await searchInput.fill("Developer");
 
-      await expect(footerRow.locator("td").last()).toContainText("$200");
+      await expect(footerRow.locator("td").first()).toContainText("$200");
     });
   });
 });
