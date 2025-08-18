@@ -5,7 +5,7 @@ import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 
-test.describe("Homepage redirect", () => {
+test.describe.serial("Homepage redirect", () => {
   test("unauthenticated user sees marketing homepage", async ({ page }) => {
     await page.goto("/");
 
@@ -29,7 +29,6 @@ test.describe("Homepage redirect", () => {
     const { user } = await usersFactory.createContractor();
     await login(page, user);
     await page.goto("/");
-    await page.waitForURL((url) => url.pathname.includes("/invoices"));
     expect(page.url()).toContain("/invoices");
     await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
   });
@@ -38,7 +37,6 @@ test.describe("Homepage redirect", () => {
     const { user } = await usersFactory.createCompanyAdmin();
     await login(page, user);
     await page.goto("/");
-    await page.waitForURL((url) => url.pathname.includes("/invoices"));
     expect(page.url()).toContain("/invoices");
     await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
   });
@@ -49,7 +47,6 @@ test.describe("Homepage redirect", () => {
     await companyLawyersFactory.create({ companyId: company.id, userId: user.id });
     await login(page, user);
     await page.goto("/");
-    await page.waitForURL((url) => url.pathname.includes("/documents"));
     expect(page.url()).toContain("/documents");
     await expect(page.getByRole("heading", { name: "Documents" })).toBeVisible();
   });
@@ -62,7 +59,6 @@ test.describe("Homepage redirect", () => {
     await companyInvestorsFactory.create({ companyId: company.id, userId: user.id });
     await login(page, user);
     await page.goto("/");
-    await page.waitForURL((url) => url.pathname.includes("/equity"));
     expect(page.url()).toContain("/equity/");
   });
 
