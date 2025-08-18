@@ -111,3 +111,18 @@ test("login description updates with last used sign-in method", async ({ page })
   await logout(page);
   await expect(page.getByText("you used your work email to log in last time")).toBeVisible();
 });
+
+test("login page should display OAuth error messages", async ({ page }) => {
+  await page.goto("/login?error=Callback");
+  await expect(page.getByText("Access denied or an unexpected error occurred.")).toBeVisible();
+
+  await page.goto("/login?error=AccessDenied");
+  await expect(page.getByText("You do not have permission to perform this action.")).toBeVisible();
+
+  await page.goto("/login?error=Verification");
+  await expect(page.getByText("Invalid or expired verification link.")).toBeVisible();
+
+  const customMessage = "Error occurred during sign-in. Try again later";
+  await page.goto(`/login?error=${encodeURIComponent(customMessage)}`);
+  await expect(page.getByText(customMessage)).toBeVisible();
+});

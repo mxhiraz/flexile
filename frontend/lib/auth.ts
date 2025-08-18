@@ -166,6 +166,7 @@ export const authOptions = {
   },
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   secret: env.NEXTAUTH_SECRET,
 } satisfies NextAuthOptions;

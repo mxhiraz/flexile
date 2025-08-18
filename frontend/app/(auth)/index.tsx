@@ -20,6 +20,12 @@ import { request } from "@/utils/request";
 const emailSchema = z.object({ email: z.string().email() });
 const otpSchema = z.object({ otp: z.string().length(6) });
 
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  Callback: "Access denied or an unexpected error occurred.",
+  AccessDenied: "You do not have permission to perform this action.",
+  Verification: "Invalid or expired verification link.",
+};
+
 export function AuthPage({
   title,
   description,
@@ -37,6 +43,7 @@ export function AuthPage({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const oauthError = searchParams.get("error");
   const sendOtp = useMutation({
     mutationFn: async (values: { email: string }) => {
       const response = await request({
@@ -186,6 +193,13 @@ export function AuthPage({
             <Form {...emailForm}>
               <form onSubmit={(e) => void submitEmailForm(e)} className="space-y-4">
                 <div className="mb-4 flex flex-col items-center">
+                  {oauthError ? (
+                    <p className="text-destructive mb-2">
+                      {Object.prototype.hasOwnProperty.call(OAUTH_ERROR_MESSAGES, oauthError)
+                        ? OAUTH_ERROR_MESSAGES[oauthError]
+                        : oauthError}
+                    </p>
+                  ) : null}
                   <Button
                     type="button"
                     variant="outline"
