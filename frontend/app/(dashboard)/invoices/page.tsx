@@ -199,6 +199,7 @@ export default function InvoicesPage() {
                 <div className="text-xs text-gray-500">{info.row.original.contractor.role}</div>
               </>
             ),
+            footer: "Total",
           })
         : columnHelper.accessor("invoiceNumber", {
             header: "Invoice ID",
@@ -207,14 +208,20 @@ export default function InvoicesPage() {
                 {info.getValue()}
               </Link>
             ),
+            footer: "Total",
           }),
       columnHelper.simple("invoiceDate", "Sent on", (value) => (value ? formatDate(value) : "N/A")),
-      columnHelper.simple(
-        "totalAmountInUsdCents",
-        "Amount",
-        (value) => (value ? formatMoneyFromCents(value) : "N/A"),
-        "numeric",
-      ),
+      columnHelper.accessor("totalAmountInUsdCents", {
+        header: "Amount",
+        cell: (info) => {
+          const value = info.getValue();
+          return value ? formatMoneyFromCents(value) : "N/A";
+        },
+        meta: { numeric: true },
+        footer: formatMoneyFromCents(
+          data.reduce((sum, invoice) => sum + Number(invoice.totalAmountInUsdCents || 0), 0),
+        ),
+      }),
       columnHelper.accessor((row) => statusNames[row.status], {
         id: "status",
         header: "Status",
